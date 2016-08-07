@@ -1,7 +1,8 @@
 //敵
 class Enemy{
   float x, y;                 //画像左上の座標
-  float w, h;                 //画像の大きさ
+  float vx;                   //横方向の速度
+  int   w, h;                 //画像の大きさ
   int energy;                 //粉エネルギー
   int hp;                     //体力(何回消されたら消えるか)
   boolean dieflag;            //死んでいるならtrue
@@ -60,8 +61,9 @@ class Attacker extends Enemy{
     if(attacker_attack != null)  attacksound = minim.loadSample(attacker_attack);
     
     imgs.add(loadImage("attacker.png"));
-    w = imgs.get(0).width/20;
-    h = imgs.get(0).height/20;
+    w = (int)(imgs.get(0).width/20.0);
+    h = (int)(imgs.get(0).height/20.0);
+    vx = -1;
     
     hp = 2;
     y = height - h;
@@ -70,7 +72,7 @@ class Attacker extends Enemy{
   }
   
   void move(){
-    x--;
+    x += vx;
     if(x - sm.x < width/2)  die();
   }
 }
@@ -80,8 +82,8 @@ class Flys extends Enemy{
   
   Flys(){
     imgs.add(loadImage("flyattacker.png"));
-    w = imgs.get(0).width/20;
-    h = imgs.get(0).height/20;
+    w = (int)(imgs.get(0).width/20.0);
+    h = (int)(imgs.get(0).height/20.0);
     hp = 1;
   }
 
@@ -112,13 +114,14 @@ class Sin extends Flys{
     if(sin_attack != null)  attacksound = minim.loadSample(sin_attack);
     
     theta = 0;
+    vx = -2;
     Reverse();
   }
   
   void move(){
     theta+=2;
     y = basicy - sin(theta*PI/180)*height/6;
-    x -= 2;
+    x += vx;
   }
 }
 
@@ -128,6 +131,7 @@ class Tangent extends Sin{
   Tangent(){
     if(tangent_die != null)     diesound = minim.loadSample(tangent_die);
     if(tangent_attack != null)  attacksound = minim.loadSample(tangent_attack);
+    vx = -5;
   }
   
   Tangent(int x, int y){
@@ -135,12 +139,13 @@ class Tangent extends Sin{
     this.basicy = y+sm.y;
     if(tangent_die != null)     diesound = minim.loadSample(tangent_die);
     if(tangent_attack != null)  attacksound = minim.loadSample(tangent_attack);
+    vx = -5;
   }
   
   void move(){
     theta+=2;
     y = basicy - tan(theta*PI/180)*100;
-    x -= 5;
+    x += vx;
   }
 }
 
@@ -156,6 +161,7 @@ class Parachuter extends Attacker{
     parachuterflag = true;
     y = -random(100);
     x = random(500);
+    vx = -0.5;
     
     reSize();
   }
@@ -167,6 +173,7 @@ class Parachuter extends Attacker{
     parachuterflag = true;
     this.y = y+sm.y;
     this.x = x+sm.x;
+    vx = -0.5;
     
     reSize();
   }
@@ -174,7 +181,7 @@ class Parachuter extends Attacker{
   void move(){
     if(parachuterflag){
       y += 6;
-      x--;
+      x += vx;
       
       if(y > height - h){
         y = height - h;
@@ -230,8 +237,8 @@ class Home{
     img = reverse(loadImage("cleaner.png"));
     imgm = (float)1/3;
     
-    w = (int)(img.width * imgm);
-    h = (int)(img.height * imgm);
+    w = (int)(img.width * imgm / widthrate);
+    h = (int)(img.height * imgm / heightrate);
     
     img.resize(w, h);
   }

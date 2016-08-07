@@ -13,6 +13,7 @@ ScrollManager sm;
 ReadText rt;
 Minim minim;
 AudioPlayer bgm;
+float widthrate, heightrate;
 
 //効果音の敵種別ファイル名
 String attacker_die, sin_die, tangent_die, parachuter_die;
@@ -29,6 +30,9 @@ void setup(){
   rt = new ReadText();
   rt.read();
   rt.readCommands();
+  
+  widthrate = 1600.0/width;
+  heightrate = 800.0/height;
   
   sm = new ScrollManager();
   
