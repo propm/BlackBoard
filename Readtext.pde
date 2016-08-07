@@ -104,7 +104,6 @@ class ReadText{
             saver.intdata[0] = i;
             saver.intdata[3] = Integer.parseInt(code.substring(num, num2));
             saver.stringdata[0] = object;
-            println(object);
             
             secline.add(saver);
             
@@ -217,10 +216,6 @@ class ReadText{
     
     //秒数順にソート
     Collections.sort(secline, compa);
-    
-    for(int i = 0; i < secline.size(); i++){
-      println(secline.get(i));
-    }
   }
   
   void checksec(){
@@ -238,6 +233,7 @@ class ReadText{
             secline.remove(0);
             i--;
             break;
+            
           case 2:
             if(bgm != null)  bgm.close();
             bgm = minim.loadFile(ds.stringdata[0]);
@@ -249,7 +245,7 @@ class ReadText{
       }
     }
     
-    counter+= 2;
+    counter++;
   }
 }
 

@@ -22,6 +22,12 @@ class Enemy{
     }
   }
   
+  void Reverse(){
+    for(int i = 0; i < imgs.size(); i++){
+      imgs.set(i, reverse(imgs.get(i)));
+    }
+  }
+  
   void die(){
     dieflag = true;
     diesound.trigger();
@@ -43,9 +49,10 @@ class Attacker extends Enemy{
   }
   
   Attacker(int x, int y){
-    this.x = x;
-    this.y = y;
+    this.x = x+sm.x;
+    this.y = y+sm.y;
     initial();
+    reSize();
   }
   
   void initial(){
@@ -58,6 +65,8 @@ class Attacker extends Enemy{
     
     hp = 2;
     y = height - h;
+    
+    Reverse();
   }
   
   void move(){
@@ -86,12 +95,14 @@ class Sin extends Flys{
   
   Sin(){
     initial();
+    basicy = random(height/3*2) + h/2 + height/6;
     reSize();
   }
   
   Sin(int x, int y){
-    this.x = x;
-    this.basicy = y;
+    this.x      = x+sm.x;
+    this.basicy = y+sm.y;
+    
     initial();
     reSize();
   }
@@ -101,13 +112,13 @@ class Sin extends Flys{
     if(sin_attack != null)  attacksound = minim.loadSample(sin_attack);
     
     theta = 0;
-    basicy = random(height/3*2) + h/2 + height/6;
+    Reverse();
   }
   
   void move(){
     theta+=2;
     y = basicy - sin(theta*PI/180)*height/6;
-    x = -theta;
+    x -= 2;
   }
 }
 
@@ -120,8 +131,8 @@ class Tangent extends Sin{
   }
   
   Tangent(int x, int y){
-    this.x = x;
-    this.basicy = y;
+    this.x = x+sm.x;
+    this.basicy = y+sm.y;
     if(tangent_die != null)     diesound = minim.loadSample(tangent_die);
     if(tangent_attack != null)  attacksound = minim.loadSample(tangent_attack);
   }
@@ -154,8 +165,8 @@ class Parachuter extends Attacker{
     if(parachuter_attack != null)  attacksound = minim.loadSample(parachuter_attack);
     
     parachuterflag = true;
-    this.y = y;
-    this.x = x;
+    this.y = y+sm.y;
+    this.x = x+sm.x;
     
     reSize();
   }

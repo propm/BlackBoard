@@ -23,6 +23,8 @@ die(オブジェクト名), erase(), attacked(オブジェクト名)
 
 <appear>Parachuter:900, 500:10s
 <appear>Sin:1000, 500:20s
-<bgm>"toxo.mp3":0s
-<bgm>"yugata_majojou.mp3":12s
+<appear>Tangent:1200, 500:15s
+<appear>Attacker:1000, 500:18s
+<bgm>  "toxo.mp3":0s
+<bgm>  "yugata_majojou.mp3":12s
 <sound>"punch.mp3" >> die()

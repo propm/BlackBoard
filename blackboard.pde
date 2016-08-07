@@ -48,7 +48,9 @@ void draw(){
 //処理用関数
 void process(){
   
+  if(rt.counter%60 == 0)  println(rt.counter/60);
   rt.checksec();
+  
   sm.move();
   
   //プレイヤーの動きの処理
