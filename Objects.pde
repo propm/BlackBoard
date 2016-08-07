@@ -6,13 +6,12 @@ class Enemy{
   int hp;                     //体力(何回消されたら消えるか)
   boolean dieflag;            //死んでいるならtrue
   ArrayList<PImage> imgs;     //画像
-  ScrollManager sm;
+  
+  AudioSample diesound, attacksound;
   
   Enemy(){
     dieflag = false;
     imgs = new ArrayList<PImage>();    //アニメーションさせるために10枚ほど絵が必要
-    x = -random(10);
-    
   }
   
   void move(){}
@@ -21,6 +20,11 @@ class Enemy{
     for(int i = 0; i < imgs.size(); i++){
       imgs.get(i).resize((int)w, (int)h);
     }
+  }
+  
+  void die(){
+    dieflag = true;
+    diesound.trigger();
   }
   
   //描画
@@ -33,17 +37,21 @@ class Enemy{
 //突撃隊
 class Attacker extends Enemy{
   
-  Attacker(ScrollManager sm){
-    this.sm = sm;
+  Attacker(){
     initial();
     reSize();
   }
   
-  Attacker(){
+  Attacker(int x, int y){
+    this.x = x;
+    this.y = y;
     initial();
   }
   
   void initial(){
+    if(attacker_die != null)  diesound = minim.loadSample(attacker_die);
+    if(attacker_attack != null)  attacksound = minim.loadSample(attacker_attack);
+    
     imgs.add(loadImage("attacker.png"));
     w = imgs.get(0).width/20;
     h = imgs.get(0).height/20;
@@ -53,7 +61,8 @@ class Attacker extends Enemy{
   }
   
   void move(){
-    x++;
+    x--;
+    if(x - sm.x < width/2)  die();
   }
 }
 
@@ -71,20 +80,26 @@ class Flys extends Enemy{
 
 //正弦タコ
 class Sin extends Flys{
+  
   float basicy;    //角度が0のときの高さ
   int theta;       //角度(ラジアンではない);
   
-  Sin(ScrollManager sm){
-    this.sm = sm;
+  Sin(){
     initial();
     reSize();
   }
   
-  Sin(){
+  Sin(int x, int y){
+    this.x = x;
+    this.basicy = y;
     initial();
+    reSize();
   }
   
   void initial(){
+    if(sin_die != null)     diesound = minim.loadSample(sin_die);
+    if(sin_attack != null)  attacksound = minim.loadSample(sin_attack);
+    
     theta = 0;
     basicy = random(height/3*2) + h/2 + height/6;
   }
@@ -92,31 +107,40 @@ class Sin extends Flys{
   void move(){
     theta+=2;
     y = basicy - sin(theta*PI/180)*height/6;
-    x = theta;
+    x = -theta;
   }
 }
 
 //タンジェントタコ
 class Tangent extends Sin{
   
-  Tangent(ScrollManager sm){
-    this.sm = sm;
-    reSize();
+  Tangent(){
+    if(tangent_die != null)     diesound = minim.loadSample(tangent_die);
+    if(tangent_attack != null)  attacksound = minim.loadSample(tangent_attack);
+  }
+  
+  Tangent(int x, int y){
+    this.x = x;
+    this.basicy = y;
+    if(tangent_die != null)     diesound = minim.loadSample(tangent_die);
+    if(tangent_attack != null)  attacksound = minim.loadSample(tangent_attack);
   }
   
   void move(){
     theta+=2;
     y = basicy - tan(theta*PI/180)*100;
-    x += 5;
+    x -= 5;
   }
 }
 
 //パラシュートタコ
 class Parachuter extends Attacker{
+  
   boolean parachuterflag;      //地面に着地するまではパラシュート状態：true
   
-  Parachuter(ScrollManager sm){
-    this.sm = sm;
+  Parachuter(){
+    if(parachuter_die != null)     diesound = minim.loadSample(parachuter_die);
+    if(parachuter_attack != null)  attacksound = minim.loadSample(parachuter_attack);
     
     parachuterflag = true;
     y = -random(100);
@@ -125,10 +149,21 @@ class Parachuter extends Attacker{
     reSize();
   }
   
+  Parachuter(int x, int y){
+    if(parachuter_die != null)     diesound = minim.loadSample(parachuter_die);
+    if(parachuter_attack != null)  attacksound = minim.loadSample(parachuter_attack);
+    
+    parachuterflag = true;
+    this.y = y;
+    this.x = x;
+    
+    reSize();
+  }
+  
   void move(){
     if(parachuterflag){
       y += 6;
-      x++;
+      x--;
       
       if(y > height - h){
         y = height - h;
@@ -145,6 +180,11 @@ class Parachuter extends Attacker{
 class Player{
   float x, y;                  //座標
   boolean attackflag = false;  //マウスクリック時true
+  AudioSample erasesound;
+  
+  Player(){
+    if(erase != null)  erasesound = minim.loadSample(erase);
+  }
   
   void move(){
     x = mouseX;
@@ -170,10 +210,8 @@ class Home{
   float imgm;          //画像の拡大倍率
   float angle;         //画像回転角度（単位：度）
   int hp;              //体力
-  ScrollManager sm;
     
-  Home(ScrollManager sm){
-    this.sm = sm;
+  Home(){
     
     x = (int)((float)width/50*6);
     y = (int)((float)height/2);

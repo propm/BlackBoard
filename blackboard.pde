@@ -1,3 +1,9 @@
+import ddf.minim.spi.*;
+import ddf.minim.signals.*;
+import ddf.minim.*;
+import ddf.minim.analysis.*;
+import ddf.minim.ugens.*;
+import ddf.minim.effects.*;
 
 
 ArrayList<Enemy> enemys;
@@ -5,24 +11,32 @@ Player player;
 Home home;
 ScrollManager sm;
 ReadText rt;
+Minim minim;
+AudioPlayer bgm;
+
+//効果音の敵種別ファイル名
+String attacker_die, sin_die, tangent_die, parachuter_die;
+String attacker_attack, sin_attack, tangent_attack, parachuter_attack;
+String erase;
 
 void setup(){
   size(1600, 800);
   
+  minim = new Minim(this);
   enemys = new ArrayList<Enemy>();
   player = new Player();
-  
-  sm = new ScrollManager();
-  
-  enemys.add(new Attacker(sm));
-  enemys.add(new Sin(sm));
-  enemys.add(new Tangent(sm));
-  enemys.add(new Parachuter(sm));
-  home = new Home(sm);
   
   rt = new ReadText();
   rt.read();
   rt.readCommands();
+  
+  sm = new ScrollManager();
+  
+  enemys.add(new Attacker());
+  enemys.add(new Sin());
+  enemys.add(new Tangent());
+  enemys.add(new Parachuter());
+  home = new Home();
 }
 
 void draw(){
@@ -34,6 +48,7 @@ void draw(){
 //処理用関数
 void process(){
   
+  rt.checksec();
   sm.move();
   
   //プレイヤーの動きの処理
@@ -42,6 +57,12 @@ void process(){
   //敵の動きの処理
   for(int i = 0; i < enemys.size(); i++){
     Enemy enemy = enemys.get(i);
+    
+    if(enemy.dieflag){
+      enemys.remove(i);
+      i--;
+    }
+    
     enemy.move();
   }
 }
@@ -86,10 +107,29 @@ PImage reverse(PImage img){
   return img;
 }
 
+void setsound(String objectname, String command, String filename){
+  
+  if(objectname.equals("Attacker")){
+    if(command.equals("die"))       attacker_die = filename;
+    if(command.equals("attacked"))  attacker_attack = filename;
+    
+  }else if(objectname.equals("Sin")){
+    if(command.equals("die"))       sin_die = filename;
+    if(command.equals("attacked"))  sin_attack = filename;
+    
+  }else if(objectname.equals("Tangent")){
+    if(command.equals("die"))       tangent_die = filename;
+    if(command.equals("attacked"))  tangent_attack = filename;
+    
+  }else if(objectname.equals("Parachuter")){
+    if(command.equals("die"))       parachuter_die = filename;
+    if(command.equals("attacked"))  parachuter_attack = filename;
+  }
+}
+
 void mousePressed(){
   player.attackflag = true;
 }
-
 
 
 
