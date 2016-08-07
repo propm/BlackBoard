@@ -32,3 +32,5 @@ die(オブジェクト名), erase(), attacked(オブジェクト名)
 <appear>Tangent:1200, 500:	15s
 <appear>Attacker:1000, 500:	18s
 <appear>Sin:1000, 500:		20s
+
+<bgm>"aaa":12s

@@ -12,6 +12,7 @@ class ReadText{
   String[] lines;
   ArrayList<Datasaver> secline;          //秒数が関係するタグの情報を保存する可変長配列
   ArrayList<Datasaver> nsecline;         //秒数が関係しない(ry
+  ArrayList<Integer> misprintline;       //タグはついてるけど誤字ってる行を保存する配列
   int counter;                           //60なら1秒
   
   MyComparator compa = new MyComparator();
@@ -29,6 +30,7 @@ class ReadText{
     String creg = "^(";                                //タグのパターン用変数
     secline = new ArrayList<Datasaver>();
     nsecline = new ArrayList<Datasaver>();
+    misprintline = new ArrayList<Integer>();
     
     //タグのパターン作成
     for(int i = 0; i < tags.length; i++){
@@ -72,19 +74,31 @@ class ReadText{
         switch(tagnum){
           
           case 1:
-            if(sizepro(saver, code, tagnum, i))   continue;
+            if(sizepro(saver, code, tagnum, i)){
+              misprintline.add(i);
+              continue;
+            }
             break;
           
           case 2:
-            if(soundpro(saver, code, tagnum, i))  continue;
+            if(soundpro(saver, code, tagnum, i)){
+              misprintline.add(i);
+              continue;
+            }
             break;
           
           case 3:
-            if(appearpro(saver, code, tagnum, i)) continue;
+            if(appearpro(saver, code, tagnum, i)){
+              misprintline.add(i);
+              continue;
+            }
             break;
             
           case 4:
-            if(bgmpro(saver, code, tagnum, i))    continue;
+            if(bgmpro(saver, code, tagnum, i)){
+              misprintline.add(i);
+              continue;
+            }
             break;
         }
       }
@@ -352,7 +366,7 @@ class ReadText{
       }
     }
     
-    String[] writelines = new String[asterisk+1+1+secline.size()+1+nsecline.size()];
+    String[] writelines = new String[asterisk+1+1+secline.size()+1+nsecline.size()+1+misprintline.size()];
     for(int i = 0; i < writelines.length; i++){
       if(i <= asterisk)  writelines[i] = blines[i];
     }
@@ -363,6 +377,7 @@ class ReadText{
     for(int i = asterisk+2; i < writelines.length; i++){
       int beginnum = i - (asterisk+2);    //0から始まるようにした変数
       int beginnum2 = i - finishnum - (asterisk+2);
+      
       if(beginnum < nsecline.size())        writelines[i] = blines[nsecline.get(beginnum).intdata[0]];
       else if(beginnum == nsecline.size()){
         writelines[i] = "";
@@ -372,6 +387,14 @@ class ReadText{
         Datasaver saver = secline.get(beginnum2);
         writelines[i] = blines[saver.intdata[0]]; 
       }
+      else if(beginnum2 == secline.size()){
+        writelines[i] = "";
+        finishnum = i+1;
+      }
+    }
+    
+    for(int i = 0; i < misprintline.size(); i++){
+      writelines[finishnum+i] = blines[misprintline.get(i)];
     }
     
     saveStrings(".\\data\\settings.txt", writelines);
