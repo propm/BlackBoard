@@ -5,36 +5,32 @@ import ddf.minim.analysis.*;
 import ddf.minim.ugens.*;
 import ddf.minim.effects.*;
 
+ScrollManager sm;
+ReadText rt;
+DataBase db;
+Minim minim;
+AudioPlayer bgm;
 
 ArrayList<Enemy> enemys;
 Player player;
 Home home;
-ScrollManager sm;
-ReadText rt;
-Minim minim;
-AudioPlayer bgm;
-float widthrate, heightrate;
-
-//効果音の敵種別ファイル名
-String attacker_die, sin_die, tangent_die, parachuter_die;
-String attacker_attack, sin_attack, tangent_attack, parachuter_attack;
-String erase;
 
 void setup(){
   size(1600, 800);
   
   minim = new Minim(this);
-  enemys = new ArrayList<Enemy>();
-  player = new Player();
+  db = new DataBase();
   
+  db.widthrate = 1600.0/width;
+  db.heightrate = 800.0/height;
+  
+  sm = new ScrollManager();
   rt = new ReadText();
   rt.read();
   rt.readCommands();
   
-  widthrate = 1600.0/width;
-  heightrate = 800.0/height;
-  
-  sm = new ScrollManager();
+  enemys = new ArrayList<Enemy>();
+  player = new Player();
   
   enemys.add(new Attacker());
   enemys.add(new Sin());
@@ -52,8 +48,8 @@ void draw(){
 //処理用関数
 void process(){
   
-  if(rt.counter%60 == 0)  println(rt.counter/60);
   rt.checksec();
+  if(rt.counter%60 == 0)  println(rt.counter/60);
   
   sm.move();
   
@@ -113,28 +109,8 @@ PImage reverse(PImage img){
   return img;
 }
 
-void setsound(String objectname, String command, String filename){
-  
-  if(objectname.equals("Attacker")){
-    if(command.equals("die"))       attacker_die = filename;
-    if(command.equals("attacked"))  attacker_attack = filename;
-    
-  }else if(objectname.equals("Sin")){
-    if(command.equals("die"))       sin_die = filename;
-    if(command.equals("attacked"))  sin_attack = filename;
-    
-  }else if(objectname.equals("Tangent")){
-    if(command.equals("die"))       tangent_die = filename;
-    if(command.equals("attacked"))  tangent_attack = filename;
-    
-  }else if(objectname.equals("Parachuter")){
-    if(command.equals("die"))       parachuter_die = filename;
-    if(command.equals("attacked"))  parachuter_attack = filename;
-  }
-}
-
 void mousePressed(){
-  player.attackflag = true;
+  player.ATflag = true;
 }
 
 

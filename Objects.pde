@@ -1,37 +1,76 @@
+
+//あらゆる初期設定を保存するクラス
+class DataBase{
+  
+  float widthrate, heightrate;
+  int bs;                        //弾速
+  
+  //効果音の敵種別ファイル名
+  String at_die, sin_die, tan_die, para_die;
+  String at_AT, sin_AT, tan_AT, para_AT;
+  String erase;
+  
+  //敵の効果音を設定
+  void setsound(String objectname, String command, String filename){
+  
+    if(objectname.equals("Attacker")){
+      if(command.equals("die"))       at_die = filename;
+      if(command.equals("attacked"))  at_AT = filename;
+      
+    }else if(objectname.equals("Sin")){
+      if(command.equals("die"))       sin_die = filename;
+      if(command.equals("attacked"))  sin_AT = filename;
+      
+    }else if(objectname.equals("Tangent")){
+      if(command.equals("die"))       tan_die = filename;
+      if(command.equals("attacked"))  tan_AT = filename;
+      
+    }else if(objectname.equals("Parachuter")){
+      if(command.equals("die"))       para_die = filename;
+      if(command.equals("attacked"))  para_AT = filename;
+    }
+  }
+}
+
 //敵
-class Enemy{
-  float x, y;                 //画像左上の座標
-  float vx;                   //横方向の速度
+abstract class Enemy{
+  float x, y, vx;             //画像左上の座標、横方向の速度
   int   w, h;                 //画像の大きさ
   int energy;                 //粉エネルギー
   int hp;                     //体力(何回消されたら消えるか)
   boolean dieflag;            //死んでいるならtrue
   ArrayList<PImage> imgs;     //画像
   
-  AudioSample diesound, attacksound;
+  //Polygon pol;                        //当たり判定用多角形
+  AudioSample diesound, ATsound;  //効果音
   
   Enemy(){
+    //pol = new Polygon();
     dieflag = false;
     imgs = new ArrayList<PImage>();    //アニメーションさせるために10枚ほど絵が必要
   }
   
-  void move(){}
+  //******処理系関数******//
+  abstract void move();
   
-  void reSize(){
-    for(int i = 0; i < imgs.size(); i++){
-      imgs.get(i).resize((int)w, (int)h);
-    }
+  void die(){
+    dieflag = true;
+    diesound.trigger();
   }
   
+  //******画像系関数******//
+  
+  //反転
   void Reverse(){
     for(int i = 0; i < imgs.size(); i++){
       imgs.set(i, reverse(imgs.get(i)));
     }
   }
   
-  void die(){
-    dieflag = true;
-    diesound.trigger();
+  void reSize(){
+    for(int i = 0; i < imgs.size(); i++){
+      imgs.get(i).resize((int)w, (int)h);
+    }
   }
   
   //描画
@@ -57,8 +96,8 @@ class Attacker extends Enemy{
   }
   
   void initial(){
-    if(attacker_die != null)  diesound = minim.loadSample(attacker_die);
-    if(attacker_attack != null)  attacksound = minim.loadSample(attacker_attack);
+    if(db.at_die != null)  diesound = minim.loadSample(db.at_die);
+    if(db.at_AT != null)    ATsound = minim.loadSample(db.at_AT);
     
     imgs.add(loadImage("attacker.png"));
     w = (int)(imgs.get(0).width/20.0);
@@ -78,7 +117,7 @@ class Attacker extends Enemy{
 }
 
 //フライングタコ
-class Flys extends Enemy{
+abstract class Flys extends Enemy{
   
   Flys(){
     imgs.add(loadImage("flyattacker.png"));
@@ -86,7 +125,6 @@ class Flys extends Enemy{
     h = (int)(imgs.get(0).height/20.0);
     hp = 1;
   }
-
 }
 
 //正弦タコ
@@ -110,8 +148,8 @@ class Sin extends Flys{
   }
   
   void initial(){
-    if(sin_die != null)     diesound = minim.loadSample(sin_die);
-    if(sin_attack != null)  attacksound = minim.loadSample(sin_attack);
+    if(db.sin_die != null)     diesound = minim.loadSample(db.sin_die);
+    if(db.sin_AT != null)  ATsound = minim.loadSample(db.sin_AT);
     
     theta = 0;
     vx = -2;
@@ -129,16 +167,16 @@ class Sin extends Flys{
 class Tangent extends Sin{
   
   Tangent(){
-    if(tangent_die != null)     diesound = minim.loadSample(tangent_die);
-    if(tangent_attack != null)  attacksound = minim.loadSample(tangent_attack);
+    if(db.tan_die != null)     diesound = minim.loadSample(db.tan_die);
+    if(db.tan_AT != null)       ATsound = minim.loadSample(db.tan_AT);
     vx = -5;
   }
   
   Tangent(int x, int y){
     this.x = x+sm.x;
     this.basicy = y+sm.y;
-    if(tangent_die != null)     diesound = minim.loadSample(tangent_die);
-    if(tangent_attack != null)  attacksound = minim.loadSample(tangent_attack);
+    if(db.tan_die != null)     diesound = minim.loadSample(db.tan_die);
+    if(db.tan_AT != null)  ATsound = minim.loadSample(db.tan_AT);
     vx = -5;
   }
   
@@ -152,13 +190,13 @@ class Tangent extends Sin{
 //パラシュートタコ
 class Parachuter extends Attacker{
   
-  boolean parachuterflag;      //地面に着地するまではパラシュート状態：true
+  boolean paraflag;      //地面に着地するまではパラシュート状態：true
   
   Parachuter(){
-    if(parachuter_die != null)     diesound = minim.loadSample(parachuter_die);
-    if(parachuter_attack != null)  attacksound = minim.loadSample(parachuter_attack);
+    if(db.para_die != null)        diesound = minim.loadSample(db.para_die);
+    if(db.para_AT != null)  ATsound = minim.loadSample(db.para_AT);
     
-    parachuterflag = true;
+    paraflag = true;
     y = -random(100);
     x = random(500);
     vx = -0.5;
@@ -167,10 +205,10 @@ class Parachuter extends Attacker{
   }
   
   Parachuter(int x, int y){
-    if(parachuter_die != null)     diesound = minim.loadSample(parachuter_die);
-    if(parachuter_attack != null)  attacksound = minim.loadSample(parachuter_attack);
+    if(db.para_die != null)     diesound = minim.loadSample(db.para_die);
+    if(db.para_AT != null)  ATsound = minim.loadSample(db.para_AT);
     
-    parachuterflag = true;
+    paraflag = true;
     this.y = y+sm.y;
     this.x = x+sm.x;
     vx = -0.5;
@@ -179,13 +217,13 @@ class Parachuter extends Attacker{
   }
   
   void move(){
-    if(parachuterflag){
+    if(paraflag){
       y += 6;
       x += vx;
       
       if(y > height - h){
         y = height - h;
-        parachuterflag = false;
+        paraflag = false;
       }
       
     }else{
@@ -196,23 +234,42 @@ class Parachuter extends Attacker{
 
 //プレイヤー
 class Player{
-  float x, y;                  //座標
-  boolean attackflag = false;  //マウスクリック時true
+  float bx, by, x, y;  //座標
+  boolean ATflag;  //マウスクリック時true
+  boolean wallflag;    //壁作ってるときtrue
+  int count;
+  //Polygon pol;
+  
   AudioSample erasesound;
   
   Player(){
-    if(erase != null)  erasesound = minim.loadSample(erase);
+    if(db.erase != null)  erasesound = minim.loadSample(db.erase);
+    ATflag = wallflag = false;
+    //pol = new Polygon();
   }
   
   void move(){
+    bx = x;
+    by = y;
+    
     x = mouseX;
     y = mouseY;
     
-    if(attackflag)  attack();
+    if(x == bx && y == by){
+      count++;
+      if(count/60 >= 3)  wallflag = true;
+    }else{
+      count = 0;
+      wallflag = false;
+      if(ATflag)  attack();
+    }
+    
   }
   
   void attack(){
-    
+    for(int i = 0; i < enemys.size(); i++){
+      //judge(pol, enemys.get(i).pol);
+    }
   }
   
   void draw(){
@@ -227,6 +284,8 @@ class Home{
   PImage img;          //画像
   float imgm;          //画像の拡大倍率
   float angle;         //画像回転角度（単位：度）
+  float anglev;        //角速度  （単位：度）
+  boolean positive;    //各加速度が正負どちらに近づくか(trueなら正）
   int hp;              //体力
     
   Home(){
@@ -237,20 +296,26 @@ class Home{
     img = reverse(loadImage("cleaner.png"));
     imgm = (float)1/3;
     
-    w = (int)(img.width * imgm / widthrate);
-    h = (int)(img.height * imgm / heightrate);
+    w = (int)(img.width * imgm / db.widthrate);
+    h = (int)(img.height * imgm / db.heightrate);
     
     img.resize(w, h);
+    anglev = angle = 0;
   }
   
   void rotation(){
-    
     pushMatrix();
     translate(x - sm.x, y - sm.y);
     rotate(angle/(180/PI));
     
-    angle += 2;
-    angle %= 360;
+    if(angle < -15)      positive = true;
+    else if(angle > 15)  positive = false;
+    
+    if(positive)  anglev += 0.3;
+    else          anglev -= 0.3;
+    
+    angle += anglev;
+    //println(angle+" , "+anglev);
   }
   
   void draw(){

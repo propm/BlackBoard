@@ -4,7 +4,7 @@ import java.io.*;
 
 class ReadText{
   
-  final String[] tags = {"<size>", "<sound>", "<appear>", "<bgm>"};
+  final String[] tags = {"<size>", "<sound>", "<appear>" , "<bgm>", "<bs>"};
   final String[] commands = {"die", "erase", "attacked"};
   final String[] objects = {"Attacker", "Sin", "Tangent", "Parachuter"};
   
@@ -53,7 +53,8 @@ class ReadText{
         
         //どのタグかを取得
         int tagnum = 0;
-        for(int j = 0; j < tags.length; j++)  if(Pattern.compile("^"+tags[j]).matcher(lines[i]).find())  tagnum = j+1;
+        for(int j = 0; j < tags.length; j++)  
+          if(Pattern.compile("^"+tags[j]).matcher(lines[i]).find())  tagnum = j+1;
         
         //タグの後の文を取得
         String code = "";
@@ -64,7 +65,7 @@ class ReadText{
           }
         }
         
-        Datasaver saver = new Datasaver();
+        Datasaver ds = new Datasaver();
         
         //ファイル名とオブジェクト名保持用の変数
         String object, filename;
@@ -74,28 +75,35 @@ class ReadText{
         switch(tagnum){
           
           case 1:
-            if(sizepro(saver, code, tagnum, i)){
+            if(sizepro(ds, code, tagnum, i)){
               misprintline.add(i);
               continue;
             }
             break;
           
           case 2:
-            if(soundpro(saver, code, tagnum, i)){
+            if(soundpro(ds, code, tagnum, i)){
               misprintline.add(i);
               continue;
             }
             break;
           
           case 3:
-            if(appearpro(saver, code, tagnum, i)){
+            if(appearpro(ds, code, tagnum, i)){
               misprintline.add(i);
               continue;
             }
             break;
             
           case 4:
-            if(bgmpro(saver, code, tagnum, i)){
+            if(bgmpro(ds, code, tagnum, i)){
+              misprintline.add(i);
+              continue;
+            }
+            break;
+            
+          case 5:
+            if(bspro(ds, code, tagnum, i)){
               misprintline.add(i);
               continue;
             }
@@ -108,21 +116,21 @@ class ReadText{
     Collections.sort(secline, compa);
     //タグ順にソート
     Collections.sort(nsecline, compa);
-    
-    println(secline.size());
 
     //ファイル出力
     writetext();
   }
   
   //sizeタグの処理
-  boolean sizepro(Datasaver saver, String code, int tagnum, int i){
+  boolean sizepro(Datasaver ds, String code, int tagnum, int i){
     
+    //エラー処理
     if(!Pattern.matches(tags[tagnum-1]+"[0-9]+,[0-9]+", lines[i])){
       println("書式通り記入してください。 行数： "+(i+1));
       return true;
     }
     
+    //width, heightの抽出
     int w = 0, h = 0;
     for(int j = 0; j < code.length(); j++){
       if(code.substring(j, j+1).equals(",")){
@@ -133,24 +141,27 @@ class ReadText{
     
     size(w, h);
     
-    saver.intdata = new int[2];
-    saver.intdata[0] = i;
-    saver.intdata[1] = tagnum;
+    //行数とタグを記憶
+    ds.intdata = new int[2];
+    ds.intdata[0] = i;
+    ds.intdata[1] = tagnum;
     
-    nsecline.add(saver);
+    nsecline.add(ds);
     return false;
   }
   
   //soundタグの処理
-  boolean soundpro(Datasaver saver, String code, int tagnum, int i){
+  boolean soundpro(Datasaver ds, String code, int tagnum, int i){
     String object, filename;
     int ifcount = 0;
     
+    //エラー処理
     if(!Pattern.matches(tags[tagnum-1]+"\".+\">>[a-z]+\\([a-zA-z]*\\)", lines[i])){
       println("書式通り記入してください。 行数： "+(i+1));
       return true;
     }
     
+    //括弧（始）がある位置を取得
     int parennum = 0;  // "("がある位置
     for(int j = code.length()-1; j >= 0 ; j--){
       if(code.substring(j, j+1).equals("(")){
@@ -178,12 +189,13 @@ class ReadText{
       if(object.length() == 0)  objectnum = -1;
     }
     
-    
+    //エラー処理
     if(objectnum == 0){
       println("そのようなオブジェクトは存在しません: "+object+" 行数: "+(i+1));
       return true;
     }
     
+    //ファイル名取得
     filename = "";
     for(int j = 0; j < code.length(); j++){
       if(code.substring(j, j+1).equals("\"")){
@@ -196,28 +208,29 @@ class ReadText{
     if(conffile(filename, i))  return true;
     
     if(comnum == 1 || comnum == 3){
-      if(objectnum > 0)  setsound(objects[objectnum-1], commands[comnum-1], filename);
-      else               for(int j = 0; j < 4; j++)  setsound(objects[j], commands[comnum-1], filename);
+      if(objectnum > 0)  db.setsound(objects[objectnum-1], commands[comnum-1], filename);
+      else               for(int j = 0; j < 4; j++)  db.setsound(objects[j], commands[comnum-1], filename);
     }
     else if(comnum == 2){
       if(objectnum > 0){
         println("オブジェクトの情報は必要ありません。 行数: "+(i+1));
         return true;
       }
-      erase = filename;
+      db.erase = filename;
     }
     
-    saver.intdata = new int[2];
-    saver.intdata[0] = i;
-    saver.intdata[1] = tagnum;
+    //行数とタグを記憶
+    ds.intdata = new int[2];
+    ds.intdata[0] = i;
+    ds.intdata[1] = tagnum;
     
-    nsecline.add(saver);
+    nsecline.add(ds);
     
     return false;
   }
   
   //appearタグの処理
-  boolean appearpro(Datasaver saver, String code, int tagnum, int i){
+  boolean appearpro(Datasaver ds, String code, int tagnum, int i){
     if(!Pattern.matches(tags[tagnum-1]+"[A-Z][a-z]+:[0-9]+,[0-9]+:[0-9]+s", lines[i])){
       println("書式通り記入してください。 行数： "+(i+1));
       return true;
@@ -237,30 +250,30 @@ class ReadText{
       }
     }
     
-    saver.intdata = new int[4];
-    saver.stringdata = new String[1];
+    ds.intdata = new int[4];
+    ds.stringdata = new String[1];
     
     //座標取得
     for(int j = number; j < nums[0] - 1; j++){
       if(code.substring(j, j+1).equals(",")){
-        saver.intdata[1] = Integer.parseInt(code.substring(number, j));
-        saver.intdata[2] = Integer.parseInt(code.substring(j+1, nums[0]-1));
+        ds.intdata[1] = Integer.parseInt(code.substring(number, j));
+        ds.intdata[2] = Integer.parseInt(code.substring(j+1, nums[0]-1));
       }
     }
     
     //データ保存
-    saver.tag = tagnum;
-    saver.intdata[0] = i;
-    saver.intdata[3] = Integer.parseInt(code.substring(nums[0], nums[1]));
-    saver.stringdata[0] = object;
+    ds.tag = tagnum;
+    ds.intdata[0] = i;
+    ds.intdata[3] = Integer.parseInt(code.substring(nums[0], nums[1]));
+    ds.stringdata[0] = object;
     
-    secline.add(saver);
+    secline.add(ds);
     
     return false;
   }
   
   //bgmタグの処理
-  boolean bgmpro(Datasaver saver, String code, int tagnum, int i){
+  boolean bgmpro(Datasaver ds, String code, int tagnum, int i){
     String filename;
     int ifcount = 0;
     
@@ -286,16 +299,31 @@ class ReadText{
     if(conffile(filename, i))  return true;
     
     //データ保存
-    saver.intdata = new int[2];
-    saver.stringdata = new String[1];
+    ds.intdata = new int[2];
+    ds.stringdata = new String[1];
     
-    saver.tag = tagnum;
-    saver.intdata[0] = i;
-    saver.intdata[1] = Integer.parseInt(code.substring(nums[0], nums[1]));
-    saver.stringdata[0] = filename;
+    ds.tag = tagnum;
+    ds.intdata[0] = i;
+    ds.intdata[1] = Integer.parseInt(code.substring(nums[0], nums[1]));
+    ds.stringdata[0] = filename;
     
-    secline.add(saver);
+    secline.add(ds);
     
+    return false;
+  }
+  
+  //bsタグの処理
+  boolean bspro(Datasaver ds, String code, int tagnum, int i){
+    
+    //書式通りに記入されてなかった場合の処理
+    if(!Pattern.matches(tags[tagnum-1]+"[0-9]+", lines[i])){
+      println("書式通り記入してください。 行数： "+(i+1));
+      return true;
+    }
+    
+    //弾速取得
+    db.bs = Integer.parseInt(code.substring(0, code.length()));
+    println(db.bs);
     return false;
   }
   
