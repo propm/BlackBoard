@@ -28,6 +28,7 @@ void setup(){
   rt = new ReadText();
   rt.read();
   rt.readCommands();
+  db.setenemys();
   
   enemys = new ArrayList<Enemy>();
   player = new Player();

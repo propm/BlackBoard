@@ -10,30 +10,87 @@ class DataBase{
   String at_AT, sin_AT, tan_AT, para_AT;
   String erase;
   
+  Enemy[] oriEnemys = new Enemy[4];    //敵種別設定用のオブジェクト
+                                       //1:突撃兵  2:サイン  3:タンジェント  4:パラシュート
+  
+  DataBase(){
+    for(int i = 0; i < oriEnemys.length; i++){
+      oriEnemys[i] = new Enemy();
+    }
+  }
+  
   //敵の効果音を設定
   void setsound(String objectname, String command, String filename){
+    Enemy[] oe = oriEnemys;
   
     if(objectname.equals("Attacker")){
-      if(command.equals("die"))       at_die = filename;
-      if(command.equals("attacked"))  at_AT = filename;
+      if(command.equals("die"))       oe[0].diesound = minim.loadSample(filename);
+      if(command.equals("attacked"))  oe[0].ATsound  = minim.loadSample(filename);
       
     }else if(objectname.equals("Sin")){
-      if(command.equals("die"))       sin_die = filename;
-      if(command.equals("attacked"))  sin_AT = filename;
+      if(command.equals("die"))       oe[1].diesound = minim.loadSample(filename);
+      if(command.equals("attacked"))  oe[1].ATsound  = minim.loadSample(filename);
       
     }else if(objectname.equals("Tangent")){
-      if(command.equals("die"))       tan_die = filename;
-      if(command.equals("attacked"))  tan_AT = filename;
+      if(command.equals("die"))       oe[2].diesound = minim.loadSample(filename);
+      if(command.equals("attacked"))  oe[2].ATsound  = minim.loadSample(filename);
       
     }else if(objectname.equals("Parachuter")){
-      if(command.equals("die"))       para_die = filename;
-      if(command.equals("attacked"))  para_AT = filename;
+      if(command.equals("die"))       oe[3].diesound = minim.loadSample(filename);
+      if(command.equals("attacked"))  oe[3].ATsound  = minim.loadSample(filename);
     }
+  }
+  
+  void setenemys(){
+    for(int i = 0; i < oriEnemys.length; i++){
+      
+      Enemy e = oriEnemys[i];
+      
+      switch(i){
+        case 0:
+        case 3:
+          e.hp = 2;
+          
+          e.imgs.add(loadImage("attacker.png"));
+          e.w = (int)(e.imgs.get(0).width/20.0);
+          e.h = (int)(e.imgs.get(0).height/20.0);
+          
+          for(int j = 0; j < e.imgs.size(); j++){
+            e.imgs.set(j, reSize(e.imgs.get(j), e.w, e.h));
+            e.imgs.set(j, Reverse(e.imgs.get(j)));
+          }
+          
+          break;
+          
+        case 1:
+        case 2:
+          e.hp = 1;
+          
+          e.imgs.add(loadImage("flyattacker.png"));
+          e.w = (int)(e.imgs.get(0).width/20.0);
+          e.h = (int)(e.imgs.get(0).height/20.0);
+          
+          for(int j = 0; j < e.imgs.size(); j++){
+            e.imgs.set(j, reSize(e.imgs.get(j), e.w, e.h));
+            e.imgs.set(j, Reverse(e.imgs.get(j)));
+          }
+      }
+    }
+  }
+  
+   //反転
+  PImage Reverse(PImage img){
+    return reverse(img);
+  }
+  
+  PImage reSize(PImage img, int w, int h){
+    img.resize(w, h);
+    return img;
   }
 }
 
 //敵
-abstract class Enemy{
+class Enemy{
   float x, y, vx;             //画像左上の座標、横方向の速度
   int   w, h;                 //画像の大きさ
   int energy;                 //粉エネルギー
@@ -41,36 +98,20 @@ abstract class Enemy{
   boolean dieflag;            //死んでいるならtrue
   ArrayList<PImage> imgs;     //画像
   
-  //Polygon pol;                        //当たり判定用多角形
+  Polygon pol;                        //当たり判定用多角形
   AudioSample diesound, ATsound;  //効果音
   
   Enemy(){
-    //pol = new Polygon();
     dieflag = false;
     imgs = new ArrayList<PImage>();    //アニメーションさせるために10枚ほど絵が必要
   }
   
   //******処理系関数******//
-  abstract void move();
+  void move(){}
   
   void die(){
     dieflag = true;
-    diesound.trigger();
-  }
-  
-  //******画像系関数******//
-  
-  //反転
-  void Reverse(){
-    for(int i = 0; i < imgs.size(); i++){
-      imgs.set(i, reverse(imgs.get(i)));
-    }
-  }
-  
-  void reSize(){
-    for(int i = 0; i < imgs.size(); i++){
-      imgs.get(i).resize((int)w, (int)h);
-    }
+    if(diesound != null)  diesound.trigger();
   }
   
   //描画
@@ -85,29 +126,27 @@ class Attacker extends Enemy{
   
   Attacker(){
     initial();
-    reSize();
   }
   
   Attacker(int x, int y){
     this.x = x+sm.x;
     this.y = y+sm.y;
     initial();
-    reSize();
   }
   
   void initial(){
-    if(db.at_die != null)  diesound = minim.loadSample(db.at_die);
-    if(db.at_AT != null)    ATsound = minim.loadSample(db.at_AT);
+    Enemy oe = db.oriEnemys[0];
+    if(db.at_die != null)  diesound = oe.diesound;
+    if(db.at_AT != null)    ATsound = oe.ATsound;
     
-    imgs.add(loadImage("attacker.png"));
-    w = (int)(imgs.get(0).width/20.0);
-    h = (int)(imgs.get(0).height/20.0);
+    imgs.add(db.oriEnemys[0].imgs.get(0));
+    
+    w = oe.w;
+    h = oe.h;
     vx = -1;
     
-    hp = 2;
+    hp = oe.hp;
     y = height - h;
-    
-    Reverse();
   }
   
   void move(){
@@ -116,19 +155,8 @@ class Attacker extends Enemy{
   }
 }
 
-//フライングタコ
-abstract class Flys extends Enemy{
-  
-  Flys(){
-    imgs.add(loadImage("flyattacker.png"));
-    w = (int)(imgs.get(0).width/20.0);
-    h = (int)(imgs.get(0).height/20.0);
-    hp = 1;
-  }
-}
-
 //正弦タコ
-class Sin extends Flys{
+class Sin extends Enemy{
   
   float basicy;    //角度が0のときの高さ
   int theta;       //角度(ラジアンではない);
@@ -136,7 +164,6 @@ class Sin extends Flys{
   Sin(){
     initial();
     basicy = random(height/3*2) + h/2 + height/6;
-    reSize();
   }
   
   Sin(int x, int y){
@@ -144,16 +171,18 @@ class Sin extends Flys{
     this.basicy = y+sm.y;
     
     initial();
-    reSize();
   }
   
   void initial(){
-    if(db.sin_die != null)     diesound = minim.loadSample(db.sin_die);
-    if(db.sin_AT != null)  ATsound = minim.loadSample(db.sin_AT);
+    Enemy oe = db.oriEnemys[1];
+    
+    if(db.sin_die != null) diesound = oe.diesound;
+    if(db.sin_AT != null)   ATsound = oe.ATsound;
+    
+    imgs.add(db.oriEnemys[0].imgs.get(0));
     
     theta = 0;
     vx = -2;
-    Reverse();
   }
   
   void move(){
@@ -167,16 +196,22 @@ class Sin extends Flys{
 class Tangent extends Sin{
   
   Tangent(){
-    if(db.tan_die != null)     diesound = minim.loadSample(db.tan_die);
-    if(db.tan_AT != null)       ATsound = minim.loadSample(db.tan_AT);
-    vx = -5;
+    initialize();
   }
   
   Tangent(int x, int y){
     this.x = x+sm.x;
     this.basicy = y+sm.y;
-    if(db.tan_die != null)     diesound = minim.loadSample(db.tan_die);
-    if(db.tan_AT != null)  ATsound = minim.loadSample(db.tan_AT);
+    initialize();
+  }
+  
+  void initialize(){
+    Enemy oe = db.oriEnemys[2];
+    
+    if(db.tan_die != null)     diesound = oe.diesound;
+    if(db.tan_AT != null)       ATsound = oe.ATsound;
+    imgs.add(db.oriEnemys[0].imgs.get(0));
+    
     vx = -5;
   }
   
@@ -193,27 +228,28 @@ class Parachuter extends Attacker{
   boolean paraflag;      //地面に着地するまではパラシュート状態：true
   
   Parachuter(){
-    if(db.para_die != null)        diesound = minim.loadSample(db.para_die);
-    if(db.para_AT != null)  ATsound = minim.loadSample(db.para_AT);
-    
-    paraflag = true;
-    y = -random(100);
-    x = random(500);
-    vx = -0.5;
-    
-    reSize();
+    initialize();
   }
   
   Parachuter(int x, int y){
-    if(db.para_die != null)     diesound = minim.loadSample(db.para_die);
-    if(db.para_AT != null)  ATsound = minim.loadSample(db.para_AT);
+    initialize();
     
-    paraflag = true;
     this.y = y+sm.y;
     this.x = x+sm.x;
-    vx = -0.5;
+  }
+  
+  void initialize(){
+    Enemy oe = db.oriEnemys[3];
     
-    reSize();
+    if(db.para_die != null)     diesound = oe.diesound;
+    if(db.para_AT != null)       ATsound = oe.ATsound;
+    imgs.add(db.oriEnemys[0].imgs.get(0));
+    
+    y = -random(100);
+    x = random(500);
+    paraflag = true;
+    
+    vx = -0.5;
   }
   
   void move(){
@@ -315,7 +351,6 @@ class Home{
     else          anglev -= 0.3;
     
     angle += anglev;
-    //println(angle+" , "+anglev);
   }
   
   void draw(){
