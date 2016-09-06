@@ -12,6 +12,7 @@ Minim minim;
 AudioPlayer bgm;
 
 ArrayList<Enemy> enemys;
+ArrayList<Bullet> bullets;
 Player player;
 Home home;
 
@@ -31,6 +32,7 @@ void setup(){
   db.setenemys();
   
   enemys = new ArrayList<Enemy>();
+  bullets = new ArrayList<Bullet>();
   player = new Player();
   
   enemys.add(new Attacker());
@@ -59,15 +61,30 @@ void process(){
   
   //敵の動きの処理
   for(int i = 0; i < enemys.size(); i++){
-    Enemy enemy = enemys.get(i);
+    enemys.get(i).move();
     
-    if(enemy.dieflag){
+    if(enemys.get(i).dieflag){
       enemys.remove(i);
       i--;
     }
     
-    enemy.move();
   }
+  
+  //弾の処理
+  for(int i = 0; i < bullets.size(); i++){
+    bullets.get(i).move();
+    
+    if(bullets.get(i).dieflag){
+      bullets.remove(i);
+      i--;
+    }
+  }
+}
+
+//多数の動きの処理をする
+void moving(ArrayList<Object> a){
+  
+  
 }
 
 //描画用関数
@@ -79,6 +96,10 @@ void drawing(){
   for(int i = 0; i < enemys.size(); i++){
     Enemy enemy = enemys.get(i);
     enemy.draw();
+  }
+  
+  for(int i = 0; i < bullets.size(); i++){
+    bullets.get(i).draw();
   }
   
   //プレイヤー

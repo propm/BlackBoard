@@ -323,7 +323,13 @@ class ReadText{
     
     //弾速取得
     db.bs = Integer.parseInt(code.substring(0, code.length()));
-    println(db.bs);
+    
+    
+    ds.intdata = new int[1];
+    ds.tag = tagnum;
+    ds.intdata[0] = i;
+    nsecline.add(ds);
+    
     return false;
   }
   
@@ -437,6 +443,6 @@ class MyComparator implements Comparator<Datasaver>{
 
 class Datasaver{
   int tag;
-  int[] intdata;
+  int[] intdata;        //0番目の要素には行数が入る
   String[] stringdata;
 }

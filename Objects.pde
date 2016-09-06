@@ -6,8 +6,6 @@ class DataBase{
   int bs;                        //弾速
   
   //効果音の敵種別ファイル名
-  String at_die, sin_die, tan_die, para_die;
-  String at_AT, sin_AT, tan_AT, para_AT;
   String erase;
   
   Enemy[] oriEnemys = new Enemy[4];    //敵種別設定用のオブジェクト
@@ -107,7 +105,25 @@ class Enemy{
   }
   
   //******処理系関数******//
+  
+  //初期設定をコピーする関数
+  void initial(int num){
+    Enemy oe = db.oriEnemys[num];
+    diesound = oe.diesound;
+    ATsound = oe.ATsound;
+    
+    imgs.add(oe.imgs.get(0));
+    
+    w = oe.w;
+    h = oe.h;
+    
+    hp = oe.hp;
+  }
+  
   void move(){}
+  void attack(){
+    bullets.add(new Bullet(x, y+h/2, new PVector(-db.bs/10.0, 0)));
+  }
   
   void die(){
     dieflag = true;
@@ -135,17 +151,9 @@ class Attacker extends Enemy{
   }
   
   void initial(){
-    Enemy oe = db.oriEnemys[0];
-    if(db.at_die != null)  diesound = oe.diesound;
-    if(db.at_AT != null)    ATsound = oe.ATsound;
-    
-    imgs.add(db.oriEnemys[0].imgs.get(0));
-    
-    w = oe.w;
-    h = oe.h;
+    initial(0);  //初期設定をコピー
     vx = -1;
     
-    hp = oe.hp;
     y = height - h;
   }
   
@@ -160,6 +168,7 @@ class Sin extends Enemy{
   
   float basicy;    //角度が0のときの高さ
   int theta;       //角度(ラジアンではない);
+  int count;
   
   Sin(){
     initial();
@@ -174,21 +183,22 @@ class Sin extends Enemy{
   }
   
   void initial(){
-    Enemy oe = db.oriEnemys[1];
-    
-    if(db.sin_die != null) diesound = oe.diesound;
-    if(db.sin_AT != null)   ATsound = oe.ATsound;
-    
-    imgs.add(db.oriEnemys[0].imgs.get(0));
+    initial(1);  //初期設定をコピー
     
     theta = 0;
     vx = -2;
+    count = 0;
   }
   
   void move(){
     theta+=2;
     y = basicy - sin(theta*PI/180)*height/6;
     x += vx;
+    
+    if(count++ > 45){
+      count = 0;
+      attack();
+    }
   }
 }
 
@@ -206,11 +216,7 @@ class Tangent extends Sin{
   }
   
   void initialize(){
-    Enemy oe = db.oriEnemys[2];
-    
-    if(db.tan_die != null)     diesound = oe.diesound;
-    if(db.tan_AT != null)       ATsound = oe.ATsound;
-    imgs.add(db.oriEnemys[0].imgs.get(0));
+    initial(2);  //初期設定をコピー
     
     vx = -5;
   }
@@ -239,11 +245,7 @@ class Parachuter extends Attacker{
   }
   
   void initialize(){
-    Enemy oe = db.oriEnemys[3];
-    
-    if(db.para_die != null)     diesound = oe.diesound;
-    if(db.para_AT != null)       ATsound = oe.ATsound;
-    imgs.add(db.oriEnemys[0].imgs.get(0));
+    initial(3);      //初期設定をコピー
     
     y = -random(100);
     x = random(500);
@@ -357,5 +359,52 @@ class Home{
     rotation();
     image(img, 0 - w/2, 0-h/2);
     popMatrix();
+  }
+}
+
+//敵の弾丸
+class Bullet{
+  float x, y;      //弾の進行方向の先端の座標
+  PVector length;
+  PVector v;
+  boolean dieflag;
+  
+  Bullet(){
+    x = width/2;
+    y = height/2;
+    v = new PVector(-1, 0);
+    initial();
+  }
+  
+  Bullet(float x, float y){
+    this.x = x;
+    this.y = y;
+    v = new PVector(-1, 0);
+    initial();
+  }
+  
+  Bullet(float x, float y, PVector v){
+    this.x = x;
+    this.y = y;
+    this.v = v;
+    initial();
+  }
+  
+  void initial(){
+    length = v.get();
+    length.setMag(100*width/1600);
+    dieflag = false;
+  }
+  
+  void move(){
+    x += v.x;
+    y += v.y;
+    
+    if((v.x <= 0 && x+abs(length.x) < sm.x) || (v.x > 0 && x-abs(length.x) > sm.x+width))  dieflag = true;
+  }
+  
+  void draw(){
+    stroke(255, 255, 0);
+    line(x-sm.x, y-sm.y, x-sm.x+length.x, y-sm.y+length.y);
   }
 }
