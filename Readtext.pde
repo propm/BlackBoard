@@ -365,7 +365,7 @@ class ReadText{
   }
   
   int[] getsec(String code){
-    //秒数取得、データ保持用のクラスに保存
+    //秒数取得
     int[] nums = {0, 0};
     
     for(int j = code.length() - 1; j >= 0; j--){

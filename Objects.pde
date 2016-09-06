@@ -45,8 +45,9 @@ class DataBase{
       Enemy e = oriEnemys[i];
       
       switch(i){
-        case 0:
         case 3:
+          e.bulletflag = true;
+        case 0:
           e.hp = 2;
           
           e.imgs.add(loadImage("attacker.png"));
@@ -58,8 +59,18 @@ class DataBase{
             e.imgs.set(j, Reverse(e.imgs.get(j)));
           }
           
-          break;
+          e.pol = new Polygon();
+          e.pol.Add(e.w/2, 0, 0);
+          e.pol.Add(e.w*9/10, e.h*3/20, 0);
+          e.pol.Add(e.w, e.h, 0);
+          e.pol.Add(0, e.h*21/22, 0);
+          e.pol.Add(e.w/5, e.h*3/25, 0);
+          println(e.pol.ver);
+          e.pol.Reverse(e.w);
+          println(e.pol.ver);
           
+          if(i == 0)  e.bulletflag = false;
+          break;
         case 1:
         case 2:
           e.hp = 1;
@@ -72,6 +83,18 @@ class DataBase{
             e.imgs.set(j, reSize(e.imgs.get(j), e.w, e.h));
             e.imgs.set(j, Reverse(e.imgs.get(j)));
           }
+          
+          e.pol = new Polygon();
+          e.pol.Add(e.w, e.h*3/5, 0);
+          e.pol.Add(e.w*16/21, e.h*100/106, 0);
+          e.pol.Add(e.w/4, e.h, 0);
+          e.pol.Add(0, e.h*7/10, 0);
+          e.pol.Add(e.w/7, 0, 0);
+          e.pol.Add(e.w*4/5, e.h*4/25, 0);
+          e.pol.Reverse(e.w);
+          
+          e.bulletflag = true;
+          break;
       }
     }
   }
@@ -93,10 +116,13 @@ class Enemy{
   int   w, h;                 //画像の大きさ
   int energy;                 //粉エネルギー
   int hp;                     //体力(何回消されたら消えるか)
+  int count;                  //時間カウント
   boolean dieflag;            //死んでいるならtrue
+  boolean bulletflag;         //弾を発射するオブジェクトならtrue
   ArrayList<PImage> imgs;     //画像
   
-  Polygon pol;                        //当たり判定用多角形
+  Polygon pol;                    //当たり判定用多角形
+  Polygon oripol;                 //形のみを保持する多角形
   AudioSample diesound, ATsound;  //効果音
   
   Enemy(){
@@ -113,16 +139,29 @@ class Enemy{
     ATsound = oe.ATsound;
     
     imgs.add(oe.imgs.get(0));
+    oripol = new Polygon(oe.pol.ver);
+    pol    = new Polygon(oe.pol.ver);
+    println(oe.pol.ver);
     
     w = oe.w;
     h = oe.h;
+    bulletflag = oe.bulletflag;
     
     hp = oe.hp;
+    count = 0;
+  }
+  
+  void setPolygon(float x, float y){
+    for(int i = 0; i < pol.ver.size(); i++){
+      PVector pv = oripol.ver.get(i);
+      pol.ver.set(i, new PVector(x-sm.x+pv.x, y-sm.y+pv.y, 0));
+    }
+    pol.Init();
   }
   
   void move(){}
   void attack(){
-    bullets.add(new Bullet(x, y+h/2, new PVector(-db.bs/10.0, 0)));
+    if(bulletflag)  bullets.add(new Bullet(x, y+h/2, new PVector(-db.bs/10.0, 0)));
   }
   
   void die(){
@@ -133,6 +172,7 @@ class Enemy{
   //描画
   void draw(){
     image(imgs.get(0), x - sm.x, y - sm.y);
+    pol.Draw();
   }
   
 }
@@ -153,13 +193,19 @@ class Attacker extends Enemy{
   void initial(){
     initial(0);  //初期設定をコピー
     vx = -1;
-    
     y = height - h;
+    
+    setPolygon(x, y);
   }
   
   void move(){
     x += vx;
-    if(x - sm.x < width/2)  die();
+    setPolygon(x, y);
+    
+    if(bulletflag && count++ > 45){
+      count = 0;
+      attack();
+    }
   }
 }
 
@@ -168,7 +214,6 @@ class Sin extends Enemy{
   
   float basicy;    //角度が0のときの高さ
   int theta;       //角度(ラジアンではない);
-  int count;
   
   Sin(){
     initial();
@@ -187,7 +232,8 @@ class Sin extends Enemy{
     
     theta = 0;
     vx = -2;
-    count = 0;
+    
+    setPolygon(x, y);
   }
   
   void move(){
@@ -195,7 +241,8 @@ class Sin extends Enemy{
     y = basicy - sin(theta*PI/180)*height/6;
     x += vx;
     
-    if(count++ > 45){
+    setPolygon(x, y);
+    if(bulletflag && count++ > 45){
       count = 0;
       attack();
     }
@@ -219,12 +266,19 @@ class Tangent extends Sin{
     initial(2);  //初期設定をコピー
     
     vx = -5;
+    setPolygon(x, y);
   }
   
   void move(){
     theta+=2;
     y = basicy - tan(theta*PI/180)*100;
     x += vx;
+    
+    setPolygon(x, y);
+    if(bulletflag && count++ > 45){
+      count = 0;
+      attack();
+    }
   }
 }
 
@@ -252,6 +306,7 @@ class Parachuter extends Attacker{
     paraflag = true;
     
     vx = -0.5;
+    setPolygon(x, y);
   }
   
   void move(){
@@ -259,9 +314,15 @@ class Parachuter extends Attacker{
       y += 6;
       x += vx;
       
-      if(y > height - h){
+      setPolygon(x, y);
+      if(bulletflag && count++ > 45){
+        count = 0;
+        attack();
+      }
+      
+      if(y >= height - h){
         y = height - h;
-        paraflag = false;
+        paraflag = bulletflag = false;
       }
       
     }else{

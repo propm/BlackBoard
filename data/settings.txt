@@ -1,6 +1,6 @@
 ﻿＜説明＞
 
-オブジェクト名：突撃隊			Attacker
+オブジェクト名：突撃兵			Attacker
 		サインタコ		Sin
 		タンジェントタコ	Tangent
 		パラシュートタコ	Parachuter
@@ -29,6 +29,10 @@ die(オブジェクト名), erase(), attacked(オブジェクト名)
 <bs>100
 
 <bgm>  "toxo.mp3":		0s
+<appear>Parachuter:1000, 0:	1s
+<appear>Parachuter:1000, 0:	2s
+<appear>Parachuter:1000, 0:	3s
+<appear>Parachuter:1000, 0:	4s
 <appear>Sin:1000, 500:		5s
 <appear>Sin:1000, 500:		6s
 <appear>Sin:1000, 500:		7s

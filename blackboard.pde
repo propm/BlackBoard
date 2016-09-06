@@ -35,10 +35,6 @@ void setup(){
   bullets = new ArrayList<Bullet>();
   player = new Player();
   
-  enemys.add(new Attacker());
-  enemys.add(new Sin());
-  enemys.add(new Tangent());
-  enemys.add(new Parachuter());
   home = new Home();
 }
 
@@ -81,15 +77,8 @@ void process(){
   }
 }
 
-//多数の動きの処理をする
-void moving(ArrayList<Object> a){
-  
-  
-}
-
 //描画用関数
 void drawing(){
-  background(255);
   sm.drawView();
   
   //敵

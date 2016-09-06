@@ -10,7 +10,7 @@ class ScrollManager{
   float m;         //画像の拡大倍率
   
   ScrollManager(){
-    x = y = 0;
+    x = y = vy = 0;
     vx = 1;
     view = loadImage("space.jpg");
     
