@@ -53,7 +53,7 @@ class ReadText{
         
         //どのタグかを取得
         int tagnum = 0;
-        for(int j = 0; j < tags.length; j++)  
+        for(int j = 0; j < tags.length; j++)
           if(Pattern.compile("^"+tags[j]).matcher(lines[i]).find())  tagnum = j+1;
         
         //タグの後の文を取得
@@ -208,15 +208,15 @@ class ReadText{
     if(conffile(filename, i))  return true;
     
     if(comnum == 1 || comnum == 3){
-      if(objectnum > 0)  db.setsound(objects[objectnum-1], commands[comnum-1], filename);
-      else               for(int j = 0; j < 4; j++)  db.setsound(objects[j], commands[comnum-1], filename);
+      if(objectnum > 0)                    db.setsound(objects[objectnum-1], commands[comnum-1], filename);
+      else     for(int j = 0; j < 4; j++)  db.setsound(objects[j], commands[comnum-1], filename);
     }
     else if(comnum == 2){
       if(objectnum > 0){
         println("オブジェクトの情報は必要ありません。 行数: "+(i+1));
         return true;
       }
-      db.erase = filename;
+      db.oriplayer.erase = minim.loadSample(filename);
     }
     
     //行数とタグを記憶
@@ -374,6 +374,11 @@ class ReadText{
     }
     
     return nums;
+  }
+  
+  //begin: 探し始める位置  end:探し終わる部分にある文字
+  String getword(String code, int begin, String end){
+    return "a";
   }
   
   //ファイルが存在するかの確認

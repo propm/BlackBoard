@@ -11,7 +11,7 @@ DataBase db;
 Minim minim;
 AudioPlayer bgm;
 
-ArrayList<Enemy> enemys;
+ArrayList<MyObj> enemys;
 ArrayList<Bullet> bullets;
 Player player;
 Home home;
@@ -27,11 +27,13 @@ void setup(){
   
   sm = new ScrollManager();
   rt = new ReadText();
+  db.setobjectnames();
+  
   rt.read();
   rt.readCommands();
-  db.setenemys();
+  db.setobjects();
   
-  enemys = new ArrayList<Enemy>();
+  enemys = new ArrayList<MyObj>();
   bullets = new ArrayList<Bullet>();
   player = new Player();
   
@@ -48,8 +50,6 @@ void draw(){
 void process(){
   
   rt.checksec();
-  if(rt.counter%60 == 0)  println(rt.counter/60);
-  
   sm.move();
   
   //プレイヤーの動きの処理
@@ -83,7 +83,7 @@ void drawing(){
   
   //敵
   for(int i = 0; i < enemys.size(); i++){
-    Enemy enemy = enemys.get(i);
+    MyObj enemy = enemys.get(i);
     enemy.draw();
   }
   
@@ -122,6 +122,10 @@ PImage reverse(PImage img){
 
 void mousePressed(){
   player.ATflag = true;
+}
+
+void mouseReleased(){
+  player.ATflag = false;
 }
 
 

@@ -2,47 +2,44 @@
 //あらゆる初期設定を保存するクラス
 class DataBase{
   
+  String[] objects;
   float widthrate, heightrate;
   int bs;                        //弾速
   
   //効果音の敵種別ファイル名
   String erase;
   
-  Enemy[] oriEnemys = new Enemy[4];    //敵種別設定用のオブジェクト
+  HashMap<String, MyObj> oriEnemys;    //敵種別設定用のオブジェクト
                                        //1:突撃兵  2:サイン  3:タンジェント  4:パラシュート
+  Player oriplayer = new Player();
   
-  DataBase(){
-    for(int i = 0; i < oriEnemys.length; i++){
-      oriEnemys[i] = new Enemy();
+  void setobjectnames(){
+    objects = rt.objects.clone();
+    oriEnemys = new HashMap<String, MyObj>(objects.length);
+    
+    for(int i = 0; i < objects.length; i++){
+      oriEnemys.put(objects[i], new MyObj());
     }
   }
   
   //敵の効果音を設定
-  void setsound(String objectname, String command, String filename){
-    Enemy[] oe = oriEnemys;
+  void setsound(String object, String command, String filename){
   
-    if(objectname.equals("Attacker")){
-      if(command.equals("die"))       oe[0].diesound = minim.loadSample(filename);
-      if(command.equals("attacked"))  oe[0].ATsound  = minim.loadSample(filename);
-      
-    }else if(objectname.equals("Sin")){
-      if(command.equals("die"))       oe[1].diesound = minim.loadSample(filename);
-      if(command.equals("attacked"))  oe[1].ATsound  = minim.loadSample(filename);
-      
-    }else if(objectname.equals("Tangent")){
-      if(command.equals("die"))       oe[2].diesound = minim.loadSample(filename);
-      if(command.equals("attacked"))  oe[2].ATsound  = minim.loadSample(filename);
-      
-    }else if(objectname.equals("Parachuter")){
-      if(command.equals("die"))       oe[3].diesound = minim.loadSample(filename);
-      if(command.equals("attacked"))  oe[3].ATsound  = minim.loadSample(filename);
+    if(oriEnemys.containsKey(object)){
+      for(int i = 0; i < oriEnemys.size(); i++){
+        if(objects[i].equals(object)){
+          if(command.equals("die"))       oriEnemys.get(object).die = minim.loadSample(filename);
+          if(command.equals("attacked"))  oriEnemys.get(object).AT  = minim.loadSample(filename);
+        }
+      }
     }
   }
   
-  void setenemys(){
-    for(int i = 0; i < oriEnemys.length; i++){
+  //敵・プレイヤーの設定
+  void setobjects(){
+    for(int i = 0; i < oriEnemys.size(); i++){
       
-      Enemy e = oriEnemys[i];
+      MyObj e = oriEnemys.get(objects[i]);
       
       switch(i){
         case 3:
@@ -50,24 +47,14 @@ class DataBase{
         case 0:
           e.hp = 2;
           
-          e.imgs.add(loadImage("attacker.png"));
-          e.w = (int)(e.imgs.get(0).width/20.0);
-          e.h = (int)(e.imgs.get(0).height/20.0);
-          
-          for(int j = 0; j < e.imgs.size(); j++){
-            e.imgs.set(j, reSize(e.imgs.get(j), e.w, e.h));
-            e.imgs.set(j, Reverse(e.imgs.get(j)));
-          }
+          setImage(e, "attacker.png");
           
           e.pol = new Polygon();
-          e.pol.Add(e.w/2, 0, 0);
-          e.pol.Add(e.w*9/10, e.h*3/20, 0);
-          e.pol.Add(e.w, e.h, 0);
-          e.pol.Add(0, e.h*21/22, 0);
-          e.pol.Add(e.w/5, e.h*3/25, 0);
-          println(e.pol.ver);
+          float[][] vectors1 = {{e.w/2, 0, 0}, {e.w*9/10, e.h*3/20, 0}, {e.w, e.h, 0}, 
+                                {0, e.h*21/22, 0}, {e.w/5, e.h*3/25, 0}};
+                               
+          for(int j = 0; j < vectors1.length; j++)  e.pol.Add(vectors1[j][0], vectors1[j][1], vectors1[j][2]);
           e.pol.Reverse(e.w);
-          println(e.pol.ver);
           
           if(i == 0)  e.bulletflag = false;
           break;
@@ -75,27 +62,42 @@ class DataBase{
         case 2:
           e.hp = 1;
           
-          e.imgs.add(loadImage("flyattacker.png"));
-          e.w = (int)(e.imgs.get(0).width/20.0);
-          e.h = (int)(e.imgs.get(0).height/20.0);
+          setImage(e, "flyattacker.png");
           
-          for(int j = 0; j < e.imgs.size(); j++){
-            e.imgs.set(j, reSize(e.imgs.get(j), e.w, e.h));
-            e.imgs.set(j, Reverse(e.imgs.get(j)));
-          }
-          
+          //多角形設定
           e.pol = new Polygon();
-          e.pol.Add(e.w, e.h*3/5, 0);
-          e.pol.Add(e.w*16/21, e.h*100/106, 0);
-          e.pol.Add(e.w/4, e.h, 0);
-          e.pol.Add(0, e.h*7/10, 0);
-          e.pol.Add(e.w/7, 0, 0);
-          e.pol.Add(e.w*4/5, e.h*4/25, 0);
+          float[][] vectors2 = {{e.w, e.h*3/5, 0}, {e.w*16/21, e.h*100/106, 0}, {e.w/4, e.h, 0}, 
+                                {0, e.h*7/10, 0}, {e.w/7, 0, 0}, {e.w*4/5, e.h*4/25, 0}};
+          
+          for(int j = 0; j < vectors2.length; j++)  e.pol.Add(vectors2[j][0], vectors2[j][1], vectors2[j][2]);
           e.pol.Reverse(e.w);
           
           e.bulletflag = true;
           break;
       }
+    }
+    
+    Player p = oriplayer;
+    p.w = width/80;
+    p.h = height/45;
+    
+    p.pol = new Polygon();
+    p.pol.Add(0, 0, 0);
+    p.pol.Add(p.w, 0, 0);
+    p.pol.Add(p.w, p.h, 0);
+    p.pol.Add(0, p.h, 0);
+  }
+  
+  //画像設定
+  void setImage(MyObj e, String filename){
+    
+    e.imgs.add(loadImage(filename));
+    e.w = (int)(e.imgs.get(0).width/20.0);
+    e.h = (int)(e.imgs.get(0).height/20.0);
+    
+    for(int j = 0; j < e.imgs.size(); j++){
+      e.imgs.set(j, reSize(e.imgs.get(j), e.w, e.h));
+      e.imgs.set(j, Reverse(e.imgs.get(j)));
     }
   }
   
@@ -104,6 +106,7 @@ class DataBase{
     return reverse(img);
   }
   
+  //拡大・縮小
   PImage reSize(PImage img, int w, int h){
     img.resize(w, h);
     return img;
@@ -111,7 +114,7 @@ class DataBase{
 }
 
 //敵
-class Enemy{
+class MyObj{
   float x, y, vx;             //画像左上の座標、横方向の速度
   int   w, h;                 //画像の大きさ
   int energy;                 //粉エネルギー
@@ -123,9 +126,9 @@ class Enemy{
   
   Polygon pol;                    //当たり判定用多角形
   Polygon oripol;                 //形のみを保持する多角形
-  AudioSample diesound, ATsound;  //効果音
+  AudioSample die, AT;  //効果音
   
-  Enemy(){
+  MyObj(){
     dieflag = false;
     imgs = new ArrayList<PImage>();    //アニメーションさせるために10枚ほど絵が必要
   }
@@ -134,14 +137,14 @@ class Enemy{
   
   //初期設定をコピーする関数
   void initial(int num){
-    Enemy oe = db.oriEnemys[num];
-    diesound = oe.diesound;
-    ATsound = oe.ATsound;
+    MyObj oe = db.oriEnemys.get(db.objects[num]);
+    
+    die = oe.die;
+    AT =  oe.AT;
     
     imgs.add(oe.imgs.get(0));
     oripol = new Polygon(oe.pol.ver);
     pol    = new Polygon(oe.pol.ver);
-    println(oe.pol.ver);
     
     w = oe.w;
     h = oe.h;
@@ -151,6 +154,7 @@ class Enemy{
     count = 0;
   }
   
+  //多角形更新
   void setPolygon(float x, float y){
     for(int i = 0; i < pol.ver.size(); i++){
       PVector pv = oripol.ver.get(i);
@@ -159,14 +163,18 @@ class Enemy{
     pol.Init();
   }
   
+  //動く
   void move(){}
+  
+  //攻撃
   void attack(){
     if(bulletflag)  bullets.add(new Bullet(x, y+h/2, new PVector(-db.bs/10.0, 0)));
   }
   
+  //死
   void die(){
     dieflag = true;
-    if(diesound != null)  diesound.trigger();
+    if(die != null)  die.trigger();
   }
   
   //描画
@@ -174,11 +182,10 @@ class Enemy{
     image(imgs.get(0), x - sm.x, y - sm.y);
     pol.Draw();
   }
-  
 }
 
 //突撃隊
-class Attacker extends Enemy{
+class Attacker extends MyObj{
   
   Attacker(){
     initial();
@@ -210,7 +217,7 @@ class Attacker extends Enemy{
 }
 
 //正弦タコ
-class Sin extends Enemy{
+class Sin extends MyObj{
   
   float basicy;    //角度が0のときの高さ
   int theta;       //角度(ラジアンではない);
@@ -332,19 +339,30 @@ class Parachuter extends Attacker{
 }
 
 //プレイヤー
-class Player{
-  float bx, by, x, y;  //座標
+class Player extends MyObj{
+  float bx, by;  //座標
   boolean ATflag;  //マウスクリック時true
   boolean wallflag;    //壁作ってるときtrue
   int count;
-  //Polygon pol;
   
-  AudioSample erasesound;
+  AudioSample erase;
   
   Player(){
-    if(db.erase != null)  erasesound = minim.loadSample(db.erase);
     ATflag = wallflag = false;
-    //pol = new Polygon();
+    initial();
+  }
+  
+  void initial(){
+    try{
+      Player p = db.oriplayer;
+      
+      w = p.w;
+      h = p.h;
+      erase = p.erase;
+      
+      oripol = new Polygon(p.pol.ver);
+      pol    = new Polygon(p.pol.ver);
+    }catch(NullPointerException e){}
   }
   
   void move(){
@@ -354,6 +372,7 @@ class Player{
     x = mouseX;
     y = mouseY;
     
+    setPolygon(x-w/2+sm.x, y-w/2+sm.y);
     if(x == bx && y == by){
       count++;
       if(count/60 >= 3)  wallflag = true;
@@ -367,12 +386,14 @@ class Player{
   
   void attack(){
     for(int i = 0; i < enemys.size(); i++){
-      //judge(pol, enemys.get(i).pol);
+      if(judge(pol, enemys.get(i).pol))  enemys.get(i).die();
     }
+    if(erase != null)  erase.trigger();
   }
   
   void draw(){
-    ellipse(x, y, 20, 20);
+    ellipse(x, y, w, h);
+    pol.Draw();
   }
 }
 
