@@ -381,7 +381,6 @@ class Player extends MyObj{
       wallflag = false;
       if(ATflag)  attack();
     }
-    
   }
   
   void attack(){

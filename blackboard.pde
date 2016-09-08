@@ -63,7 +63,6 @@ void process(){
       enemys.remove(i);
       i--;
     }
-    
   }
   
   //弾の処理

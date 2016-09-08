@@ -132,14 +132,18 @@ class ReadText{
     
     //width, heightの抽出
     int w = 0, h = 0;
-    for(int j = 0; j < code.length(); j++){
-      if(code.substring(j, j+1).equals(",")){
-        w = Integer.parseInt(code.substring(0, j));
-        h = Integer.parseInt(code.substring(j+1,code.length()));
-      }
-    }
     
-    size(w, h);
+    String[] a = getnumword(code, 0, ",");
+    if(a[0] != null) w = Integer.parseInt(a[0]);
+    
+    String b = getword(code, Integer.parseInt(a[1]), "");    
+    if(b != null)  h = Integer.parseInt(b);
+    
+    if(w > 0 && h > 0)  size(w, h);
+    else{
+      println("sizeが0になっています。　行数: "+(i+1));
+      return true;
+    }
     
     //行数とタグを記憶
     ds.intdata = new int[2];
@@ -153,7 +157,6 @@ class ReadText{
   //soundタグの処理
   boolean soundpro(Datasaver ds, String code, int tagnum, int i){
     String object, filename;
-    int ifcount = 0;
     
     //エラー処理
     if(!Pattern.matches(tags[tagnum-1]+"\".+\">>[a-z]+\\([a-zA-z]*\\)", lines[i])){
@@ -161,59 +164,42 @@ class ReadText{
       return true;
     }
     
-    //括弧（始）がある位置を取得
-    int parennum = 0;  // "("がある位置
-    for(int j = code.length()-1; j >= 0 ; j--){
-      if(code.substring(j, j+1).equals("(")){
-        parennum = j;
-        break;
-      }
-    }
-    
     //どのコマンドが使われているか調べる
-    int comnum = 0;
-    for(int j = 0; j < commands.length; j++){
-      String s = commands[j]+"\\([a-zA-Z]*\\)$";
-      if(Pattern.compile(s).matcher(lines[i]).find())  comnum = j+1;
-    }
+    int comnum = -1;
+    for(int j = 0; j < commands.length; j++)
+      if(Pattern.compile(commands[j]).matcher(lines[i]).find())  comnum = j+1;
+    
+    if(error("そのようなコマンドは存在しません", comnum, i, true))  return true;
+    
+    //オブジェクト名取得
+    int number = getnum(code, 0, "(");
+    object = getword(code, number, ")");
     
     //どのオブジェクトを指しているか調べる
-    int objectnum = 0;
-    if(comnum == 0){
-      println("そのようなコマンドは存在しません 行数: "+(i+1));
-      return true;
-    }
-    else{
-      object = code.substring(parennum+1, code.length()-1);
-      for(int j = 0; j < objects.length; j++)  if(object.equals(objects[j]))  objectnum = j+1;
-      if(object.length() == 0)  objectnum = -1;
-    }
+    int objectnum = -1;
+    for(int j = 0; j < objects.length; j++)
+      if(object.equals(objects[j]))  objectnum = j+1;
     
-    //エラー処理
-    if(objectnum == 0){
-      println("そのようなオブジェクトは存在しません: "+object+" 行数: "+(i+1));
-      return true;
-    }
+    if(object.equals(""))  objectnum = 0;
+    if(error("そのようなオブジェクトは存在しません"+object, objectnum, i, true))  return true;
     
     //ファイル名取得
-    filename = "";
-    for(int j = 0; j < code.length(); j++){
-      if(code.substring(j, j+1).equals("\"")){
-        if(ifcount == 1)  filename = code.substring(1, j);
-        ifcount++;
-      }
-    }
+    number = getnum(code, 0, "\"");
+    if(error("ファイル名を「\"\"」付きで書いてください", number, i, true))  return true;
+    
+    filename = getword(code, number, "\"");
     
     //ファイルが存在するかの確認
     if(conffile(filename, i))  return true;
     
+    //音楽セット
     if(comnum == 1 || comnum == 3){
-      if(objectnum > 0)                    db.setsound(objects[objectnum-1], commands[comnum-1], filename);
-      else     for(int j = 0; j < 4; j++)  db.setsound(objects[j], commands[comnum-1], filename);
+      if(objectnum > 0)                  db.setsound(objects[objectnum-1], commands[comnum-1], filename);
+      else     for(String obj: objects)  db.setsound(obj, commands[comnum-1], filename);
     }
     else if(comnum == 2){
       if(objectnum > 0){
-        println("オブジェクトの情報は必要ありません。 行数: "+(i+1));
+        println("オブジェクトの情報は必要ありません　行数: "+(i+1));
         return true;
       }
       db.oriplayer.erase = minim.loadSample(filename);
@@ -240,7 +226,7 @@ class ReadText{
     int[] nums = getsec(code); 
     
     //オブジェクト名取得
-    int    number = 0;
+    int number = 0;
     String object = "";
     for(int j = 0; j < code.length(); j++){
       if(code.substring(j, j+1).equals(":")){
@@ -376,21 +362,60 @@ class ReadText{
     return nums;
   }
   
-  //begin: 探し始める位置  end:探し終わる部分にある文字
+  //begin: 探し始める位置  end:探し終わる部分にある文字（「:」など）
   String getword(String code, int begin, String end){
-    return "a";
+    
+    for(int i = begin; i <= code.length(); i++){
+      try{
+        if((end.equals("") && i == code.length()) || (code.substring(i, i+1).equals(end))){
+          
+          return code.substring(begin, i);
+        }
+      }catch(Exception e){}
+    }
+    return null;
+  }
+  
+  //begin: 探し始める位置  end:探し終わる部分にある文字（「:」など）
+  int getnum(String code, int begin, String end){
+    
+    for(int i = begin; i < code.length(); i++){
+      if(code.substring(i, i+1).equals(end)){
+        return i+1;
+      }
+    }
+    return -1;
+  }
+    
+  String[] getnumword(String code, int begin, String end){
+    
+    String[] word = {null, "-1"};
+    for(int i = begin; i < code.length(); i++)
+      if(code.substring(i, i+1).equals(end)){
+        word[0] = code.substring(begin, i);
+        word[1] = String.valueOf(i+1);
+      }
+      
+    return word;
+  }
+  
+  boolean error(String errorcode, int num, int i, boolean flag){
+    if((num == -1) == flag){
+      println(errorcode+"  行数: "+(i+1));
+      return true;
+    }else{
+      return false;
+    }
   }
   
   //ファイルが存在するかの確認
   boolean conffile(String filename, int i){
     
-    if(!filename.equals("")){
-      try{
-        nullplayer = minim.loadFile(filename);
-      }catch(NullPointerException e){
-        println("そのようなファイルは存在しません: \""+filename+"\"　行数: "+(i+1));
-        return true;
-      }
+    try{
+      nullplayer = minim.loadFile(filename);
+    }catch(NullPointerException e){
+      println("そのようなファイルは存在しません: \""+filename+"\"　行数: "+(i+1));
+      return true;
     }
     
     return false;
