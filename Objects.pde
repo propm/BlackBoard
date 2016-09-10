@@ -173,8 +173,10 @@ class MyObj{
   
   //死
   void die(){
-    dieflag = true;
-    if(die != null)  die.trigger();
+    if(hp <= 0){
+      dieflag = true;
+      if(die != null)  die.trigger();
+    }
   }
   
   //描画
@@ -188,6 +190,8 @@ class MyObj{
 class Attacker extends MyObj{
   
   Attacker(){
+    x = random(width)+width/2+sm.x;
+    y = random(height-h/2)+h/2+sm.y;
     initial();
   }
   
@@ -206,6 +210,7 @@ class Attacker extends MyObj{
   }
   
   void move(){
+    die();
     x += vx;
     setPolygon(x, y);
     
@@ -223,8 +228,9 @@ class Sin extends MyObj{
   int theta;       //角度(ラジアンではない);
   
   Sin(){
+    x = random(width)+width/2+sm.x;
+    basicy = random(height/3*2) + h/2 + height/6+sm.y;
     initial();
-    basicy = random(height/3*2) + h/2 + height/6;
   }
   
   Sin(int x, int y){
@@ -244,6 +250,7 @@ class Sin extends MyObj{
   }
   
   void move(){
+    die();
     theta+=2;
     y = basicy - sin(theta*PI/180)*height/6;
     x += vx;
@@ -277,6 +284,7 @@ class Tangent extends Sin{
   }
   
   void move(){
+    die();
     theta+=2;
     y = basicy - tan(theta*PI/180)*100;
     x += vx;
@@ -295,21 +303,20 @@ class Parachuter extends Attacker{
   boolean paraflag;      //地面に着地するまではパラシュート状態：true
   
   Parachuter(){
+    x = random(width/2)+width/2;
+    y = -height/3;
     initialize();
   }
   
   Parachuter(int x, int y){
-    initialize();
-    
     this.y = y+sm.y;
     this.x = x+sm.x;
+    initialize();
   }
   
   void initialize(){
     initial(3);      //初期設定をコピー
     
-    y = -random(100);
-    x = random(500);
     paraflag = true;
     
     vx = -0.5;
@@ -317,6 +324,7 @@ class Parachuter extends Attacker{
   }
   
   void move(){
+    die();
     if(paraflag){
       y += 6;
       x += vx;
@@ -385,7 +393,7 @@ class Player extends MyObj{
   
   void attack(){
     for(int i = 0; i < enemys.size(); i++){
-      if(judge(pol, enemys.get(i).pol))  enemys.get(i).die();
+      if(judge(pol, enemys.get(i).pol))  enemys.get(i).hp--;
     }
     if(erase != null)  erase.trigger();
   }

@@ -217,7 +217,7 @@ class ReadText{
   
   //appearタグの処理
   boolean appearpro(Datasaver ds, String code, int tagnum, int i){
-    if(!Pattern.matches(tags[tagnum-1]+"[A-Z][a-z]+:[0-9]+,[0-9]+:[0-9]+s", lines[i])){
+    if(!Pattern.matches(tags[tagnum-1]+"[A-Z][a-z]+(:[0-9]+,[0-9]+){0,1}:[0-9]+s", lines[i])){
       println("書式通り記入してください。 行数： "+(i+1));
       return true;
     }
@@ -228,22 +228,23 @@ class ReadText{
     //オブジェクト名取得
     int number = 0;
     String object = "";
-    for(int j = 0; j < code.length(); j++){
-      if(code.substring(j, j+1).equals(":")){
-        object = code.substring(0, j);
-        number = j+1;
-        break;
-      }
-    }
+    
+    String[] a = getnumword(code, 0, ":");
+    object = a[0];
+    number = Integer.parseInt(a[1]);
+    
     
     ds.intdata = new int[4];
     ds.stringdata = new String[1];
+    ds.intdata[1] = ds.intdata[2] = -10000;
     
-    //座標取得
-    for(int j = number; j < nums[0] - 1; j++){
-      if(code.substring(j, j+1).equals(",")){
-        ds.intdata[1] = Integer.parseInt(code.substring(number, j));
-        ds.intdata[2] = Integer.parseInt(code.substring(j+1, nums[0]-1));
+    //座標取得(座標が書かれてない場合、intdata[1], [2]には何も入らない)
+    if(number < nums[0]-1){
+      for(int j = number; j < nums[0] - 1; j++){
+        if(code.substring(j, j+1).equals(",")){
+          ds.intdata[1] = Integer.parseInt(code.substring(number, j));
+          ds.intdata[2] = Integer.parseInt(code.substring(j+1, nums[0]-1));
+        }
       }
     }
     
@@ -326,11 +327,18 @@ class ReadText{
       if(counter/60.0 >= ds.intdata[ds.intdata.length-1]){
         switch(ds.tag){
           case 3:
-            if(ds.stringdata[0].equals("Attacker"))    enemys.add(new Attacker(ds.intdata[1], ds.intdata[2]));
-            if(ds.stringdata[0].equals("Sin"))         enemys.add(new Sin(ds.intdata[1], ds.intdata[2]));
-            if(ds.stringdata[0].equals("Tangent"))     enemys.add(new Tangent(ds.intdata[1], ds.intdata[2]));
+            if(ds.stringdata[0].equals("Attacker"))    
+              if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Attacker(ds.intdata[1], ds.intdata[2]));
+              else                                                    enemys.add(new Attacker());
+            if(ds.stringdata[0].equals("Sin"))
+              if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Sin(ds.intdata[1], ds.intdata[2]));
+              else                                                    enemys.add(new Sin());
+            if(ds.stringdata[0].equals("Tangent"))
+              if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Tangent(ds.intdata[1], ds.intdata[2]));
+              else                                                    enemys.add(new Tangent());
             if(ds.stringdata[0].equals("Parachuter")){
-              enemys.add(new Parachuter(ds.intdata[1], ds.intdata[2]));
+              if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Parachuter(ds.intdata[1], ds.intdata[2]));
+              else                                                    enemys.add(new Parachuter());
             }
             secline.remove(0);
             i--;
@@ -394,6 +402,7 @@ class ReadText{
       if(code.substring(i, i+1).equals(end)){
         word[0] = code.substring(begin, i);
         word[1] = String.valueOf(i+1);
+        return word;
       }
       
     return word;

@@ -1,5 +1,4 @@
 
-
 class ScrollManager{
   
   float x, y;      //画面左上端の座標
@@ -37,6 +36,11 @@ class ScrollManager{
   }
 }
 
+class RandomCreate{
+ 
+ 
+  
+}
 
 
 

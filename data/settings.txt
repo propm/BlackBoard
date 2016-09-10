@@ -28,17 +28,17 @@ die(オブジェクト名), erase(), attacked(オブジェクト名)
 <sound>"punch.mp3" >> die()
 <bs>100
 
-<bgm>  "toxo.mp3":		0s
-<appear>Parachuter:1000, 0:	1s
-<appear>Parachuter:1000, 0:	2s
-<appear>Parachuter:1000, 0:	3s
-<appear>Parachuter:1000, 0:	4s
-<appear>Sin:1000, 500:		5s
-<appear>Sin:1000, 500:		6s
-<appear>Sin:1000, 500:		7s
-<appear>Sin:1000, 500:		8s
-<appear>Parachuter:900, 500:	10s
+<bgm>  "toxo.mp3":					  0s
+<appear>Parachuter:	 	              1s
+<appear>Parachuter:	 	              2s
+<appear>Parachuter:	 	              3s
+<appear>Parachuter:	 	              4s
+<appear>Sin:		 	                  5s
+<appear>Sin:		 	                  6s
+<appear>Sin:		 	                  7s
+<appear>Sin:		 	                  8s
+<appear>Parachuter:					10s
 <bgm>  "yugata_majojou.mp3":	12s
-<appear>Tangent:1200, 500:	15s
-<appear>Attacker:1000, 500:	18s
+<appear>Tangent:						15s
+<appear>Attacker:						18s
 
