@@ -3,7 +3,7 @@
 class DataBase{
   
   String[] objects;
-  float widthrate, heightrate;
+  float scwhrate;
   int bs;                        //弾速
   int screenw, screenh;
   
@@ -82,7 +82,7 @@ class DataBase{
     
     Player p = oriplayer;
     p.w = width/80;
-    p.h = height/45;
+    p.h = width/80;
     
     p.pol = new Polygon();
     p.pol.Add(0, 0, 0);
@@ -95,8 +95,8 @@ class DataBase{
   void setImage(MyObj e, String filename){
     
     e.imgs.add(loadImage(filename));
-    e.w = (int)(e.imgs.get(0).width/20.0);
-    e.h = (int)(e.imgs.get(0).height/20.0);
+    e.w = (int)(e.imgs.get(0).width/20.0*scwhrate);
+    e.h = (int)(e.imgs.get(0).height/20.0*scwhrate);
     
     for(int j = 0; j < e.imgs.size(); j++){
       e.imgs.set(j, reSize(e.imgs.get(j), e.w, e.h));
@@ -255,7 +255,6 @@ class Sin extends MyObj{
     
     theta = 0;
     vx = -2;
-    Bi = 45;
     
     setPolygon(x, y);
   }
@@ -425,8 +424,8 @@ class Home{
     img = reverse(loadImage("cleaner.png"));
     imgm = (float)1/3;
     
-    w = (int)(img.width * imgm / db.widthrate);
-    h = (int)(img.height * imgm / db.heightrate);
+    w = (int)(img.width * imgm * db.scwhrate);
+    h = (int)(img.height * imgm * db.scwhrate);
     
     img.resize(w, h);
     anglev = angle = 0;

@@ -32,10 +32,9 @@ void setup(){
   rt.readCommands();
   
   db.screenh = (int)(db.screenw*whrate);
-  db.widthrate = db.screenw/width;
-  db.heightrate = db.screenw*whrate/height;
   
   size(db.screenw, db.screenh);
+  db.scwhrate = width/1600;
   
   db.setobjects();
   
