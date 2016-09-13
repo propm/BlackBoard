@@ -5,6 +5,7 @@ class DataBase{
   String[] objects;
   float widthrate, heightrate;
   int bs;                        //弾速
+  int screenw, screenh;
   
   //効果音の敵種別ファイル名
   String erase;
@@ -44,6 +45,7 @@ class DataBase{
       switch(i){
         case 3:
           e.bulletflag = true;
+          e.Bi = 20;
         case 0:
           e.hp = 2;
           
@@ -73,6 +75,7 @@ class DataBase{
           e.pol.Reverse(e.w);
           
           e.bulletflag = true;
+          e.Bi = 75;
           break;
       }
     }
@@ -116,12 +119,13 @@ class DataBase{
 //敵
 class MyObj{
   float x, y, vx;             //画像左上の座標、横方向の速度
-  int   w, h;                 //画像の大きさ
+  int   w, h;                                                   //画像の大きさ
   int energy;                 //粉エネルギー
-  int hp;                     //体力(何回消されたら消えるか)
+  int hp;                                                       //体力(何回消されたら消えるか)
   int count;                  //時間カウント
+  int Bi;                                                       //bullet interval
   boolean dieflag;            //死んでいるならtrue
-  boolean bulletflag;         //弾を発射するオブジェクトならtrue
+  boolean bulletflag;                                           //弾を発射するオブジェクトならtrue
   ArrayList<PImage> imgs;     //画像
   
   Polygon pol;                    //当たり判定用多角形
@@ -151,6 +155,7 @@ class MyObj{
     bulletflag = oe.bulletflag;
     
     hp = oe.hp;
+    Bi = oe.Bi;
     count = 0;
   }
   
@@ -166,9 +171,17 @@ class MyObj{
   //動く
   void move(){}
   
+  //弾で攻撃
+  void bullet(){
+    if(count++ > Bi){
+      if(bulletflag)  bullets.add(new Bullet(x, y+h/2, new PVector(-db.bs/10.0, 0)));
+      count = 0;
+    }
+  }
+  
   //攻撃
   void attack(){
-    if(bulletflag)  bullets.add(new Bullet(x, y+h/2, new PVector(-db.bs/10.0, 0)));
+    bullet();
   }
   
   //死
@@ -182,7 +195,7 @@ class MyObj{
   //描画
   void draw(){
     image(imgs.get(0), x - sm.x, y - sm.y);
-    pol.Draw();
+    //pol.Draw();
   }
 }
 
@@ -214,10 +227,7 @@ class Attacker extends MyObj{
     x += vx;
     setPolygon(x, y);
     
-    if(bulletflag && count++ > 45){
-      count = 0;
-      attack();
-    }
+    attack();
   }
 }
 
@@ -245,6 +255,7 @@ class Sin extends MyObj{
     
     theta = 0;
     vx = -2;
+    Bi = 45;
     
     setPolygon(x, y);
   }
@@ -256,10 +267,7 @@ class Sin extends MyObj{
     x += vx;
     
     setPolygon(x, y);
-    if(bulletflag && count++ > 45){
-      count = 0;
-      attack();
-    }
+    attack();
   }
 }
 
@@ -290,10 +298,7 @@ class Tangent extends Sin{
     x += vx;
     
     setPolygon(x, y);
-    if(bulletflag && count++ > 45){
-      count = 0;
-      attack();
-    }
+    attack();
   }
 }
 
@@ -330,11 +335,8 @@ class Parachuter extends Attacker{
       x += vx;
       
       setPolygon(x, y);
-      if(bulletflag && count++ > 45){
-        count = 0;
-        attack();
-      }
-      
+      attack();
+            
       if(y >= height - h){
         y = height - h;
         paraflag = bulletflag = false;
@@ -400,7 +402,7 @@ class Player extends MyObj{
   
   void draw(){
     ellipse(x, y, w, h);
-    pol.Draw();
+    //pol.Draw();
   }
 }
 
@@ -481,7 +483,7 @@ class Bullet{
   
   void initial(){
     length = v.get();
-    length.setMag(100*width/1600);
+    length.setMag(40*width/1600);
     dieflag = false;
   }
   

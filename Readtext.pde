@@ -121,26 +121,26 @@ class ReadText{
     writetext();
   }
   
+  //*****************************************************************************************************************
+  
   //sizeタグの処理
   boolean sizepro(Datasaver ds, String code, int tagnum, int i){
     
     //エラー処理
-    if(!Pattern.matches(tags[tagnum-1]+"[0-9]+,[0-9]+", lines[i])){
+    if(!Pattern.matches(tags[tagnum-1]+"[0-9]+", lines[i])){
       println("書式通り記入してください。 行数： "+(i+1));
       return true;
     }
     
-    //width, heightの抽出
-    int w = 0, h = 0;
+    //widthの抽出
+    int w = 0;
     
-    String[] a = getnumword(code, 0, ",");
-    if(a[0] != null) w = Integer.parseInt(a[0]);
+    String a = getword(code, 0, "");
+    if(a != null) w = Integer.parseInt(a);
     
-    String b = getword(code, Integer.parseInt(a[1]), "");    
-    if(b != null)  h = Integer.parseInt(b);
-    
-    if(w > 0 && h > 0)  size(w, h);
-    else{
+    if(w > 0){
+      db.screenw = w;
+    }else{
       println("sizeが0になっています。　行数: "+(i+1));
       return true;
     }
@@ -153,6 +153,8 @@ class ReadText{
     nsecline.add(ds);
     return false;
   }
+  
+  //*****************************************************************************************************************
   
   //soundタグの処理
   boolean soundpro(Datasaver ds, String code, int tagnum, int i){
@@ -215,6 +217,8 @@ class ReadText{
     return false;
   }
   
+  //*****************************************************************************************************************
+  
   //appearタグの処理
   boolean appearpro(Datasaver ds, String code, int tagnum, int i){
     if(!Pattern.matches(tags[tagnum-1]+"[A-Z][a-z]+(:[0-9]+,[0-9]+){0,1}:[0-9]+s", lines[i])){
@@ -259,6 +263,8 @@ class ReadText{
     return false;
   }
   
+  //*****************************************************************************************************************
+  
   //bgmタグの処理
   boolean bgmpro(Datasaver ds, String code, int tagnum, int i){
     String filename;
@@ -299,6 +305,8 @@ class ReadText{
     return false;
   }
   
+  //*****************************************************************************************************************
+  
   //bsタグの処理
   boolean bspro(Datasaver ds, String code, int tagnum, int i){
     
@@ -319,6 +327,8 @@ class ReadText{
     
     return false;
   }
+  
+  //*****************************************************************************************************************
   
   void checksec(){
     

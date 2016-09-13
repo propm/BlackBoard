@@ -7,12 +7,12 @@
 
 ＜タグについて＞
 
-//<size>width, height
+//<size>width
 //<appear>オブジェクト名:x座標,y座標:秒数s
 //<bgm>"ファイル名":秒数s
 //<sound>"ファイル名" >> コマンド
 //<bs>弾速
-※sizeの横幅、縦幅を200未満にすると表示がおかしくなります。
+※sizeの横幅を200未満にすると表示がおかしくなります。
 
 soundのコマンド 　　
 die(オブジェクト名), erase(), attacked(オブジェクト名)
@@ -24,21 +24,45 @@ die(オブジェクト名), erase(), attacked(オブジェクト名)
 
 **********************************************************************************************************************
 
-<size>1600,  800
+<size>2000
 <sound>"punch.mp3" >> die()
 <bs>100
 
 <bgm>  "toxo.mp3":					  0s
 <appear>Parachuter:	 	              1s
+<appear>Parachuter:	 	              1s
+<appear>Parachuter:	 	              2s
 <appear>Parachuter:	 	              2s
 <appear>Parachuter:	 	              3s
+<appear>Parachuter:	 	              3s
+<appear>Parachuter:	 	              4s
 <appear>Parachuter:	 	              4s
 <appear>Sin:		 	                  5s
+<appear>Sin:		 	                  5s
+<appear>Sin:		 	                  6s
 <appear>Sin:		 	                  6s
 <appear>Sin:		 	                  7s
+<appear>Sin:		 	                  7s
 <appear>Sin:		 	                  8s
+<appear>Sin:		 	                  8s
+<appear>Parachuter:					9s
+<bgm>  "yugata_majojou.mp3":	10s
 <appear>Parachuter:					10s
+<appear>Parachuter:					10s
+<appear>Tangent:						11s
+<appear>Attacker:						12s
 <bgm>  "yugata_majojou.mp3":	12s
+<bgm>  "yugata_majojou.mp3":	12s
+<appear>Parachuter:	 	            13s
+<appear>Parachuter:	 	             14s
+<appear>Parachuter:	 	              15s
 <appear>Tangent:						15s
+<appear>Tangent:						15s
+<appear>Parachuter:	 	              16s
+<appear>Sin:		 	                  17s
+<appear>Sin:		 	                  18s
 <appear>Attacker:						18s
+<appear>Attacker:						18s
+<appear>Sin:		 	                  19s
+<appear>Sin:		 	                  20s
 

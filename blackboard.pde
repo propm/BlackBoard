@@ -5,6 +5,8 @@ import ddf.minim.analysis.*;
 import ddf.minim.ugens.*;
 import ddf.minim.effects.*;
 
+final float whrate = (float)23/90;
+
 ScrollManager sm;
 ReadText rt;
 DataBase db;
@@ -17,13 +19,10 @@ Player player;
 Home home;
 
 void setup(){
-  size(1600, 800);
-  
   minim = new Minim(this);
   db = new DataBase();
   
-  db.widthrate = 1600.0/width;
-  db.heightrate = 800.0/height;
+  db.screenw = 1600;
   
   sm = new ScrollManager();
   rt = new ReadText();
@@ -31,6 +30,13 @@ void setup(){
   
   rt.read();
   rt.readCommands();
+  
+  db.screenh = (int)(db.screenw*whrate);
+  db.widthrate = db.screenw/width;
+  db.heightrate = db.screenw*whrate/height;
+  
+  size(db.screenw, db.screenh);
+  
   db.setobjects();
   
   enemys = new ArrayList<MyObj>();
