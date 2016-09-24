@@ -436,12 +436,16 @@ class Home{
     translate(x - sm.x, y - sm.y);
     rotate(angle/(180/PI));
     
-    if(angle < -15)      positive = true;
-    else if(angle > 15)  positive = false;
+    if(angle < -15){
+      positive = true;
+    }else if(angle > 15){
+      positive = false;
+    }
     
-    if(positive)  anglev += 0.3;
-    else          anglev -= 0.3;
+    if(positive)  anglev += 0.3/abs(angle+1);
+    else          anglev -= 0.3/abs(angle+1);
     
+    //println(anglev);
     angle += anglev;
   }
   

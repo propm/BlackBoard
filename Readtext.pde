@@ -31,6 +31,7 @@ class ReadText{
     secline = new ArrayList<Datasaver>();
     nsecline = new ArrayList<Datasaver>();
     misprintline = new ArrayList<Integer>();
+    int asterisk = -1;
     
     //タグのパターン作成
     for(int i = 0; i < tags.length; i++){
@@ -39,75 +40,86 @@ class ReadText{
       else                     creg = creg + ")";
     }
     
+    for(int i = 0; i < lines.length; i++){
+      //アスタリスクの行であれば
+      if(Pattern.compile("\\*{30,}").matcher(blines[i]).find())  asterisk = i;
+    }
+    
     //1秒ごとに文を読む
     for(int i = 0; i < lines.length; i++){
       Pattern p = Pattern.compile(creg);
       Matcher m = p.matcher(blines[i]);
       
-      //文中にタグが存在したら
-      if(m.find()){
-        
-        //半角空白、タブ削除
-        lines[i] = Pattern.compile(" ").matcher(blines[i]).replaceAll("");
-        lines[i] = Pattern.compile("\t").matcher(lines[i]).replaceAll("");
-        
-        //どのタグかを取得
-        int tagnum = 0;
-        for(int j = 0; j < tags.length; j++)
-          if(Pattern.compile("^"+tags[j]).matcher(lines[i]).find())  tagnum = j+1;
-        
-        //タグの後の文を取得
-        String code = "";
-        for(int j = 0; j < lines[i].length(); j++){
-          if(lines[i].substring(j, j+1).equals(">")){
-            code = lines[i].substring(j+1, lines[i].length());
-            break;
+      //半角空白、タブ削除
+      lines[i] = Pattern.compile(" ").matcher(blines[i]).replaceAll("");
+      lines[i] = Pattern.compile("\t").matcher(lines[i]).replaceAll("");
+      
+      if(i > asterisk){
+        //文中にタグが存在したら
+        if(m.find()){
+          
+          //どのタグかを取得
+          int tagnum = 0;
+          for(int j = 0; j < tags.length; j++)
+            if(Pattern.compile("^"+tags[j]).matcher(lines[i]).find())  tagnum = j+1;
+          
+          //タグの後の文を取得
+          String code = "";
+          for(int j = 0; j < lines[i].length(); j++){
+            if(lines[i].substring(j, j+1).equals(">")){
+              code = lines[i].substring(j+1, lines[i].length());
+              break;
+            }
           }
-        }
-        
-        Datasaver ds = new Datasaver();
-        
-        //ファイル名とオブジェクト名保持用の変数
-        String object, filename;
-        int ifcount = 0;
-        
-        //タグごとの処理
-        switch(tagnum){
           
-          case 1:
-            if(sizepro(ds, code, tagnum, i)){
-              misprintline.add(i);
-              continue;
-            }
-            break;
+          Datasaver ds = new Datasaver();
           
-          case 2:
-            if(soundpro(ds, code, tagnum, i)){
-              misprintline.add(i);
-              continue;
-            }
-            break;
+          //ファイル名とオブジェクト名保持用の変数
+          String object, filename;
+          int ifcount = 0;
           
-          case 3:
-            if(appearpro(ds, code, tagnum, i)){
-              misprintline.add(i);
-              continue;
-            }
-            break;
+          //タグごとの処理
+          switch(tagnum){
             
-          case 4:
-            if(bgmpro(ds, code, tagnum, i)){
-              misprintline.add(i);
-              continue;
-            }
-            break;
+            case 1:
+              if(sizepro(ds, code, tagnum, i)){
+                misprintline.add(i);
+                continue;
+              }
+              break;
             
-          case 5:
-            if(bspro(ds, code, tagnum, i)){
-              misprintline.add(i);
-              continue;
-            }
-            break;
+            case 2:
+              if(soundpro(ds, code, tagnum, i)){
+                misprintline.add(i);
+                continue;
+              }
+              break;
+            
+            case 3:
+              if(appearpro(ds, code, tagnum, i)){
+                misprintline.add(i);
+                continue;
+              }
+              break;
+              
+            case 4:
+              if(bgmpro(ds, code, tagnum, i)){
+                misprintline.add(i);
+                continue;
+              }
+              break;
+              
+            case 5:
+              if(bspro(ds, code, tagnum, i)){
+                misprintline.add(i);
+                continue;
+              }
+              break;
+          }
+        }else{
+          if(!lines[i].equals("")){
+            misprintline.add(i);
+          }
         }
       }
     }
@@ -116,7 +128,7 @@ class ReadText{
     Collections.sort(secline, compa);
     //タグ順にソート
     Collections.sort(nsecline, compa);
-
+    
     //ファイル出力
     writetext();
   }
@@ -146,9 +158,8 @@ class ReadText{
     }
     
     //行数とタグを記憶
-    ds.intdata = new int[2];
-    ds.intdata[0] = i;
-    ds.intdata[1] = tagnum;
+    ds.line = i;
+    ds.tag = tagnum;
     
     nsecline.add(ds);
     return false;
@@ -208,9 +219,8 @@ class ReadText{
     }
     
     //行数とタグを記憶
-    ds.intdata = new int[2];
-    ds.intdata[0] = i;
-    ds.intdata[1] = tagnum;
+    ds.line = i;
+    ds.tag = tagnum;
     
     nsecline.add(ds);
     
@@ -221,45 +231,68 @@ class ReadText{
   
   //appearタグの処理
   boolean appearpro(Datasaver ds, String code, int tagnum, int i){
-    if(!Pattern.matches(tags[tagnum-1]+"[A-Z][a-z]+(:[0-9]+,[0-9]+){0,1}:[0-9]+s", lines[i])){
+    if(!Pattern.matches(tags[tagnum-1]+"[A-Z][a-z]+(:[0-9]+,[0-9]+){0,1}:[0-9]+s+(,[0-9]+s)*", lines[i])){
       println("書式通り記入してください。 行数： "+(i+1));
       return true;
     }
     
     //秒数取得
-    int[] nums = getsec(code); 
+    Matcher m = Pattern.compile("[0-9]+s").matcher(code);
+    
+    int freq = 0;
+    while(m.find()){
+      freq++;
+    }
+    int[][] nums = new int[freq][2];
+    for(int j = nums.length-1; j >= 0; j--){
+      nums[j] = getsec(code, j != nums.length-1 ? nums[j+1][0] : code.length()-1);
+    }
     
     //オブジェクト名取得
-    int number = 0;
-    String object = "";
+    int number = 0;        //オブジェクト名の次の:の終わりの位置
+    String object = "";    //オブジェクト名
     
     String[] a = getnumword(code, 0, ":");
     object = a[0];
     number = Integer.parseInt(a[1]);
     
+    //秒数の数だけdsを生成、保存
+    ds.dss = new Datasaver[freq];
     
-    ds.intdata = new int[4];
-    ds.stringdata = new String[1];
-    ds.intdata[1] = ds.intdata[2] = -10000;
+    //dscの[intdata]    0:x座標 1:y座標
+    //dscの[stringdata] 0:オブジェクト名
     
-    //座標取得(座標が書かれてない場合、intdata[1], [2]には何も入らない)
-    if(number < nums[0]-1){
-      for(int j = number; j < nums[0] - 1; j++){
-        if(code.substring(j, j+1).equals(",")){
-          ds.intdata[1] = Integer.parseInt(code.substring(number, j));
-          ds.intdata[2] = Integer.parseInt(code.substring(j+1, nums[0]-1));
+    for(int j = 0; j < freq; j++){
+      Datasaver dsc = new Datasaver();
+      dsc.intdata = new int[2];
+      dsc.stringdata = new String[1];
+      dsc.intdata[0] = dsc.intdata[1] = -10000;
+      
+      //座標取得(座標が書かれてない場合、intdata[1], [2]には何も入らない)
+      if(number < nums[j][0]-1){
+        for(int k = number; k < nums[0][0] - 1; k++){
+          if(code.substring(k, k+1).equals(",")){
+            dsc.intdata[0] = Integer.parseInt(code.substring(number, k));
+            dsc.intdata[1] = Integer.parseInt(code.substring(k+1, nums[0][0]-1));
+          }
         }
       }
+      
+      //データ保存
+      dsc.sec = Integer.parseInt(code.substring(nums[j][0], nums[j][1]));
+      dsc.stringdata[0] = object;
+      ds.dss[j] = dsc;
+      //println(dsc.sec);
     }
     
-    //データ保存
     ds.tag = tagnum;
-    ds.intdata[0] = i;
-    ds.intdata[3] = Integer.parseInt(code.substring(nums[0], nums[1]));
-    ds.stringdata[0] = object;
+    ds.line = i;
     
+    //秒数が複数指定されていないなら、その秒数を行の順番を考えるときの行数にする
+    if(ds.dss.length > 1)  ds.sec = 0;
+    else                ds.sec = ds.dss[0].sec;
     secline.add(ds);
-    
+      
     return false;
   }
   
@@ -277,7 +310,7 @@ class ReadText{
     }
     
     //秒数取得
-    int[] nums = getsec(code);
+    int[] nums = getsec(code, code.length()-1);
     
     //ファイル名取得
     filename = "";
@@ -292,12 +325,13 @@ class ReadText{
     if(conffile(filename, i))  return true;
     
     //データ保存
-    ds.intdata = new int[2];
+    //[stringdata]  0:ファイル名
+    
     ds.stringdata = new String[1];
     
     ds.tag = tagnum;
-    ds.intdata[0] = i;
-    ds.intdata[1] = Integer.parseInt(code.substring(nums[0], nums[1]));
+    ds.line = i;
+    ds.sec = Integer.parseInt(code.substring(nums[0], nums[1]));
     ds.stringdata[0] = filename;
     
     secline.add(ds);
@@ -319,10 +353,8 @@ class ReadText{
     //弾速取得
     db.bs = Integer.parseInt(code.substring(0, code.length()));
     
-    
-    ds.intdata = new int[1];
     ds.tag = tagnum;
-    ds.intdata[0] = i;
+    ds.line = i;
     nsecline.add(ds);
     
     return false;
@@ -330,37 +362,47 @@ class ReadText{
   
   //*****************************************************************************************************************
   
+  //秒数ごとに指定されたことを実行
   void checksec(){
-    
     for(int i = 0; i < secline.size(); i++){
       Datasaver ds = secline.get(i);
-      if(counter/60.0 >= ds.intdata[ds.intdata.length-1]){
+      if(counter/60.0 >= ds.sec && ds.dss == null){
         switch(ds.tag){
-          case 3:
-            if(ds.stringdata[0].equals("Attacker"))    
-              if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Attacker(ds.intdata[1], ds.intdata[2]));
-              else                                                    enemys.add(new Attacker());
-            if(ds.stringdata[0].equals("Sin"))
-              if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Sin(ds.intdata[1], ds.intdata[2]));
-              else                                                    enemys.add(new Sin());
-            if(ds.stringdata[0].equals("Tangent"))
-              if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Tangent(ds.intdata[1], ds.intdata[2]));
-              else                                                    enemys.add(new Tangent());
-            if(ds.stringdata[0].equals("Parachuter")){
-              if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Parachuter(ds.intdata[1], ds.intdata[2]));
-              else                                                    enemys.add(new Parachuter());
-            }
-            secline.remove(0);
-            i--;
-            break;
-            
           case 4:
             if(bgm != null)  bgm.close();
             bgm = minim.loadFile(ds.stringdata[0]);
             bgm.loop();
-            secline.remove(0);
+            secline.remove(i);
             i--;
             break;
+        }
+      }
+      
+      
+      if(ds.dss != null){
+        for(int j = 0; j < ds.dss.length; j++){
+          if(ds.dss[j] != null){
+            if(counter/60.0 >= ds.dss[j].sec){
+              
+              switch(ds.tag){
+                case 3:
+                  checksecparts(ds.dss[j]);
+                  ds.dss[j] = null;
+                  break;
+              }
+            }
+          }
+        }
+        
+        //dssのうち、一つでも描画されてないオブジェクトがあったらflag = false
+        boolean flag = true;
+        for(int j = 0; j < ds.dss.length; j++){
+          //println(ds.dss[j].flag);
+          if(ds.dss[j] != null)  flag = false;
+        }
+        if(flag){
+          secline.remove(0);
+          i--;
         }
       }
     }
@@ -368,12 +410,32 @@ class ReadText{
     counter++;
   }
   
-  int[] getsec(String code){
+  void checksecparts(Datasaver ds){
+    if(ds.stringdata[0].equals("Attacker"))    
+      if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Attacker(ds.intdata[1], ds.intdata[2]));
+      else                                                    enemys.add(new Attacker());
+    if(ds.stringdata[0].equals("Sin"))
+      if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Sin(ds.intdata[1], ds.intdata[2]));
+      else                                                    enemys.add(new Sin());
+    if(ds.stringdata[0].equals("Tangent"))
+      if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Tangent(ds.intdata[1], ds.intdata[2]));
+      else                                                    enemys.add(new Tangent());
+    if(ds.stringdata[0].equals("Parachuter")){
+      if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Parachuter(ds.intdata[1], ds.intdata[2]));
+      else                                                    enemys.add(new Parachuter());
+    }
+  }
+  
+  int[] getsec(String code, int begin){
     //秒数取得
-    int[] nums = {0, 0};
+    int[] nums = {0, 0};                 //1つ目の要素は秒数の書き始めの位置、2つ目は書き終わりの位置
+                                         //3つ目は0ならこれより左に秒数が書かれていないことを表す
+    Pattern p = Pattern.compile(":|,");
     
-    for(int j = code.length() - 1; j >= 0; j--){
-      if(nums[0] == 0 && code.substring(j, j+1).equals(":"))  nums[0] = j+1;
+    for(int j = begin; j >= 0; j--){
+      if(nums[0] == 0 && nums[1] != 0 && p.matcher(code.substring(j, j+1)).find()){
+        nums[0] = j+1;
+      }
       if(nums[1] == 0 && code.substring(j, j+1).equals("s"))  nums[1] = j;
     }
     
@@ -440,8 +502,9 @@ class ReadText{
     return false;
   }
   
+  //Settings.txtへの書き込み
   void writetext(){
-    int asterisk = -1;
+    int asterisk = 0;    //アスタリスクの行数-1  アスタリスクの行がない場合は1行目に作られる
     
     for(int i = 0; i < blines.length; i++){
       if(Pattern.compile("\\*{10}").matcher(blines[i]).find()){
@@ -449,49 +512,78 @@ class ReadText{
       }
     }
     
-    String[] writelines = new String[asterisk+1+1+secline.size()+1+nsecline.size()+1+misprintline.size()];
+    //書き込む行を入れるようの配列　定義の+1は空白の行を入れる用
+    String[] writelines = new String[asterisk+1+secline.size()+1+nsecline.size()+1+misprintline.size()];
+    
+    //アスタリスクの行がない場合にそれを作成する
+    if(asterisk == 0){
+      String a = "";
+      for(int j = 0; j < 120; j++)  a += "*";
+      writelines[0] = a;
+    }
+    
+    //書き込む行を一行ずつ配列に入れていく
     for(int i = 0; i < writelines.length; i++){
-      if(i <= asterisk)  writelines[i] = blines[i];
+      if(asterisk != 0 && i <= asterisk)  writelines[i] = blines[i];
     }
     
     writelines[asterisk+1] = "";
     
+    //スクリプトの行を入れていく
+    //iがasterisk+2なのはアスタリスクとスクリプトの行の間に一行開けるため
+    //finishnumは処理が一段落したときの行+1
     int finishnum = 100;
     for(int i = asterisk+2; i < writelines.length; i++){
-      int beginnum = i - (asterisk+2);    //0から始まるようにした変数
-      int beginnum2 = i - finishnum - (asterisk+2);
+      int beginnum = i - (asterisk+2);                //アスタリスクの行の1行下が0から始まるようにした変数
+      int beginnum2 = i - finishnum - (asterisk+2);   //同じく
       
-      if(beginnum < nsecline.size())        writelines[i] = blines[nsecline.get(beginnum).intdata[0]];
+      //初期設定系スクリプトの書き込み
+      if(beginnum < nsecline.size())        writelines[i] = blines[nsecline.get(beginnum).line];
       else if(beginnum == nsecline.size()){
-        writelines[i] = "";
+        writelines[i] = "";                        //空白挿入
         finishnum = beginnum+1;
       }
+      
+      //秒数関連スクリプトの書き込み
       else if(beginnum2 >= 0 && beginnum2 < secline.size()){
-        Datasaver saver = secline.get(beginnum2);
-        writelines[i] = blines[saver.intdata[0]]; 
+        Datasaver ds = secline.get(beginnum2);
+        writelines[i] = blines[ds.line]; 
       }
       else if(beginnum2 == secline.size()){
-        writelines[i] = "";
+        writelines[i] = "";                        //空白挿入
         finishnum = i+1;
       }
     }
     
+    //誤字脱字ありスクリプトの書き込み
     for(int i = 0; i < misprintline.size(); i++){
       writelines[finishnum+i] = blines[misprintline.get(i)];
     }
     
+    //ファイルに書き込み
     saveStrings(".\\data\\settings.txt", writelines);
   }
 }
 
+//Datasaverが入った配列を並べ替えるためのクラス
 class MyComparator implements Comparator<Datasaver>{
   public int compare(Datasaver a, Datasaver b){
-    return a.intdata[a.intdata.length - 1] - b.intdata[b.intdata.length - 1];
+    if(a.sec != -10000 && b.sec != -10000)  return a.sec - b.sec;
+    else                                    return a.tag - b.tag;
   }
 }
 
+//一時保存用クラス
 class Datasaver{
   int tag;
-  int[] intdata;        //0番目の要素には行数が入る
+  int line;
+  int sec;
+  int[] intdata;
   String[] stringdata;
+  
+  Datasaver[] dss;
+  
+  Datasaver(){
+    sec = -10000;
+  }
 }

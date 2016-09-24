@@ -36,13 +36,6 @@ class ScrollManager{
   }
 }
 
-class RandomCreate{
- 
- 
-  
-}
-
-
 
 
 
