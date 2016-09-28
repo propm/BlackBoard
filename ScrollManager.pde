@@ -14,7 +14,7 @@ class ScrollManager{
     view = loadImage("space.jpg");
     
     m = 2;
-    view.resize((int)(view.width*m), (int)(view.height*m));
+    view.resize((int)(view.width*m*db.scwhrate), (int)(view.height*m*db.scwhrate));
     
     viewx = 0;
     viewx2 = view.width;
@@ -26,8 +26,8 @@ class ScrollManager{
     viewx -= vx;
     viewx2 -= vx;
     
-    if(viewx2 + view.width < 0 && width >= viewx + view.width)  viewx2 = viewx + view.width;
-    if(viewx + view.width < 0 && width >= viewx2 + view.width)   viewx = viewx2 + view.width;
+    if(viewx2 + view.width <= 0 && width >= viewx + view.width)  viewx2 = viewx + view.width;
+    if(viewx + view.width <= 0 && width >= viewx2 + view.width)  viewx = viewx2 + view.width;
   }
   
   void drawView(){
