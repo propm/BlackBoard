@@ -49,7 +49,7 @@ class DataBase{
           e.Bi = 20;
         case 0:
           e.hp = 2;
-          e.vx = 1*scwhrate;
+          e.vx = -1*scwhrate;
           
           setImage(e, "attacker.png");
           
@@ -209,6 +209,7 @@ class MyObj{
 
 //突撃隊
 class Attacker extends MyObj{
+  boolean flag = false;
   
   Attacker(){
     x = random(width)+width/2+sm.x;
@@ -457,7 +458,7 @@ class Home{
   
   void draw(){
     //rotation();
-    image(img, x - sm.x - w/2, y - sm.y - h/2);
+    image(img, x - w/2, y - h/2);
     //popMatrix();
   }
 }
@@ -504,6 +505,7 @@ class Bullet{
   }
   
   void draw(){
+    
     stroke(255, 255, 0);
     line(x-sm.x, y-sm.y, x-sm.x+length.x, y-sm.y+length.y);
   }
