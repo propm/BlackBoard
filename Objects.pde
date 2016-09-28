@@ -128,6 +128,7 @@ class MyObj{
   int Bi;                                                       //bullet interval
   boolean dieflag;            //死んでいるならtrue
   boolean bulletflag;                                           //弾を発射するオブジェクトならtrue
+  boolean overlapflag;        //プレイヤーと重なっているならtrue
   ArrayList<PImage> imgs;     //画像
   
   Polygon pol;                    //当たり判定用多角形
@@ -158,6 +159,7 @@ class MyObj{
     
     hp = oe.hp;
     Bi = oe.Bi;
+    overlapflag = false;
     count = 0;
     
     switch(num){
@@ -356,18 +358,19 @@ class Parachuter extends Attacker{
 
 //プレイヤー
 class Player extends MyObj{
-  float bx, by;  //座標
-  boolean ATflag;  //マウスクリック時true
+  float bx, by;        //座標
+  boolean ATflag;      //マウスクリック時true
   boolean wallflag;    //壁作ってるときtrue
   int count;
   
-  AudioSample erase;
+  AudioSample erase;    //消すときの音
   
   Player(){
     ATflag = wallflag = false;
     initial();
   }
   
+  //初期化
   void initial(){
     try{
       Player p = db.oriplayer;
@@ -381,6 +384,7 @@ class Player extends MyObj{
     }catch(NullPointerException e){}
   }
   
+  //動作
   void move(){
     bx = x;
     by = y;
@@ -395,15 +399,28 @@ class Player extends MyObj{
     }else{
       count = 0;
       wallflag = false;
-      if(ATflag)  attack();
+      attack();
     }
   }
   
+  //攻撃判定（攻撃してなくても呼び出される）
   void attack(){
     for(int i = 0; i < enemys.size(); i++){
-      if(judge(pol, enemys.get(i).pol))  enemys.get(i).hp--;
+      MyObj e = enemys.get(i);
+      
+      if(ATflag && !overlap(e) && e.overlapflag)  e.hp--;
     }
-    if(erase != null)  erase.trigger();
+    if(ATflag && erase != null)  erase.trigger();
+  }
+  
+  //敵と自機が重なっているかどうかの判定:  戻り値→変更前のoverlapflag
+  boolean overlap(MyObj e){
+    boolean boverlapflag = e.overlapflag;
+      
+    if(judge(pol, e.pol))  e.overlapflag = true;
+    else                   e.overlapflag = false;
+    
+    return boverlapflag;
   }
   
   void draw(){
