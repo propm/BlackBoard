@@ -5,7 +5,7 @@ import ddf.minim.analysis.*;
 import ddf.minim.ugens.*;
 import ddf.minim.effects.*;
 
-final float whrate = (float)23/90;
+final float whrate = (float)23/105;
 
 ScrollManager sm;
 ReadText rt;

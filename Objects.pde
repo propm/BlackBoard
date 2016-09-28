@@ -203,7 +203,7 @@ class MyObj{
   //描画
   void draw(){
     image(imgs.get(0), x - sm.x, y - sm.y);
-    pol.Draw();
+    //pol.Draw();
   }
 }
 
@@ -425,7 +425,7 @@ class Home{
     
   Home(){
     
-    x = (int)((float)width/50*6);
+    x = (int)((float)width/50*2);
     y = (int)((float)height/2);
     
     img = reverse(loadImage("cleaner.png"));
@@ -505,7 +505,7 @@ class Bullet{
   }
   
   void draw(){
-    
+    strokeWeight(4);
     stroke(255, 255, 0);
     line(x-sm.x, y-sm.y, x-sm.x+length.x, y-sm.y+length.y);
   }
