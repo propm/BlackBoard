@@ -10,7 +10,7 @@ class ScrollManager{
   
   ScrollManager(){
     x = y = vy = 0;
-    vx = 1;
+    vx = 1 * db.scwhrate;
     view = loadImage("space.jpg");
     
     m = 2;
@@ -31,8 +31,8 @@ class ScrollManager{
   }
   
   void drawView(){
-    image(view, viewx, 0);
-    image(view, viewx2, 0);
+    image(view, (int)viewx, 0);
+    image(view, (int)viewx2, 0);
   }
 }
 

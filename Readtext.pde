@@ -411,9 +411,11 @@ class ReadText{
   }
   
   void checksecparts(Datasaver ds){
-    if(ds.stringdata[0].equals("Attacker"))    
+    if(ds.stringdata[0].equals("Attacker")){ 
       if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Attacker(ds.intdata[1], ds.intdata[2]));
       else                                                    enemys.add(new Attacker());
+      println("Attacker");
+    }
     if(ds.stringdata[0].equals("Sin"))
       if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Sin(ds.intdata[1], ds.intdata[2]));
       else                                                    enemys.add(new Sin());

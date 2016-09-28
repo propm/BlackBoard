@@ -19,12 +19,11 @@ Player player;
 Home home;
 
 void setup(){
-  minim = new Minim(this);
-  db = new DataBase();
+  minim = new Minim(this);    //音楽・効果音用
+  db = new DataBase();        //データベース
   
-  db.screenw = 1600;
+  db.screenw = 1600;          //スクリーンwidth
   
-  sm = new ScrollManager();
   rt = new ReadText();
   db.setobjectnames();
   
@@ -34,8 +33,9 @@ void setup(){
   db.screenh = (int)(db.screenw*whrate);
   
   size(db.screenw, db.screenh);
-  db.scwhrate = width/1600;
+  db.scwhrate = width/1600.0;
   
+  sm = new ScrollManager();
   db.setobjects();
   
   enemys = new ArrayList<MyObj>();
@@ -95,13 +95,14 @@ void drawing(){
     bullets.get(i).draw();
   }
   
+  //自陣
+  home.draw();
+  
   //プレイヤー
   noStroke();
   fill(255, 134, 0);
   player.draw();
-  
-  //自陣
-  home.draw();
+
 }
 
 //画像反転用関数

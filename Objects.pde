@@ -3,7 +3,7 @@
 class DataBase{
   
   String[] objects;
-  float scwhrate;
+  float scwhrate;                //width/1600.0
   int bs;                        //弾速
   int screenw, screenh;
   
@@ -38,6 +38,7 @@ class DataBase{
   
   //敵・プレイヤーの設定
   void setobjects(){
+    bs *= scwhrate;
     for(int i = 0; i < oriEnemys.size(); i++){
       
       MyObj e = oriEnemys.get(objects[i]);
@@ -48,6 +49,7 @@ class DataBase{
           e.Bi = 20;
         case 0:
           e.hp = 2;
+          e.vx = 1*scwhrate;
           
           setImage(e, "attacker.png");
           
@@ -95,8 +97,8 @@ class DataBase{
   void setImage(MyObj e, String filename){
     
     e.imgs.add(loadImage(filename));
-    e.w = (int)(e.imgs.get(0).width/20.0*scwhrate);
-    e.h = (int)(e.imgs.get(0).height/20.0*scwhrate);
+    e.w = (int)(e.imgs.get(0).width/30.0*scwhrate);
+    e.h = (int)(e.imgs.get(0).height/30.0*scwhrate);
     
     for(int j = 0; j < e.imgs.size(); j++){
       e.imgs.set(j, reSize(e.imgs.get(j), e.w, e.h));
@@ -157,6 +159,12 @@ class MyObj{
     hp = oe.hp;
     Bi = oe.Bi;
     count = 0;
+    
+    switch(num){
+      case 0:
+        vx = oe.vx;
+        y = height-h;
+    }
   }
   
   //多角形更新
@@ -195,7 +203,7 @@ class MyObj{
   //描画
   void draw(){
     image(imgs.get(0), x - sm.x, y - sm.y);
-    //pol.Draw();
+    pol.Draw();
   }
 }
 
@@ -215,19 +223,16 @@ class Attacker extends MyObj{
   }
   
   void initial(){
-    initial(0);  //初期設定をコピー
-    vx = -1;
-    y = height - h;
-    
-    setPolygon(x, y);
+    initial(0);        //初期設定をコピー
+    setPolygon(x, y);  //座標の位置に多角形を移動
   }
   
   void move(){
-    die();
+    die();      //死んだかどうかの判定
     x += vx;
     setPolygon(x, y);
     
-    attack();
+    attack();   //攻撃
   }
 }
 
@@ -235,7 +240,8 @@ class Attacker extends MyObj{
 class Sin extends MyObj{
   
   float basicy;    //角度が0のときの高さ
-  int theta;       //角度(ラジアンではない);
+  int theta;       //角度(ラジアンではない)
+  int omega;       //角速度（ラジアンではない
   
   Sin(){
     x = random(width)+width/2+sm.x;
@@ -254,7 +260,7 @@ class Sin extends MyObj{
     initial(1);  //初期設定をコピー
     
     theta = 0;
-    vx = -2;
+    vx = -2 * db.scwhrate;
     
     setPolygon(x, y);
   }
@@ -286,7 +292,7 @@ class Tangent extends Sin{
   void initialize(){
     initial(2);  //初期設定をコピー
     
-    vx = -5;
+    vx = -5 * db.scwhrate;
     setPolygon(x, y);
   }
   
@@ -303,7 +309,7 @@ class Tangent extends Sin{
 
 //パラシュートタコ
 class Parachuter extends Attacker{
-  
+  float g;               //重力（速度）
   boolean paraflag;      //地面に着地するまではパラシュート状態：true
   
   Parachuter(){
@@ -323,14 +329,14 @@ class Parachuter extends Attacker{
     
     paraflag = true;
     
-    vx = -0.5;
+    vx = -0.5 * db.scwhrate;
     setPolygon(x, y);
   }
   
   void move(){
     die();
     if(paraflag){
-      y += 6;
+      y += 6 * db.scwhrate;
       x += vx;
       
       setPolygon(x, y);
@@ -450,9 +456,9 @@ class Home{
   }
   
   void draw(){
-    rotation();
-    image(img, 0 - w/2, 0-h/2);
-    popMatrix();
+    //rotation();
+    image(img, x - sm.x - w/2, y - sm.y - h/2);
+    //popMatrix();
   }
 }
 
