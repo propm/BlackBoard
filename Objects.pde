@@ -118,7 +118,7 @@ class DataBase{
   }
 }
 
-//敵
+//オブジェクト
 class MyObj{
   float x, y, vx;             //画像左上の座標、横方向の速度
   int   w, h;                                                   //画像の大きさ
@@ -129,7 +129,8 @@ class MyObj{
   boolean dieflag;            //死んでいるならtrue
   boolean bulletflag;                                           //弾を発射するオブジェクトならtrue
   boolean overlapflag;        //プレイヤーと重なっているならtrue
-  ArrayList<PImage> imgs;     //画像
+  boolean boverlapflag;       //1フレーム前のoverlapflag
+  ArrayList<PImage> imgs;                                       //画像
   
   Polygon pol;                    //当たり判定用多角形
   Polygon oripol;                 //形のみを保持する多角形
@@ -292,6 +293,7 @@ class Tangent extends Sin{
     initialize();
   }
   
+  //初期化
   void initialize(){
     initial(2);  //初期設定をコピー
     
@@ -360,6 +362,7 @@ class Parachuter extends Attacker{
 class Player extends MyObj{
   float bx, by;        //座標
   boolean ATflag;      //マウスクリック時true
+  boolean bATflag;
   boolean wallflag;    //壁作ってるときtrue
   int count;
   
@@ -386,6 +389,7 @@ class Player extends MyObj{
   
   //動作
   void move(){
+    
     bx = x;
     by = y;
     
@@ -393,14 +397,20 @@ class Player extends MyObj{
     y = mouseY;
     
     setPolygon(x-w/2+sm.x, y-w/2+sm.y);
+    overlap();
+    
     if(x == bx && y == by){
       count++;
-      if(count/60 >= 3)  wallflag = true;
+      if(count/60 >= 1)  wallflag = true;
     }else{
       count = 0;
       wallflag = false;
-      attack();
+      if(ATflag)  attack();
     }
+    
+    if(wallflag)  createwall();
+    
+    bATflag = ATflag;
   }
   
   //攻撃判定（攻撃してなくても呼び出される）
@@ -408,19 +418,25 @@ class Player extends MyObj{
     for(int i = 0; i < enemys.size(); i++){
       MyObj e = enemys.get(i);
       
-      if(ATflag && !overlap(e) && e.overlapflag)  e.hp--;
+      if((!bATflag || !e.boverlapflag) && e.overlapflag)  e.hp--;
     }
-    if(ATflag && erase != null)  erase.trigger();
+    if(erase != null)  erase.trigger();
   }
   
   //敵と自機が重なっているかどうかの判定:  戻り値→変更前のoverlapflag
-  boolean overlap(MyObj e){
-    boolean boverlapflag = e.overlapflag;
+  void overlap(){
+    for(int i = 0; i < enemys.size(); i++){
+      MyObj e = enemys.get(i);
       
-    if(judge(pol, e.pol))  e.overlapflag = true;
-    else                   e.overlapflag = false;
+      e.boverlapflag = e.overlapflag;
+      
+      if(judge(pol, e.pol))  e.overlapflag = true;
+      else                   e.overlapflag = false;
+    }
+  }
+  
+  void createwall(){
     
-    return boverlapflag;
   }
   
   void draw(){
@@ -431,7 +447,7 @@ class Player extends MyObj{
 
 //自陣
 class Home{
-  int x, y;            //自陣の中心の座標
+  float x, y;            //自陣の中心の座標
   int w, h;
   PImage img;          //画像
   float imgm;          //画像の拡大倍率
@@ -473,9 +489,16 @@ class Home{
     angle += anglev;
   }
   
+  void move(){
+    angle += 3;
+    angle %= 360;
+    y = sin(angle/180*PI)*4 + height/2;
+  }
+  
   void draw(){
     //rotation();
-    image(img, x - w/2, y - h/2);
+    move();
+    image(img, (int)x - w/2, (int)y - h/2);
     //popMatrix();
   }
 }
