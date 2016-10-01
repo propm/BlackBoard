@@ -1,4 +1,4 @@
-
+//画面のスクロールを管理する
 class ScrollManager{
   
   float x, y;      //画面左上端の座標

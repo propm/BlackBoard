@@ -10,6 +10,8 @@ final float whrate = (float)23/105;
 ScrollManager sm;
 ReadText rt;
 DataBase db;
+TimeManager tm;
+
 Minim minim;
 AudioPlayer bgm;
 
@@ -24,6 +26,7 @@ void setup(){
   
   db.screenw = 1600;          //スクリーンwidth
   
+  tm = new TimeManager();
   rt = new ReadText();
   db.setobjectnames();
   
@@ -43,6 +46,7 @@ void setup(){
   player = new Player();
   
   home = new Home();
+  enemys.add(new Ninja());
 }
 
 void draw(){
@@ -54,7 +58,7 @@ void draw(){
 //処理用関数
 void process(){
   
-  rt.checksec();
+  tm.checksec();
   sm.move();
   
   //プレイヤーの動きの処理

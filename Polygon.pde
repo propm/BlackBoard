@@ -1,3 +1,5 @@
+
+//当たり判定用多角形
 class Polygon {
   ArrayList<PVector> ver; //時計回りに定義
   boolean isConvex; //凸多角形であるか

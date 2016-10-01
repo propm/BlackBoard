@@ -1,9 +1,11 @@
 ﻿＜説明＞
 
 オブジェクト名：突撃兵			Attacker
-		サインタコ		Sin
+		フライングタコ		Sin
 		タンジェントタコ	Tangent
 		パラシュートタコ	Parachuter
+		大砲					Cannon
+		忍者					Ninja
 
 ＜タグについて＞
 

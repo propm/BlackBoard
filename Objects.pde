@@ -2,16 +2,17 @@
 //あらゆる初期設定を保存するクラス
 class DataBase{
   
-  String[] objects;
+  String[] objects;              //オブジェクトの名前
   float scwhrate;                //width/1600.0
   int bs;                        //弾速
   int screenw, screenh;
   
-  //効果音の敵種別ファイル名
+  //効果音のファイル名
   String erase;
   
   HashMap<String, MyObj> oriEnemys;    //敵種別設定用のオブジェクト
                                        //1:突撃兵  2:サイン  3:タンジェント  4:パラシュート
+                                       //5:大砲　　6:忍者
   Player oriplayer = new Player();
   
   void setobjectnames(){
@@ -79,6 +80,22 @@ class DataBase{
           e.bulletflag = true;
           e.Bi = 75;
           break;
+        case 4:
+        
+        case 5:
+          e.hp = 1;
+          
+          setImage(e, "attacker.png");
+          e.pol = new Polygon();
+          float[][] vectors3 = {{e.w/2, 0, 0}, {e.w*9/10, e.h*3/20, 0}, {e.w, e.h, 0}, 
+                                {0, e.h*21/22, 0}, {e.w/5, e.h*3/25, 0}};
+                               
+          for(int j = 0; j < vectors3.length; j++)  e.pol.Add(vectors3[j][0], vectors3[j][1], vectors3[j][2]);
+          e.pol.Reverse(e.w);
+          e.bulletflag = true;
+          e.Bi = 180;
+          
+          break;
       }
     }
     
@@ -124,8 +141,10 @@ class MyObj{
   int   w, h;                                                   //画像の大きさ
   int energy;                 //粉エネルギー
   int hp;                                                       //体力(何回消されたら消えるか)
-  int count;                  //時間カウント
+  int Bcount;                 //弾用時間カウント
+  int count;                  //汎用カウント
   int Bi;                                                       //bullet interval
+  int charanum;               //どの敵・プレイヤーか(0～5)
   boolean dieflag;            //死んでいるならtrue
   boolean bulletflag;                                           //弾を発射するオブジェクトならtrue
   boolean overlapflag;        //プレイヤーと重なっているならtrue
@@ -145,6 +164,7 @@ class MyObj{
   
   //初期設定をコピーする関数
   void initial(int num){
+    charanum = num;
     MyObj oe = db.oriEnemys.get(db.objects[num]);
     
     die = oe.die;
@@ -161,7 +181,7 @@ class MyObj{
     hp = oe.hp;
     Bi = oe.Bi;
     overlapflag = false;
-    count = 0;
+    count = Bcount = 0;
     
     switch(num){
       case 0:
@@ -170,7 +190,7 @@ class MyObj{
     }
   }
   
-  //多角形更新
+  //多角形更新     x, y: 左上の座標
   void setPolygon(float x, float y){
     for(int i = 0; i < pol.ver.size(); i++){
       PVector pv = oripol.ver.get(i);
@@ -184,9 +204,20 @@ class MyObj{
   
   //弾で攻撃
   void bullet(){
-    if(count++ > Bi){
-      if(bulletflag)  bullets.add(new Bullet(x, y+h/2, new PVector(-db.bs/10.0, 0)));
-      count = 0;
+    if(Bcount++ > Bi){
+      if(bulletflag) {
+        switch(charanum){
+          case 1:
+          case 2:
+          case 3:
+            bullets.add(new Bullet(x, y+h/2, new PVector(-db.bs/10.0, 0)));
+            break;
+          case 4:
+          case 5:
+            break;
+        }
+      }
+      Bcount = 0;
     }
   }
   
@@ -206,7 +237,7 @@ class MyObj{
   //描画
   void draw(){
     image(imgs.get(0), x - sm.x, y - sm.y);
-    //pol.Draw();
+    pol.Draw();
   }
 }
 
@@ -215,8 +246,8 @@ class Attacker extends MyObj{
   boolean flag = false;
   
   Attacker(){
-    x = random(width)+width/2+sm.x;
-    y = random(height-h/2)+h/2+sm.y;
+    x = random(width)+width/2;
+    y = random(height-h/2)+h/2;
     initial();
   }
   
@@ -240,7 +271,7 @@ class Attacker extends MyObj{
   }
 }
 
-//正弦タコ
+//フライング
 class Sin extends MyObj{
   
   float basicy;    //角度が0のときの高さ
@@ -280,7 +311,7 @@ class Sin extends MyObj{
   }
 }
 
-//タンジェントタコ
+//タンジェント
 class Tangent extends Sin{
   
   Tangent(){
@@ -312,7 +343,7 @@ class Tangent extends Sin{
   }
 }
 
-//パラシュートタコ
+//パラシュート
 class Parachuter extends Attacker{
   float g;               //重力（速度）
   boolean paraflag;      //地面に着地するまではパラシュート状態：true
@@ -355,6 +386,57 @@ class Parachuter extends Attacker{
     }else{
       super.move();
     }
+  }
+}
+
+//大砲
+class Cannon extends MyObj{
+  
+  Cannon(){
+    initial(4);
+  }
+}
+
+//忍者
+class Ninja extends MyObj{
+  final float ALPHA = 100;  //最大不透明度
+  float alpha;              //透明度
+  boolean stealthflag;      //透明化するときtrue
+  
+  Ninja(){
+    initial();
+  }
+  
+  void initial(){
+    initial(5);
+    x = width/2 - w/2;
+    y = height/2 - h/2;
+    alpha = ALPHA;
+    stealthflag = false;
+    setPolygon(x, y);
+  }
+  
+  void move(){
+    die();
+    attack();
+    
+    if(overlapflag)  stealthflag = true;
+    if(stealthflag)  alpha -= 3;
+    if(alpha < 0)    alpha = 0;
+    if(alpha == 0)   stealthflag = false;
+    if(!stealthflag && alpha != ALPHA) count++;
+    if(count > 30) alpha += 3;
+    if(alpha > ALPHA){
+      alpha = ALPHA;
+      count = 0;
+    }
+  }
+  
+  void draw(){
+    tint(255, alpha);
+    image(imgs.get(0), x, y);
+    tint(255, 255);
+    pol.Draw();
   }
 }
 
@@ -413,7 +495,7 @@ class Player extends MyObj{
     bATflag = ATflag;
   }
   
-  //攻撃判定（攻撃してなくても呼び出される）
+  //攻撃判定
   void attack(){
     for(int i = 0; i < enemys.size(); i++){
       MyObj e = enemys.get(i);
@@ -441,7 +523,7 @@ class Player extends MyObj{
   
   void draw(){
     ellipse(x, y, w, h);
-    //pol.Draw();
+    pol.Draw();
   }
 }
 

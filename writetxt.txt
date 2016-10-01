@@ -1,0 +1,61 @@
+//Settings.txtへの書き込み
+  void writetext(){
+    int asterisk = 0;    //アスタリスクの行数-1  アスタリスクの行がない場合は1行目に作られる
+    
+    for(int i = 0; i < blines.length; i++){
+      if(Pattern.compile("\\*{10}").matcher(blines[i]).find()){
+        asterisk = i;
+      }
+    }
+    
+    //書き込む行を入れるようの配列　定義の+1は空白の行を入れる用
+    String[] writelines = new String[asterisk+1+secline.size()+1+nsecline.size()+1+misprintline.size()];
+    
+    //アスタリスクの行がない場合にそれを作成する
+    if(asterisk == 0){
+      String a = "";
+      for(int j = 0; j < 120; j++)  a += "*";
+      writelines[0] = a;
+    }
+    
+    //書き込む行を一行ずつ配列に入れていく
+    for(int i = 0; i < writelines.length; i++){
+      if(asterisk != 0 && i <= asterisk)  writelines[i] = blines[i];
+    }
+    
+    writelines[asterisk+1] = "";
+    
+    //スクリプトの行を入れていく
+    //iがasterisk+2なのはアスタリスクとスクリプトの行の間に一行開けるため
+    //finishnumは処理が一段落したときの行+1
+    int finishnum = 100;
+    for(int i = asterisk+2; i < writelines.length; i++){
+      int beginnum = i - (asterisk+2);                //アスタリスクの行の1行下が0から始まるようにした変数
+      int beginnum2 = i - finishnum - (asterisk+2);   //同じく
+      
+      //初期設定系スクリプトの書き込み
+      if(beginnum < nsecline.size())        writelines[i] = blines[nsecline.get(beginnum).line];
+      else if(beginnum == nsecline.size()){
+        writelines[i] = "";                        //空白挿入
+        finishnum = beginnum+1;
+      }
+      
+      //秒数関連スクリプトの書き込み
+      else if(beginnum2 >= 0 && beginnum2 < secline.size()){
+        Datasaver ds = secline.get(beginnum2);
+        writelines[i] = blines[ds.line]; 
+      }
+      else if(beginnum2 == secline.size()){
+        writelines[i] = "";                        //空白挿入
+        finishnum = i+1;
+      }
+    }
+    
+    //誤字脱字ありスクリプトの書き込み
+    for(int i = 0; i < misprintline.size(); i++){
+      writelines[finishnum+i] = blines[misprintline.get(i)];
+    }
+    
+    //ファイルに書き込み
+    saveStrings(".\\data\\settings.txt", writelines);
+  }
