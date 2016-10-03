@@ -76,6 +76,7 @@ class Polygon {
       PVector p2 = ver.get((i + 1) % ver.size());
       
       stroke(255, 255, 0);
+      strokeWeight(1);
       line(p1.x, p1.y, p2.x, p2.y);
     }
   }

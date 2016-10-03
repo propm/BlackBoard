@@ -3,18 +3,7 @@ import java.util.*;
 import java.io.*;
 
 //テキストを読み込む
-class ReadText{
-  
-  final String[] tags = {"<size>", "<sound>", "<appear>" , "<bgm>", "<bs>"};
-  final String[] commands = {"die", "erase", "attacked"};
-  final String[] objects = {"Attacker", "Sin", "Tangent", "Parachuter", "Cannon", "Ninja"};
-  
-  String[] blines;
-  String[] lines;
-  int counter;                           //60なら1秒
-  
-  MyComparator compa = new MyComparator();
-  AudioPlayer nullplayer;
+class ReadText extends CheckText{
   
   //テキストファイルを読む
   void read(){
@@ -25,23 +14,10 @@ class ReadText{
   //コマンドを読む
   void readCommands(){
     
-    String creg = "^(";                                //タグのパターン用変数
-    
-    //タグのパターン作成
-    for(int i = 0; i < tags.length; i++){
-      creg = creg + tags[i];
-      if(i < tags.length - 1)  creg = creg + "|";
-      else                     creg = creg + ")";
-    }
-    
     //1秒ごとに文を読む
     for(int i = 0; i < lines.length; i++){
       Pattern p = Pattern.compile(creg);
       Matcher m = p.matcher(blines[i]);
-      
-      //半角空白、タブ削除
-      lines[i] = Pattern.compile(" ").matcher(blines[i]).replaceAll("");
-      lines[i] = Pattern.compile("\t").matcher(lines[i]).replaceAll("");
       
       //文中にタグが存在したら
       if(m.find()){
@@ -60,83 +36,59 @@ class ReadText{
           }
         }
         
-        Datasaver ds = new Datasaver();
-        
-        //ファイル名とオブジェクト名保持用の変数
-        String object, filename;
-        int ifcount = 0;
+        ds = new Datasaver();
         
         //タグごとの処理
         switch(tagnum){
           
           case 1:
-            sizepro(ds, code, tagnum, i);
+            sizepro(code);
             break;
           
           case 2:
-            soundpro(ds, code, tagnum, i);
+            soundpro(code, i);
             break;
           
           case 3:
-            appearpro(ds, code, tagnum, i);
+            appearpro(code, tagnum, i);
             break;
             
           case 4:
-            bgmpro(ds, code, tagnum, i);
+            bgmpro(code, tagnum, i);
             break;
             
           case 5:
-            bspro(ds, code, tagnum, i);
+            bspro(code, tagnum, i);
             break;
         }
       }
     }
-    
   }
   
   //*****************************************************************************************************************
   
   //sizeタグの処理
-  void sizepro(Datasaver ds, String code, int tagnum, int i){
-    
-    //エラー処理
-    if(!Pattern.matches(tags[tagnum-1]+"[0-9]+", lines[i])){
-      println("書式通り記入してください。 行数： "+(i+1));
-      System.exit(0);
-    }
+  void sizepro(String code){
     
     //widthの抽出
     int w = 0;
     
     String a = getword(code, 0, "");
-    if(a != null) w = Integer.parseInt(a);
+    w = Integer.parseInt(a);
     
-    if(w > 0){
-      db.screenw = w;
-    }else{
-      println("sizeが0になっています。　行数: "+(i+1));
-      System.exit(0);
-    }
+    db.screenw = w;
   }
   
   //*****************************************************************************************************************
   
   //soundタグの処理
-  void soundpro(Datasaver ds, String code, int tagnum, int i){
+  void soundpro(String code, int i){
     String object, filename;
-    
-    //エラー処理
-    if(!Pattern.matches(tags[tagnum-1]+"\".+\">>[a-z]+\\([a-zA-z]*\\)", lines[i])){
-      println("書式通り記入してください。 行数： "+(i+1));
-      System.exit(0);
-    }
     
     //どのコマンドが使われているか調べる
     int comnum = -1;
     for(int j = 0; j < commands.length; j++)
       if(Pattern.compile(commands[j]).matcher(lines[i]).find())  comnum = j+1;
-    
-    if(error("そのようなコマンドは存在しません", comnum, i, true))  System.exit(0);
     
     //オブジェクト名取得
     int number = getnum(code, 0, "(");
@@ -148,11 +100,9 @@ class ReadText{
       if(object.equals(objects[j]))  objectnum = j+1;
     
     if(object.equals(""))  objectnum = 0;
-    if(error("そのようなオブジェクトは存在しません"+object, objectnum, i, true))  System.exit(0);
     
     //ファイル名取得
     number = getnum(code, 0, "\"");
-    if(error("ファイル名を「\"\"」付きで書いてください", number, i, true))  System.exit(0);
     
     filename = getword(code, number, "\"");
     
@@ -165,10 +115,6 @@ class ReadText{
       else     for(String obj: objects)  db.setsound(obj, commands[comnum-1], filename);
     }
     else if(comnum == 2){
-      if(objectnum > 0){
-        println("オブジェクトの情報は必要ありません　行数: "+(i+1));
-        System.exit(0);
-      }
       db.oriplayer.erase = minim.loadSample(filename);
     }
   }
@@ -176,11 +122,7 @@ class ReadText{
   //*****************************************************************************************************************
   
   //appearタグの処理
-  void appearpro(Datasaver ds, String code, int tagnum, int i){
-    if(!Pattern.matches(tags[tagnum-1]+"[A-Z][a-z]+(:[0-9]+,[0-9]+){0,1}:[0-9]+s+(,[0-9]+s)*", lines[i])){
-      println("書式通り記入してください。 行数： "+(i+1));
-      System.exit(0);
-    }
+  void appearpro(String code, int tagnum, int i){
     
     //秒数取得
     Matcher m = Pattern.compile("[0-9]+s").matcher(code);
@@ -225,22 +167,16 @@ class ReadText{
       //データ保存
       dsc.sec = Integer.parseInt(code.substring(nums[j][0], nums[j][1]));
       dsc.stringdata[0] = object;
-      tm.events.add(dsc);
+      tm.Add(dsc);
     }
   }
   
   //*****************************************************************************************************************
   
   //bgmタグの処理
-  void bgmpro(Datasaver ds, String code, int tagnum, int i){
+  void bgmpro(String code, int tagnum, int i){
     String filename;
     int ifcount = 0;
-    
-    //書式通りに記入されてなかった場合の処理
-    if(!Pattern.matches(tags[tagnum-1]+"\".+\":[0-9]+s", lines[i])){
-      println("書式通り記入してください。 行数： "+(i+1));
-      System.exit(0);
-    }
     
     //秒数取得
     int[] nums = getsec(code, code.length()-1);
@@ -254,9 +190,6 @@ class ReadText{
       }
     }
     
-    //ファイルが存在するかの確認
-    if(conffile(filename, i))  System.exit(0);
-    
     //データ保存
     //[stringdata]  0:ファイル名
     
@@ -264,21 +197,15 @@ class ReadText{
     
     ds.tag = tagnum;
     ds.sec = Integer.parseInt(code.substring(nums[0], nums[1]));
-    ds.stringdata[0] = filename;
     
-    tm.events.add(ds);
+    ds.stringdata[0] = filename;
+    tm.Add(ds);
   }
   
   //*****************************************************************************************************************
   
   //bsタグの処理
-  void bspro(Datasaver ds, String code, int tagnum, int i){
-    
-    //書式通りに記入されてなかった場合の処理
-    if(!Pattern.matches(tags[tagnum-1]+"[0-9]+", lines[i])){
-      println("書式通り記入してください。 行数： "+(i+1));
-      System.exit(0);
-    }
+  void bspro(String code, int tagnum, int i){
     
     //弾速取得
     db.bs = Integer.parseInt(code.substring(0, code.length()));
@@ -289,7 +216,6 @@ class ReadText{
   int[] getsec(String code, int begin){
     //秒数取得
     int[] nums = {0, 0};                 //1つ目の要素は秒数の書き始めの位置、2つ目は書き終わりの位置
-                                         //3つ目は0ならこれより左に秒数が書かれていないことを表す
     Pattern p = Pattern.compile(":|,");
     
     for(int j = begin; j >= 0; j--){
@@ -339,32 +265,10 @@ class ReadText{
       
     return word;
   }
-  
-  boolean error(String errorcode, int num, int i, boolean flag){
-    if((num == -1) == flag){
-      println(errorcode+"  行数: "+(i+1));
-      return true;
-    }else{
-      return false;
-    }
-  }
-  
-  //ファイルが存在するかの確認
-  boolean conffile(String filename, int i){
-    
-    try{
-      nullplayer = minim.loadFile(filename);
-    }catch(NullPointerException e){
-      println("そのようなファイルは存在しません: \""+filename+"\"　行数: "+(i+1));
-      return true;
-    }
-    
-    return false;
-  }
 }
 
 //一時保存用クラス
-class Datasaver{
+class Datasaver implements Cloneable{
   int tag;
   int sec;
   int[] intdata;

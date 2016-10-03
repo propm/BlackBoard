@@ -9,20 +9,27 @@ class TimeManager{
     events = new PriorityQueue<Datasaver>(3, new MyComparator());
   }
   
+  void Add(Datasaver ds){
+    events.add(ds);
+  }
+  
   //秒数ごとに指定されたことを実行
   void checksec(){
-    while(counter/60.0 >= events.peek().sec){
-      Datasaver ds = events.poll();
-        switch(ds.tag){
-          case 3:
-            checksecparts(ds);
-            break;
-          case 4:
-            if(bgm != null)  bgm.close();
-            bgm = minim.loadFile(ds.stringdata[0]);
-            bgm.loop();
-            break;
-        }
+    if(events.size() > 0){
+      while(counter/60.0 >= events.peek().sec){
+        Datasaver ds = events.poll();
+          switch(ds.tag){
+            case 3:
+              checksecparts(ds);
+              break;
+            case 4:
+              if(bgm != null)  bgm.close();
+              bgm = minim.loadFile(ds.stringdata[0]);
+              bgm.loop();
+              break;
+          }
+        if(events.size() == 0)  break;
+      }
     }
     
     counter++;

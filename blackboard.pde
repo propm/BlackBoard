@@ -11,6 +11,7 @@ ScrollManager sm;
 ReadText rt;
 DataBase db;
 TimeManager tm;
+CheckText ct;
 
 Minim minim;
 AudioPlayer bgm;
@@ -21,16 +22,17 @@ Player player;
 Home home;
 
 void setup(){
+  rt = new ReadText();
+  
   minim = new Minim(this);    //音楽・効果音用
   db = new DataBase();        //データベース
   
   db.screenw = 1600;          //スクリーンwidth
   
   tm = new TimeManager();
-  rt = new ReadText();
   db.setobjectnames();
   
-  rt.read();
+  if(rt.check())  System.exit(0);
   rt.readCommands();
   
   db.screenh = (int)(db.screenw*whrate);
