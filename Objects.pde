@@ -83,7 +83,7 @@ class DataBase{
         case 4:
         
         case 5:
-          e.hp = 1;
+          e.hp = -1;
           
           setImage(e, "attacker.png");
           e.pol = new Polygon();
@@ -135,6 +135,8 @@ class DataBase{
   }
 }
 
+//******************************************************************************************************
+
 //オブジェクト
 class MyObj{
   float x, y, vx;             //画像左上の座標、横方向の速度
@@ -147,8 +149,8 @@ class MyObj{
   int charanum;               //どの敵・プレイヤーか(0～5)
   boolean dieflag;            //死んでいるならtrue
   boolean bulletflag;                                           //弾を発射するオブジェクトならtrue
-  boolean overlapflag;        //プレイヤーと重なっているならtrue
-  boolean boverlapflag;       //1フレーム前のoverlapflag
+  boolean isOver;        //プレイヤーと重なっているならtrue
+  boolean bisOver;       //1フレーム前のisOver
   ArrayList<PImage> imgs;                                       //画像
   
   Polygon pol;                    //当たり判定用多角形
@@ -180,7 +182,7 @@ class MyObj{
     
     hp = oe.hp;
     Bi = oe.Bi;
-    overlapflag = false;
+    isOver = false;
     count = Bcount = 0;
     
     switch(num){
@@ -228,7 +230,7 @@ class MyObj{
   
   //死
   void die(){
-    if(hp <= 0){
+    if(hp == 0){
       dieflag = true;
       if(die != null)  die.trigger();
     }
@@ -240,6 +242,8 @@ class MyObj{
     pol.Draw();
   }
 }
+
+//******************************************************************************************************
 
 //突撃隊
 class Attacker extends MyObj{
@@ -270,6 +274,8 @@ class Attacker extends MyObj{
     attack();   //攻撃
   }
 }
+
+//******************************************************************************************************
 
 //フライング
 class Sin extends MyObj{
@@ -311,6 +317,8 @@ class Sin extends MyObj{
   }
 }
 
+//******************************************************************************************************
+
 //タンジェント
 class Tangent extends Sin{
   
@@ -342,6 +350,8 @@ class Tangent extends Sin{
     attack();
   }
 }
+
+//******************************************************************************************************
 
 //パラシュート
 class Parachuter extends Attacker{
@@ -389,6 +399,8 @@ class Parachuter extends Attacker{
   }
 }
 
+//******************************************************************************************************
+
 //大砲
 class Cannon extends MyObj{
   
@@ -397,11 +409,14 @@ class Cannon extends MyObj{
   }
 }
 
+//******************************************************************************************************
+
 //忍者
 class Ninja extends MyObj{
   final float ALPHA = 100;  //最大不透明度
   float alpha;              //透明度
-  boolean stealthflag;      //透明化するときtrue
+  float alphav;             //透明度の増減の速さ(1フレームにどれだけ透明度が変化するか)
+  boolean isStealth;      //透明化するときtrue
   
   Ninja(){
     initial();
@@ -412,23 +427,30 @@ class Ninja extends MyObj{
     x = width/2 - w/2;
     y = height/2 - h/2;
     alpha = ALPHA;
-    stealthflag = false;
+    alphav = 5;
+    isStealth = false;
     setPolygon(x, y);
   }
   
   void move(){
-    die();
+    die();      //死判定
     attack();
     
-    if(overlapflag)  stealthflag = true;
-    if(stealthflag)  alpha -= 3;
-    if(alpha < 0)    alpha = 0;
-    if(alpha == 0)   stealthflag = false;
-    if(!stealthflag && alpha != ALPHA) count++;
-    if(count > 30) alpha += 3;
-    if(alpha > ALPHA){
-      alpha = ALPHA;
-      count = 0;
+    if(isOver)  isStealth = true;
+    
+    if(isStealth){
+      alpha -= alphav;
+      if(alpha < 0){
+        isStealth = false;
+        alpha = 0;
+      }
+    }else{
+      if(count < 15)  count++;
+      else            alpha += alphav;
+      if(alpha >= ALPHA){
+        alpha = ALPHA;
+        count = 0;
+      }
     }
   }
   
@@ -439,6 +461,8 @@ class Ninja extends MyObj{
     pol.Draw();
   }
 }
+
+//******************************************************************************************************
 
 //プレイヤー
 class Player extends MyObj{
@@ -500,23 +524,24 @@ class Player extends MyObj{
     for(int i = 0; i < enemys.size(); i++){
       MyObj e = enemys.get(i);
       
-      if((!bATflag || !e.boverlapflag) && e.overlapflag)  e.hp--;
+      if((!bATflag || !e.bisOver) && e.isOver && e.hp != -1)  e.hp--;
     }
     if(erase != null)  erase.trigger();
   }
   
-  //敵と自機が重なっているかどうかの判定:  戻り値→変更前のoverlapflag
+  //敵と自機が重なっているかどうかの判定:  戻り値→変更前のisOver
   void overlap(){
     for(int i = 0; i < enemys.size(); i++){
       MyObj e = enemys.get(i);
       
-      e.boverlapflag = e.overlapflag;
+      e.bisOver = e.isOver;
       
-      if(judge(pol, e.pol))  e.overlapflag = true;
-      else                   e.overlapflag = false;
+      if(judge(pol, e.pol))  e.isOver = true;
+      else                   e.isOver = false;
     }
   }
   
+  //壁作成
   void createwall(){
     
   }
@@ -526,6 +551,8 @@ class Player extends MyObj{
     pol.Draw();
   }
 }
+
+//******************************************************************************************************
 
 //自陣
 class Home{
@@ -584,6 +611,8 @@ class Home{
     //popMatrix();
   }
 }
+
+//******************************************************************************************************
 
 //敵の弾丸
 class Bullet{

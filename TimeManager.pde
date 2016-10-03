@@ -37,20 +37,25 @@ class TimeManager{
   
   //checksecの一部
   void checksecparts(Datasaver ds){
-    if(ds.stringdata[0].equals("Attacker")){ 
+    if(ds.stringdata[0].equals("Attacker"))
       if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Attacker(ds.intdata[1], ds.intdata[2]));
       else                                                    enemys.add(new Attacker());
-    }
     if(ds.stringdata[0].equals("Sin"))
       if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Sin(ds.intdata[1], ds.intdata[2]));
       else                                                    enemys.add(new Sin());
     if(ds.stringdata[0].equals("Tangent"))
       if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Tangent(ds.intdata[1], ds.intdata[2]));
       else                                                    enemys.add(new Tangent());
-    if(ds.stringdata[0].equals("Parachuter")){
+    if(ds.stringdata[0].equals("Parachuter"))
       if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Parachuter(ds.intdata[1], ds.intdata[2]));
       else                                                    enemys.add(new Parachuter());
-    }
+    /*if(ds.stringdata[0].equals("Cannon"))
+      if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Cannon(ds.intdata[1], ds.intdata[2]));
+      else                                                    enemys.add(new Cannon());
+    if(ds.stringdata[0].equals("Ninja"))
+      if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Ninja(ds.intdata[1], ds.intdata[2]));
+      else                                                    enemys.add(new Ninja());
+    */
   }
 }
 
