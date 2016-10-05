@@ -35,7 +35,7 @@ void display(){
 
 void keyPressed(){
   if(key == 'A' || key == 'a'){
-    CircleList.add(new Circle(width/2, height/2, 20));
+    CircleList.add(new Circle(width/2, height/2, 50));
   }else if(key == 's' || key == 'S'){
     red = 200;
   }
