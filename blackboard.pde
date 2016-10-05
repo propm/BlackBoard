@@ -17,8 +17,9 @@ AudioPlayer bgm;
 
 Client myClient;
 
-ArrayList<MyObj> enemys;
-ArrayList<Bullet> bullets;
+ArrayList<MyObj>   enemys;
+ArrayList<Bullet>  bullets;
+ArrayList<Wall>    walls;
 Player player;
 Home home;
 
@@ -46,6 +47,7 @@ void setup(){
   
   enemys = new ArrayList<MyObj>();
   bullets = new ArrayList<Bullet>();
+  walls = new ArrayList<Wall>();
   player = new Player();
   
   home = new Home();
@@ -54,7 +56,6 @@ void setup(){
 }
 
 void draw(){
-  
   process();    //処理
   drawing();    //描画
 }
@@ -70,9 +71,10 @@ void process(){
   
   //敵の動きの処理
   for(int i = 0; i < enemys.size(); i++){
-    enemys.get(i).move();
+    MyObj enemy = enemys.get(i);
+    enemy.move();
     
-    if(enemys.get(i).dieflag){
+    if(enemy.isDie){
       enemys.remove(i);
       i--;
     }
@@ -80,10 +82,22 @@ void process(){
   
   //弾の処理
   for(int i = 0; i < bullets.size(); i++){
-    bullets.get(i).move();
+    Bullet bullet = bullets.get(i);
+    bullet.move();
     
-    if(bullets.get(i).dieflag){
+    if(bullet.isDie){
       bullets.remove(i);
+      i--;
+    }
+  }
+  
+  //壁の処理
+  for(int i = 0; i < walls.size(); i++){
+    Wall wall = walls.get(i);
+    wall.die();
+    
+    if(wall.isDie){
+      walls.remove(i);
       i--;
     }
   }
@@ -106,11 +120,19 @@ void drawing(){
   }
   
   for(int i = 0; i < bullets.size(); i++){
-    bullets.get(i).draw();
+    Bullet bullet = bullets.get(i);
+    bullet.draw();
+  }
+  
+  noStroke();
+  fill(255, 100, 100);
+  for(int i = 0; i < walls.size(); i++){
+    Wall wall = walls.get(i);
+    println(wall.x+", "+wall.y+" "+walls.size());
+    wall.draw();
   }
   
   //プレイヤー
-  noStroke();
   fill(255, 134, 0);
   player.draw();
 

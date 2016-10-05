@@ -155,7 +155,7 @@ class MyObj{
   int count;                  //汎用カウント
   int Bi;                                                       //bullet interval
   int charanum;               //どの敵・プレイヤーか(0～5)
-  boolean dieflag;            //死んでいるならtrue
+  boolean isDie;            //死んでいるならtrue
   boolean bulletflag;                                           //弾を発射するオブジェクトならtrue
   boolean isOver;        //プレイヤーと重なっているならtrue
   boolean bisOver;       //1フレーム前のisOver
@@ -166,7 +166,7 @@ class MyObj{
   AudioSample die, AT;  //効果音
   
   MyObj(){
-    dieflag = false;
+    isDie = false;
     imgs = new ArrayList<PImage>();    //アニメーションさせるために10枚ほど絵が必要
   }
   
@@ -239,7 +239,7 @@ class MyObj{
   //死
   void die(){
     if(hp == 0){
-      dieflag = true;
+      isDie = true;
       if(die != null)  die.trigger();
     }
   }
@@ -526,6 +526,7 @@ class Player extends MyObj{
       case 1:
         angle += 2;
         break;
+        
       case 2:
         angle -= 2;
         break;
@@ -547,7 +548,8 @@ class Player extends MyObj{
     overlap();
     
     if(x == pmouseX && y == pmouseY){
-      createwall();
+      if(ATflag)  createwall();
+      else        count = 0;
     }else{
       count = 0;
       wallflag = false;
@@ -593,9 +595,9 @@ class Player extends MyObj{
   void createwall(){
     count++;
     
-    if(count/60 >= 1){
+    if(count/60 >= 1)
+      walls.add(new Wall(x, y, w*2.5, h, PI/180 * (angle)));
       
-    }
   }
   
   void draw(){
@@ -650,7 +652,7 @@ class Bullet{
   float x, y;      //弾の進行方向の先端の座標
   PVector length;
   PVector v;
-  boolean dieflag;
+  boolean isDie;
   
   Bullet(){
     x = width/2;
@@ -676,14 +678,14 @@ class Bullet{
   void initial(){
     length = v.get();
     length.setMag(40*width/1600);
-    dieflag = false;
+    isDie = false;
   }
   
   void move(){
     x += v.x;
     y += v.y;
     
-    if((v.x <= 0 && x+abs(length.x) < sm.x) || (v.x > 0 && x-abs(length.x) > sm.x+width))  dieflag = true;
+    if((v.x <= 0 && x+abs(length.x) < sm.x) || (v.x > 0 && x-abs(length.x) > sm.x+width))  isDie = true;
   }
   
   void draw(){
@@ -692,3 +694,62 @@ class Bullet{
     line(x-sm.x, y-sm.y, x-sm.x+length.x, y-sm.y+length.y);
   }
 }
+
+//*************************************************************************************
+
+class Wall{
+  float x, y;      //中心座標
+  float w, h;
+  float radian;    //単位はラジアン　正方向は反時計回り
+  int count;
+  
+  boolean isDie;
+  
+  Wall(float x, float y, float w, float h, float radian){
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    this.radian = radian;
+    isDie = false;
+  }
+  
+  void die(){
+    count++;
+    
+    if(count/60 >= 3)  isDie = true;
+  }
+  
+  void draw(){
+    println("a");
+    pushMatrix();
+    translate(x, y);
+    rotate(radian);
+    rect(-w/2, -h/2, w, h);
+    popMatrix();
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
