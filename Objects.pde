@@ -108,8 +108,16 @@ class DataBase{
     }
     
     Player p = oriplayer;
-    p.w = width/80;
-    p.h = width/80;
+    
+    p.gap = 180.0/PI * atan(db.eraserh/db.eraserw);
+    
+    float distx = width/db.boardw*db.eraserw/2;
+    float disty = height/db.boardh*db.eraserh/2;
+    
+    p.dist = (float)Math.sqrt(distx*distx + disty*disty);
+    
+    p.w = (int)(distx*2);
+    p.h = (int)(disty*2);
     
     p.pol = new Polygon();
     p.pol.Add(0, 0, 0);
@@ -492,12 +500,7 @@ class Player extends MyObj{
   
   Player(){
     ATflag = wallflag = false;
-    gap = 180.0/PI * atan(db.eraserh/db.eraserw);
     
-    float distx = width/db.boardw*db.eraserw/2;
-    float disty = height/db.boardh*db.eraserh/2;
-    
-    dist = (float)Math.sqrt(distx*distx + disty*disty);
     initial();
   }
   
@@ -511,6 +514,10 @@ class Player extends MyObj{
       erase = p.erase;
       angle = 0;
       key = 0;
+      wallflag = true;
+      
+      gap = p.gap;
+      dist = p.dist;
       
       oripol = new Polygon(p.pol.ver);
       pol    = new Polygon(p.pol.ver);
@@ -526,7 +533,6 @@ class Player extends MyObj{
       case 1:
         angle += 2;
         break;
-        
       case 2:
         angle -= 2;
         break;
@@ -552,7 +558,6 @@ class Player extends MyObj{
       else        count = 0;
     }else{
       count = 0;
-      wallflag = false;
       if(ATflag)  attack();
     }
     
@@ -595,13 +600,22 @@ class Player extends MyObj{
   void createwall(){
     count++;
     
-    if(count/60 >= 1)
+    if(count/60 >= 1 && wallflag){
       walls.add(new Wall(x, y, w*2.5, h, PI/180 * (angle)));
-      
+      wallflag = false;
+      count = 0;
+    }else if(count/60 >= 1){
+      wallflag = true;
+      count = 0;
+    }
   }
   
   void draw(){
-    ellipse(x, y, w, h);
+    pushMatrix();
+    translate(x, y);
+    rotate(PI/180 * angle);
+    rect(-w/2, -h/2, w, h);
+    popMatrix();
     pol.Draw();
   }
 }
@@ -721,7 +735,6 @@ class Wall{
   }
   
   void draw(){
-    println("a");
     pushMatrix();
     translate(x, y);
     rotate(radian);

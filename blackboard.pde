@@ -128,7 +128,6 @@ void drawing(){
   fill(255, 100, 100);
   for(int i = 0; i < walls.size(); i++){
     Wall wall = walls.get(i);
-    println(wall.x+", "+wall.y+" "+walls.size());
     wall.draw();
   }
   
