@@ -7,17 +7,25 @@ class DataBase{
   int bs;                        //弾速
   int screenw, screenh;
   
+  final float eraserw = 5;          //数字がでかいほうが横とする
+  final float eraserh = 2;
+  final float boardh  = 35;
+  final float boardw  = 79.8913*2;
+  
+  final float boardrate = boardh/boardw;
+  
   //効果音のファイル名
   String erase;
   
   HashMap<String, MyObj> oriEnemys;    //敵種別設定用のオブジェクト
                                        //1:突撃兵  2:サイン  3:タンジェント  4:パラシュート
                                        //5:大砲　　6:忍者
-  Player oriplayer = new Player();
+  Player oriplayer;
   
   void setobjectnames(){
     objects = rt.objects.clone();
     oriEnemys = new HashMap<String, MyObj>(objects.length);
+    oriplayer = new Player();
     
     for(int i = 0; i < objects.length; i++){
       oriEnemys.put(objects[i], new MyObj());
@@ -139,7 +147,7 @@ class DataBase{
 
 //オブジェクト
 class MyObj{
-  float x, y, vx;             //画像左上の座標、横方向の速度
+  float x, y, vx;             //画像左上(playerの場合は中心)の座標、横方向の速度
   int   w, h;                                                   //画像の大きさ
   int energy;                 //粉エネルギー
   int hp;                                                       //体力(何回消されたら消えるか)
@@ -359,6 +367,7 @@ class Parachuter extends Attacker{
   boolean paraflag;      //地面に着地するまではパラシュート状態：true
   
   Parachuter(){
+    g = 6;
     x = random(width/2)+width/2;
     y = -height/3;
     initialize();
@@ -382,7 +391,7 @@ class Parachuter extends Attacker{
   void move(){
     die();
     if(paraflag){
-      y += 6 * db.scwhrate;
+      y += g * db.scwhrate;
       x += vx;
       
       setPolygon(x, y);
@@ -414,9 +423,9 @@ class Cannon extends MyObj{
 //忍者
 class Ninja extends MyObj{
   final float ALPHA = 100;  //最大不透明度
-  float alpha;              //透明度
-  float alphav;             //透明度の増減の速さ(1フレームにどれだけ透明度が変化するか)
-  boolean isStealth;      //透明化するときtrue
+  float alpha;              //不透明度
+  float alphav;             //不透明度の増減の速さ(1フレームにどれだけ不透明度が変化するか)
+  boolean isStealth;        //透明化するときtrue
   
   Ninja(){
     initial();
@@ -436,6 +445,7 @@ class Ninja extends MyObj{
     die();      //死判定
     attack();
     
+    //黒板消しが重なっていたら消える
     if(isOver)  isStealth = true;
     
     if(isStealth){
@@ -445,7 +455,7 @@ class Ninja extends MyObj{
         alpha = 0;
       }
     }else{
-      if(count < 15)  count++;
+      if(count < 15)  count++;          //消えている時間
       else            alpha += alphav;
       if(alpha >= ALPHA){
         alpha = ALPHA;
@@ -466,16 +476,28 @@ class Ninja extends MyObj{
 
 //プレイヤー
 class Player extends MyObj{
-  float bx, by;        //座標
+  float x1, x2, y1, y2;    //手の先の座標がx1, x2, 手首の座標がx2, y2
+  float gap;               //angleに対して黒板消しの四隅の点がどれだけの角度ずれているか
+  float dist;              //黒板消しの中心から四隅の点までの長さ
+  
+  int count;
+  float angle;         //黒板消しが横向きになっているとき0度、時計回りが正方向(-90 < angle <= 90)
+  int key;
+  
   boolean ATflag;      //マウスクリック時true
   boolean bATflag;
   boolean wallflag;    //壁作ってるときtrue
-  int count;
   
   AudioSample erase;    //消すときの音
   
   Player(){
     ATflag = wallflag = false;
+    gap = 180.0/PI * atan(db.eraserh/db.eraserw);
+    
+    float distx = width/db.boardw*db.eraserw/2;
+    float disty = height/db.boardh*db.eraserh/2;
+    
+    dist = (float)Math.sqrt(distx*distx + disty*disty);
     initial();
   }
   
@@ -487,6 +509,8 @@ class Player extends MyObj{
       w = p.w;
       h = p.h;
       erase = p.erase;
+      angle = 0;
+      key = 0;
       
       oripol = new Polygon(p.pol.ver);
       pol    = new Polygon(p.pol.ver);
@@ -495,26 +519,40 @@ class Player extends MyObj{
   
   //動作
   void move(){
-    
-    bx = x;
-    by = y;
-    
     x = mouseX;
     y = mouseY;
     
-    setPolygon(x-w/2+sm.x, y-w/2+sm.y);
+    switch(key){
+      case 1:
+        angle += 2;
+        break;
+      case 2:
+        angle -= 2;
+        break;
+    }
+    
+    /*x1 = readInt();
+    y1 = readInt();
+    x2 = readInt();
+    y2 = readInt();
+    
+    angle = 180/PI * atan2(y2-y1, x2-x1);
+    
+    x = abs(x2-x1);
+    y = abs(y2-y1);
+    */
+    
+    //setPolygon(x-w/2+sm.x, y-w/2+sm.y);
+    setPolygonAngle();
     overlap();
     
-    if(x == bx && y == by){
-      count++;
-      if(count/60 >= 1)  wallflag = true;
+    if(x == pmouseX && y == pmouseY){
+      createwall();
     }else{
       count = 0;
       wallflag = false;
       if(ATflag)  attack();
     }
-    
-    if(wallflag)  createwall();
     
     bATflag = ATflag;
   }
@@ -535,15 +573,29 @@ class Player extends MyObj{
       MyObj e = enemys.get(i);
       
       e.bisOver = e.isOver;
+      //if(!e.pol.isConvex)  println(db.objects[e.charanum]);
       
       if(judge(pol, e.pol))  e.isOver = true;
       else                   e.isOver = false;
     }
   }
   
+  void setPolygonAngle(){
+    
+    pol.ver.set(0, new PVector(x+dist*cos(PI/180 * (angle-gap)), y+dist*sin(PI/180 * (angle-gap)), 0));
+    pol.ver.set(1, new PVector(x+dist*cos(PI/180 * (angle+gap)), y+dist*sin(PI/180 * (angle+gap)), 0));
+    pol.ver.set(2, new PVector(x-dist*cos(PI/180 * (angle-gap)), y-dist*sin(PI/180 * (angle-gap)), 0));
+    pol.ver.set(3, new PVector(x-dist*cos(PI/180 * (angle+gap)), y-dist*sin(PI/180 * (angle+gap)), 0));
+    pol.Init();
+  }
+  
   //壁作成
   void createwall(){
+    count++;
     
+    if(count/60 >= 1){
+      
+    }
   }
   
   void draw(){
@@ -556,13 +608,12 @@ class Player extends MyObj{
 
 //自陣
 class Home{
-  float x, y;            //自陣の中心の座標
+  float x, y;          //自陣の中心の座標
   int w, h;
   PImage img;          //画像
   float imgm;          //画像の拡大倍率
   float angle;         //画像回転角度（単位：度）
   float anglev;        //角速度  （単位：度）
-  boolean positive;    //各加速度が正負どちらに近づくか(trueなら正）
   int hp;              //体力
     
   Home(){
@@ -577,38 +628,18 @@ class Home{
     h = (int)(img.height * imgm * db.scwhrate);
     
     img.resize(w, h);
-    anglev = angle = 0;
-  }
-  
-  void rotation(){
-    pushMatrix();
-    translate(x - sm.x, y - sm.y);
-    rotate(angle/(180/PI));
-    
-    if(angle < -15){
-      positive = true;
-    }else if(angle > 15){
-      positive = false;
-    }
-    
-    if(positive)  anglev += 0.3/abs(angle+1);
-    else          anglev -= 0.3/abs(angle+1);
-    
-    //println(anglev);
-    angle += anglev;
+    anglev = 3;
+    angle = 0;
   }
   
   void move(){
-    angle += 3;
+    angle += anglev;
     angle %= 360;
     y = sin(angle/180*PI)*4 + height/2;
   }
   
   void draw(){
-    //rotation();
-    move();
     image(img, (int)x - w/2, (int)y - h/2);
-    //popMatrix();
   }
 }
 

@@ -4,8 +4,7 @@ import ddf.minim.*;
 import ddf.minim.analysis.*;
 import ddf.minim.ugens.*;
 import ddf.minim.effects.*;
-
-final float whrate = (float)23/105;
+import processing.net.*;
 
 ScrollManager sm;
 ReadText rt;
@@ -15,6 +14,8 @@ CheckText ct;
 
 Minim minim;
 AudioPlayer bgm;
+
+Client myClient;
 
 ArrayList<MyObj> enemys;
 ArrayList<Bullet> bullets;
@@ -32,10 +33,10 @@ void setup(){
   tm = new TimeManager();
   db.setobjectnames();
   
-  if(rt.check())  System.exit(0);
+  //if(rt.check())  System.exit(0);
   rt.readCommands();
   
-  db.screenh = (int)(db.screenw*whrate);
+  db.screenh = (int)(db.screenw*db.boardrate);
   
   size(db.screenw, db.screenh);
   db.scwhrate = width/1600.0;
@@ -48,7 +49,8 @@ void setup(){
   player = new Player();
   
   home = new Home();
-  enemys.add(new Ninja());
+  
+  //myClient = new Client(this, "172.23.6.216", 5204);
 }
 
 void draw(){
@@ -85,11 +87,17 @@ void process(){
       i--;
     }
   }
+  
+  //自陣の処理
+  home.move();
 }
 
 //描画用関数
 void drawing(){
   sm.drawView();
+  
+  //自陣
+  home.draw();
   
   //敵
   for(int i = 0; i < enemys.size(); i++){
@@ -100,9 +108,6 @@ void drawing(){
   for(int i = 0; i < bullets.size(); i++){
     bullets.get(i).draw();
   }
-  
-  //自陣
-  home.draw();
   
   //プレイヤー
   noStroke();
@@ -139,9 +144,29 @@ void mouseReleased(){
   player.ATflag = false;
 }
 
+void keyPressed(){
+  switch(keyCode){
+    case RIGHT:
+      player.key = 1;
+      break;
+    case LEFT:
+      player.key = 2;
+      break;
+  }
+}
 
+void keyReleased(){
+  player.key = 0;
+}
 
-
+int readInt(){
+  int a = myClient.read();
+  int b = myClient.read();
+  int c = myClient.read();
+  int d = myClient.read();
+  int e = (a<<24)|(b<<16)|(c<<8)|d;
+  return e;
+}
 
 
 
