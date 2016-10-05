@@ -1,4 +1,5 @@
 void UpdateCircle(){
+  //敵を倒したときの円の描画
   for(int i=0;i < CircleList.size();i++){
     if(CircleList.get(i).getElx() > width * 2){
       CircleList.remove(i);
@@ -12,8 +13,8 @@ void UpdateCircle(){
 
 class Circle{
   float x,y,speed;
-  public float elx=0;
-  public float ely=0;
+  public float elx=0; //円の横幅
+  public float ely=0;  //円の縦幅
   
   Circle(float _x, float _y, float _speed){
     x = _x;
