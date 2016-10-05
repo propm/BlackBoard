@@ -5,42 +5,32 @@ SyphonServer server;
 
 ArrayList<Circle> CircleList;
 
-float red;
-
 void setup(){
   size(1200,600, OPENGL);
   background(0);
+  
+  textSize(30);
   
   CircleList = new ArrayList<Circle>();
   server = new SyphonServer(this, "BlackBoardFrame");
 }
 
 void draw(){
-  DamagedOwn();
-  UpdateCircle();
+  update();
+  display();
   
   server.sendImage(g);
 }
 
-
-void UpdateCircle(){
-  for(int i=0;i < CircleList.size();i++){
-    if(CircleList.get(i).getElx() > width * 2){
-      CircleList.remove(i);
-      i--;
-    }else{
-      CircleList.get(i).update();
-      CircleList.get(i).display();
-    }
-  }
+void update(){
+  UpdateDamaged();
+  UpdateNum();
 }
 
-void DamagedOwn(){
-  if(red>=0){
-    red -=(red*0.05);
-  }
-  
-  background(red,0,0,200);
+void display(){
+  DisplayDamaged();
+  UpdateCircle();
+  DisplayNum();
 }
 
 void keyPressed(){

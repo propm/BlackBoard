@@ -1,3 +1,15 @@
+void UpdateCircle(){
+  for(int i=0;i < CircleList.size();i++){
+    if(CircleList.get(i).getElx() > width * 2){
+      CircleList.remove(i);
+      i--;
+    }else{
+      CircleList.get(i).update();
+      CircleList.get(i).display();
+    }
+  }
+}
+
 class Circle{
   float x,y,speed;
   public float elx=0;
