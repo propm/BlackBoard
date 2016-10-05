@@ -1,5 +1,5 @@
 import processing.opengl.*;
-import codeanticode.syphon.*;　//　Syphon用
+import codeanticode.syphon.*;  //Syphon用
 
 SyphonServer server;
 
