@@ -107,9 +107,13 @@ class DataBase{
       }
     }
     
+    setPlayer();
+  }
+  
+  void setPlayer(){
     Player p = oriplayer;
     
-    p.gap = 180.0/PI * atan(db.eraserh/db.eraserw);
+    p.gap = atan(db.eraserh/db.eraserw);
     
     float distx = width/db.boardw*db.eraserw/2;
     float disty = height/db.boardh*db.eraserh/2;
@@ -212,7 +216,7 @@ class MyObj{
   void setPolygon(float x, float y){
     for(int i = 0; i < pol.ver.size(); i++){
       PVector pv = oripol.ver.get(i);
-      pol.ver.set(i, new PVector(x-sm.x+pv.x, y-sm.y+pv.y, 0));
+      pol.ver.set(i, new PVector(x+pv.x, y+pv.y, 0));
     }
     pol.Init();
   }
@@ -228,7 +232,7 @@ class MyObj{
           case 1:
           case 2:
           case 3:
-            bullets.add(new Bullet(x, y+h/2, new PVector(-db.bs/10.0, 0)));
+            bullets.add(new Bullet(x, y+h/2, new PVector(-db.bs/10.0, random(-1, 1), 0)));
             break;
           case 4:
           case 5:
@@ -254,7 +258,7 @@ class MyObj{
   
   //描画
   void draw(){
-    image(imgs.get(0), x - sm.x, y - sm.y);
+    image(imgs.get(0), x, y);
     pol.Draw();
   }
 }
@@ -272,8 +276,8 @@ class Attacker extends MyObj{
   }
   
   Attacker(int x, int y){
-    this.x = x+sm.x;
-    this.y = y+sm.y;
+    this.x = x;
+    this.y = y;
     initial();
   }
   
@@ -284,7 +288,7 @@ class Attacker extends MyObj{
   
   void move(){
     die();      //死んだかどうかの判定
-    x += vx;
+    x += vx+sm.vx;
     setPolygon(x, y);
     
     attack();   //攻撃
@@ -301,14 +305,14 @@ class Sin extends MyObj{
   int omega;       //角速度（ラジアンではない
   
   Sin(){
-    x = random(width)+width/2+sm.x;
-    basicy = random(height/3*2) + h/2 + height/6+sm.y;
+    x = random(width)+width/2;
+    basicy = random(height/3*2) + h/2 + height/6;
     initial();
   }
   
   Sin(int x, int y){
-    this.x      = x+sm.x;
-    this.basicy = y+sm.y;
+    this.x      = x;
+    this.basicy = y;
     
     initial();
   }
@@ -325,8 +329,8 @@ class Sin extends MyObj{
   void move(){
     die();
     theta+=2;
-    y = basicy - sin(theta*PI/180)*height/6;
-    x += vx;
+    y = basicy - sin(theta*PI/180)*height/6 + sm.vy;
+    x += vx+sm.vx;
     
     setPolygon(x, y);
     attack();
@@ -343,8 +347,8 @@ class Tangent extends Sin{
   }
   
   Tangent(int x, int y){
-    this.x = x+sm.x;
-    this.basicy = y+sm.y;
+    this.x = x;
+    this.basicy = y;
     initialize();
   }
   
@@ -359,8 +363,8 @@ class Tangent extends Sin{
   void move(){
     die();
     theta+=2;
-    y = basicy - tan(theta*PI/180)*100;
-    x += vx;
+    y = basicy - tan(theta*PI/180)*100 + sm.vy;
+    x += vx+sm.vx;
     
     setPolygon(x, y);
     attack();
@@ -382,8 +386,8 @@ class Parachuter extends Attacker{
   }
   
   Parachuter(int x, int y){
-    this.y = y+sm.y;
-    this.x = x+sm.x;
+    this.y = y;
+    this.x = x;
     initialize();
   }
   
@@ -399,8 +403,8 @@ class Parachuter extends Attacker{
   void move(){
     die();
     if(paraflag){
-      y += g * db.scwhrate;
-      x += vx;
+      y += g * db.scwhrate+sm.vy;
+      x += vx+sm.vx;
       
       setPolygon(x, y);
       attack();
@@ -489,7 +493,7 @@ class Player extends MyObj{
   float dist;              //黒板消しの中心から四隅の点までの長さ
   
   int count;
-  float angle;         //黒板消しが横向きになっているとき0度、時計回りが正方向(-90 < angle <= 90)
+  float radian;         //黒板消しが横向きになっているとき0、時計回りが正方向(-π < radian <= π)
   int key;
   
   boolean ATflag;      //マウスクリック時true
@@ -512,7 +516,7 @@ class Player extends MyObj{
       w = p.w;
       h = p.h;
       erase = p.erase;
-      angle = 0;
+      radian = 0;
       key = 0;
       wallflag = true;
       
@@ -531,10 +535,10 @@ class Player extends MyObj{
     
     switch(key){
       case 1:
-        angle += 2;
+        radian += PI/180 * 2;
         break;
       case 2:
-        angle -= 2;
+        radian -= PI/180 * 2;
         break;
     }
     
@@ -543,13 +547,14 @@ class Player extends MyObj{
     x2 = readInt();
     y2 = readInt();
     
-    angle = 180/PI * atan2(y2-y1, x2-x1);
+    radian = atan2(y2-y1, x2-x1);
     
     x = abs(x2-x1);
     y = abs(y2-y1);
     */
     
     //setPolygon(x-w/2+sm.x, y-w/2+sm.y);
+    
     setPolygonAngle();
     overlap();
     
@@ -589,10 +594,10 @@ class Player extends MyObj{
   
   void setPolygonAngle(){
     
-    pol.ver.set(0, new PVector(x+dist*cos(PI/180 * (angle-gap)), y+dist*sin(PI/180 * (angle-gap)), 0));
-    pol.ver.set(1, new PVector(x+dist*cos(PI/180 * (angle+gap)), y+dist*sin(PI/180 * (angle+gap)), 0));
-    pol.ver.set(2, new PVector(x-dist*cos(PI/180 * (angle-gap)), y-dist*sin(PI/180 * (angle-gap)), 0));
-    pol.ver.set(3, new PVector(x-dist*cos(PI/180 * (angle+gap)), y-dist*sin(PI/180 * (angle+gap)), 0));
+    pol.ver.set(0, new PVector(x+dist*cos(radian-gap), y+dist*sin(radian-gap), 0));
+    pol.ver.set(1, new PVector(x+dist*cos(radian+gap), y+dist*sin(radian+gap), 0));
+    pol.ver.set(2, new PVector(x-dist*cos(radian-gap), y-dist*sin(radian-gap), 0));
+    pol.ver.set(3, new PVector(x-dist*cos(radian+gap), y-dist*sin(radian+gap), 0));
     pol.Init();
   }
   
@@ -601,7 +606,7 @@ class Player extends MyObj{
     count++;
     
     if(count/60 >= 1 && wallflag){
-      walls.add(new Wall(x, y, w*2.5, h, PI/180 * (angle)));
+      walls.add(new Wall(x, y, w*2.5, h, radian));
       wallflag = false;
       count = 0;
     }else if(count/60 >= 1){
@@ -611,9 +616,10 @@ class Player extends MyObj{
   }
   
   void draw(){
+    noStroke();
     pushMatrix();
     translate(x, y);
-    rotate(PI/180 * angle);
+    rotate(radian);
     rect(-w/2, -h/2, w, h);
     popMatrix();
     pol.Draw();
@@ -663,17 +669,14 @@ class Home{
 
 //敵の弾丸
 class Bullet{
-  float x, y;      //弾の進行方向の先端の座標
-  PVector length;
+  float x, y;      //弾の進行方向の先端上の座標
+  float w, h;      //弾の幅
+  float radian;    //横一直線を0としたときの角度　正方向は時計回り(-π < radian <= π)
   PVector v;
+  PVector length;
   boolean isDie;
   
-  Bullet(){
-    x = width/2;
-    y = height/2;
-    v = new PVector(-1, 0);
-    initial();
-  }
+  Polygon pol;
   
   Bullet(float x, float y){
     this.x = x;
@@ -691,21 +694,44 @@ class Bullet{
   
   void initial(){
     length = v.get();
-    length.setMag(40*width/1600);
+    length.setMag(50*db.scwhrate);
+    h = 4*db.scwhrate;
+    
+    radian = atan2(v.y, v.x);
     isDie = false;
+    
+    pol = new Polygon();
+    for(int i = 0; i < 4; i++)
+      pol.Add(new PVector(0, 0, 0));
+  }
+  
+  void setPolygonAngle(){
+    pol.ver.set(0, new PVector(x, y, 0));
+    pol.ver.set(1, new PVector(x+length.mag()*cos(radian), y+length.mag()*sin(radian), 0));
+    pol.ver.set(2, new PVector(x+length.mag()*cos(radian)+h*cos(radian+PI/2), y+length.mag()*sin(radian)+h*sin(radian+PI/2), 0));
+    pol.ver.set(3, new PVector(x+h*cos(radian+PI/2), y+h*sin(radian+PI/2), 0));
+    pol.Init();
   }
   
   void move(){
-    x += v.x;
-    y += v.y;
+    x += v.x+sm.vx;
+    y += v.y+sm.vy;
     
-    if((v.x <= 0 && x+abs(length.x) < sm.x) || (v.x > 0 && x-abs(length.x) > sm.x+width))  isDie = true;
+    if((v.x <= 0 && x+abs(length.x) < 0) ||
+        (v.x > 0 && x-abs(length.x) > width))  isDie = true;
+        
+    setPolygonAngle();
   }
   
   void draw(){
-    strokeWeight(4);
-    stroke(255, 255, 0);
-    line(x-sm.x, y-sm.y, x-sm.x+length.x, y-sm.y+length.y);
+    pushMatrix();
+    translate(x, y);
+    rotate(radian);
+    noStroke();
+    rect(0, 0, length.mag(), h);
+    popMatrix();
+    
+    pol.Draw();
   }
 }
 
@@ -719,6 +745,8 @@ class Wall{
   
   boolean isDie;
   
+  Polygon pol;
+  
   Wall(float x, float y, float w, float h, float radian){
     this.x = x;
     this.y = y;
@@ -726,6 +754,10 @@ class Wall{
     this.h = h;
     this.radian = radian;
     isDie = false;
+    
+    pol = new Polygon();
+    for(int i = 0; i < 4; i++)
+      pol.Add(new PVector(0, 0, 0));
   }
   
   void die(){
@@ -734,12 +766,42 @@ class Wall{
     if(count/60 >= 3)  isDie = true;
   }
   
+  void move(){
+    setPolygonAngle();
+    dicision();
+    
+    die();
+  }
+  
+  void setPolygonAngle(){
+    
+    pol.ver.set(0, new PVector(x+w/2*cos(radian+PI)+h/2*cos(radian-PI/2), y+w/2*sin(radian+PI)+h/2*sin(radian-PI/2), 0));
+    pol.ver.set(1, new PVector(x+w/2*cos(radian)+h/2*cos(radian-PI/2), y+w/2*sin(radian)+h/2*sin(radian-PI/2), 0));
+    pol.ver.set(2, new PVector(x+w/2*cos(radian)+h/2*cos(radian+PI/2), y+w/2*sin(radian)+h/2*sin(radian+PI/2), 0));
+    pol.ver.set(3, new PVector(x+w/2*cos(radian+PI)+h/2*cos(radian+PI/2), y+w/2*sin(radian+PI)+h/2*sin(radian+PI/2), 0));
+    pol.Init();
+  }
+  
+  void dicision(){
+    for(int i = 0; i < bullets.size(); i++){
+      Bullet b = bullets.get(i);
+      
+      if(judge(pol, b.pol)){
+        bullets.remove(i);
+        i--;
+      }
+    }
+  }
+  
   void draw(){
+    noStroke();
     pushMatrix();
     translate(x, y);
     rotate(radian);
     rect(-w/2, -h/2, w, h);
     popMatrix();
+    
+    pol.Draw();
   }
 }
 

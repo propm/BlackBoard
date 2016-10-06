@@ -23,8 +23,11 @@ ArrayList<Wall>    walls;
 Player player;
 Home home;
 
+boolean isStop;
+
 void setup(){
   rt = new ReadText();
+  isStop = false;
   
   minim = new Minim(this);    //音楽・効果音用
   db = new DataBase();        //データベース
@@ -62,48 +65,49 @@ void draw(){
 
 //処理用関数
 void process(){
-  
-  tm.checksec();
-  sm.move();
-  
-  //プレイヤーの動きの処理
-  player.move();
-  
-  //敵の動きの処理
-  for(int i = 0; i < enemys.size(); i++){
-    MyObj enemy = enemys.get(i);
-    enemy.move();
+  if(!isStop){
+    tm.checksec();
+    sm.move();
     
-    if(enemy.isDie){
-      enemys.remove(i);
-      i--;
-    }
-  }
-  
-  //弾の処理
-  for(int i = 0; i < bullets.size(); i++){
-    Bullet bullet = bullets.get(i);
-    bullet.move();
+    //プレイヤーの動きの処理
+    player.move();
     
-    if(bullet.isDie){
-      bullets.remove(i);
-      i--;
+    //敵の動きの処理
+    for(int i = 0; i < enemys.size(); i++){
+      MyObj enemy = enemys.get(i);
+      enemy.move();
+      
+      if(enemy.isDie){
+        enemys.remove(i);
+        i--;
+      }
     }
-  }
-  
-  //壁の処理
-  for(int i = 0; i < walls.size(); i++){
-    Wall wall = walls.get(i);
-    wall.die();
     
-    if(wall.isDie){
-      walls.remove(i);
-      i--;
+    //弾の処理
+    for(int i = 0; i < bullets.size(); i++){
+      Bullet bullet = bullets.get(i);
+      bullet.move();
+      
+      if(bullet.isDie){
+        bullets.remove(i);
+        i--;
+      }
     }
-  }
-  
-  //自陣の処理
-  home.move();
+    
+    //壁の処理
+    for(int i = 0; i < walls.size(); i++){
+      Wall wall = walls.get(i);
+      wall.move();
+      
+      if(wall.isDie){
+        walls.remove(i);
+        i--;
+      }
+    }
+    
+    //自陣の処理
+    home.move();
+  }           
 }
 
 //描画用関数
@@ -124,7 +128,6 @@ void drawing(){
     bullet.draw();
   }
   
-  noStroke();
   fill(255, 100, 100);
   for(int i = 0; i < walls.size(); i++){
     Wall wall = walls.get(i);
@@ -174,10 +177,20 @@ void keyPressed(){
       player.key = 2;
       break;
   }
+  
+  if(key == ' ' ){
+    if(!isStop)  isStop = true;
+    else         isStop = false;
+  }
 }
 
 void keyReleased(){
-  player.key = 0;
+  switch(keyCode){
+    case RIGHT:
+    case LEFT:
+      player.key = 0;
+      break;
+  }
 }
 
 int readInt(){
