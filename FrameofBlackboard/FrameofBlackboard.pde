@@ -28,12 +28,12 @@ void draw(){
 }
 
 void update(){
-  UpdateDamaged();
+  UpdateBackground();
   UpdateNum();
 }
 
 void display(){
-  DisplayDamaged();
+  DisplayBackground();
   UpdateCircle();
   DisplayNum();
 }
@@ -43,6 +43,9 @@ void keyPressed(){
     CircleList.add(new Circle(width/2, height/2, 50));
   }else if(key == 's' || key == 'S'){
     red = 200;
+  }else if(key == 'd' || key == 'D'){
+    red = 250;
+    grn = 250;
   }
   
 }
