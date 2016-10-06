@@ -14,6 +14,8 @@ class ReadText extends CheckText{
   //コマンドを読む
   void readCommands(){
     
+    if(!isInitialized)  initial();
+    
     //1秒ごとに文を読む
     for(int i = 0; i < lines.length; i++){
       Pattern p = Pattern.compile(creg);

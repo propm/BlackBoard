@@ -139,8 +139,9 @@ boolean judge(Polygon polygon1, Polygon polygon2) {
       //polygon1 の中心点とpolygon2の各点で計算した面積？
       float s = 0.0;
 
-      for (int i = 0; i < p2.size(); i++)
+      for (int i = 0; i < p2.size(); i++){
         s += square(p2.get(i), p2.get((i + 1) % p2.size()), polygon1.center);
+      }
       
       if (abs(polygon2.square - s) < EPS) return true;
       

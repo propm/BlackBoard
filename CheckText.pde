@@ -1,3 +1,5 @@
+
+//エラーがないか確認する
 class CheckText{
   
   final String[] tags = {"<size>", "<sound>", "<appear>" , "<bgm>", "<bs>"};
@@ -7,8 +9,9 @@ class CheckText{
   String[] blines;
   String[] lines;
   
-  boolean isError;
-  String creg;        //タグのパターン用変数
+  boolean isError;        //エラーがあればtrue
+  boolean isInitialized;  //initialがすでに呼ばれていればtrue
+  String creg;            //タグのパターン用変数
   
   AudioPlayer nullplayer;
   Datasaver ds;
@@ -16,11 +19,12 @@ class CheckText{
   CheckText(){
     creg = "^(";
     isError = false;
+    isInitialized = false;
   }
   
   void read(){}
   
-  boolean check(){
+  void initial(){
     read();
     
     //タグのパターン作成
@@ -30,14 +34,22 @@ class CheckText{
       else                     creg = creg + ")";
     }
     
+    //半角空白、タブ削除
+    for(int i = 0; i < lines.length; i++){
+      lines[i] = Pattern.compile(" ").matcher(blines[i]).replaceAll("");
+      lines[i] = Pattern.compile("\t").matcher(lines[i]).replaceAll("");
+    }
+    
+    isInitialized = true;
+  }
+  
+  boolean check(){
+    initial();
+    
     //1秒ごとに文を読む
     for(int i = 0; i < lines.length; i++){
       Pattern p = Pattern.compile(creg);
       Matcher m = p.matcher(blines[i]);
-      
-      //半角空白、タブ削除
-      lines[i] = Pattern.compile(" ").matcher(blines[i]).replaceAll("");
-      lines[i] = Pattern.compile("\t").matcher(lines[i]).replaceAll("");
       
       //文中にタグが存在したら
       if(m.find()){

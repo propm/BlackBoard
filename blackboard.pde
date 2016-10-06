@@ -4,8 +4,7 @@ import ddf.minim.*;
 import ddf.minim.analysis.*;
 import ddf.minim.ugens.*;
 import ddf.minim.effects.*;
-
-final float whrate = (float)23/105;
+import processing.net.*;
 
 ScrollManager sm;
 ReadText rt;
@@ -16,13 +15,19 @@ CheckText ct;
 Minim minim;
 AudioPlayer bgm;
 
-ArrayList<MyObj> enemys;
-ArrayList<Bullet> bullets;
+Client myClient;
+
+ArrayList<MyObj>   enemys;
+ArrayList<Bullet>  bullets;
+ArrayList<Wall>    walls;
 Player player;
 Home home;
 
+boolean isStop;
+
 void setup(){
   rt = new ReadText();
+  isStop = false;
   
   minim = new Minim(this);    //音楽・効果音用
   db = new DataBase();        //データベース
@@ -32,10 +37,10 @@ void setup(){
   tm = new TimeManager();
   db.setobjectnames();
   
-  if(rt.check())  System.exit(0);
+  //if(rt.check())  System.exit(0);
   rt.readCommands();
   
-  db.screenh = (int)(db.screenw*whrate);
+  db.screenh = (int)(db.screenw*db.boardrate);
   
   size(db.screenw, db.screenh);
   db.scwhrate = width/1600.0;
@@ -45,51 +50,72 @@ void setup(){
   
   enemys = new ArrayList<MyObj>();
   bullets = new ArrayList<Bullet>();
+  walls = new ArrayList<Wall>();
   player = new Player();
   
   home = new Home();
-  enemys.add(new Ninja());
+  
+  //myClient = new Client(this, "172.23.6.216", 5204);
 }
 
 void draw(){
-  
   process();    //処理
   drawing();    //描画
 }
 
 //処理用関数
 void process(){
-  
-  tm.checksec();
-  sm.move();
-  
-  //プレイヤーの動きの処理
-  player.move();
-  
-  //敵の動きの処理
-  for(int i = 0; i < enemys.size(); i++){
-    enemys.get(i).move();
+  if(!isStop){
+    tm.checksec();
+    sm.move();
     
-    if(enemys.get(i).dieflag){
-      enemys.remove(i);
-      i--;
-    }
-  }
-  
-  //弾の処理
-  for(int i = 0; i < bullets.size(); i++){
-    bullets.get(i).move();
+    //プレイヤーの動きの処理
+    player.move();
     
-    if(bullets.get(i).dieflag){
-      bullets.remove(i);
-      i--;
+    //敵の動きの処理
+    for(int i = 0; i < enemys.size(); i++){
+      MyObj enemy = enemys.get(i);
+      enemy.move();
+      
+      if(enemy.isDie){
+        enemys.remove(i);
+        i--;
+      }
     }
-  }
+    
+    //弾の処理
+    for(int i = 0; i < bullets.size(); i++){
+      Bullet bullet = bullets.get(i);
+      bullet.move();
+      
+      if(bullet.isDie){
+        bullets.remove(i);
+        i--;
+      }
+    }
+    
+    //壁の処理
+    for(int i = 0; i < walls.size(); i++){
+      Wall wall = walls.get(i);
+      wall.move();
+      
+      if(wall.isDie){
+        walls.remove(i);
+        i--;
+      }
+    }
+    
+    //自陣の処理
+    home.move();
+  }           
 }
 
 //描画用関数
 void drawing(){
   sm.drawView();
+  
+  //自陣
+  home.draw();
   
   //敵
   for(int i = 0; i < enemys.size(); i++){
@@ -98,14 +124,17 @@ void drawing(){
   }
   
   for(int i = 0; i < bullets.size(); i++){
-    bullets.get(i).draw();
+    Bullet bullet = bullets.get(i);
+    bullet.draw();
   }
   
-  //自陣
-  home.draw();
+  fill(255, 100, 100);
+  for(int i = 0; i < walls.size(); i++){
+    Wall wall = walls.get(i);
+    wall.draw();
+  }
   
   //プレイヤー
-  noStroke();
   fill(255, 134, 0);
   player.draw();
 
@@ -139,9 +168,39 @@ void mouseReleased(){
   player.ATflag = false;
 }
 
+void keyPressed(){
+  switch(keyCode){
+    case RIGHT:
+      player.key = 1;
+      break;
+    case LEFT:
+      player.key = 2;
+      break;
+  }
+  
+  if(key == ' ' ){
+    if(!isStop)  isStop = true;
+    else         isStop = false;
+  }
+}
 
+void keyReleased(){
+  switch(keyCode){
+    case RIGHT:
+    case LEFT:
+      player.key = 0;
+      break;
+  }
+}
 
-
+int readInt(){
+  int a = myClient.read();
+  int b = myClient.read();
+  int c = myClient.read();
+  int d = myClient.read();
+  int e = (a<<24)|(b<<16)|(c<<8)|d;
+  return e;
+}
 
 
 
