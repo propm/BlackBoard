@@ -22,7 +22,8 @@ class DataBase{
                                        //5:大砲　　6:忍者
   Player oriplayer;
   
-  void setobjectnames(){
+  //中身を入れる
+  void initial(){
     objects = rt.objects.clone();
     oriEnemys = new HashMap<String, MyObj>(objects.length);
     oriplayer = new Player();
@@ -56,6 +57,7 @@ class DataBase{
         case 3:
           e.bulletflag = true;
           e.Bi = 20;
+          e.rank = 3;
         case 0:
           e.hp = 2;
           e.vx = -1*scwhrate;
@@ -69,9 +71,13 @@ class DataBase{
           for(int j = 0; j < vectors1.length; j++)  e.pol.Add(vectors1[j][0], vectors1[j][1], vectors1[j][2]);
           e.pol.Reverse(e.w);
           
-          if(i == 0)  e.bulletflag = false;
+          if(i == 0){
+            e.rank = 1;
+            e.bulletflag = false;
+          }
           break;
         case 1:
+          e.rank = 2;
         case 2:
           e.hp = 1;
           
@@ -87,9 +93,11 @@ class DataBase{
           
           e.bulletflag = true;
           e.Bi = 75;
+          
+          if(i == 2)  e.rank = 4;
           break;
         case 4:
-        
+          e.rank = 3;
         case 5:
           e.hp = -1;
           
@@ -103,6 +111,7 @@ class DataBase{
           e.bulletflag = true;
           e.Bi = 180;
           
+          if(i == 5)  e.rank = 4;
           break;
       }
     }
@@ -162,6 +171,7 @@ class MyObj{
   float x, y, vx;             //画像左上(playerの場合は中心)の座標、横方向の速度
   int   w, h;                                                   //画像の大きさ
   int energy;                 //粉エネルギー
+  int rank;                   //この敵のランク
   int hp;                                                       //体力(何回消されたら消えるか)
   int Bcount;                 //弾用時間カウント
   int count;                  //汎用カウント
@@ -202,6 +212,11 @@ class MyObj{
     
     hp = oe.hp;
     Bi = oe.Bi;
+    rank = oe.rank;
+    
+    if(num == 2)  energy = 30;
+    else          energy = 10;
+    
     isOver = false;
     count = Bcount = 0;
     
@@ -225,7 +240,8 @@ class MyObj{
   void move(){}
   
   //弾で攻撃
-  void bullet(){
+  boolean bullet(){
+    boolean wasAttack = false;
     if(Bcount++ > Bi){
       if(bulletflag) {
         switch(charanum){
@@ -233,6 +249,7 @@ class MyObj{
           case 2:
           case 3:
             bullets.add(new Bullet(x, y+h/2, new PVector(-db.bs/10.0, random(-1, 1), 0)));
+            wasAttack = true;
             break;
           case 4:
           case 5:
@@ -241,11 +258,13 @@ class MyObj{
       }
       Bcount = 0;
     }
+    
+    return wasAttack;
   }
   
   //攻撃
   void attack(){
-    bullet();
+    if(bullet() && AT != null)  AT.trigger();
   }
   
   //死
@@ -270,7 +289,7 @@ class Attacker extends MyObj{
   boolean flag = false;
   
   Attacker(){
-    x = random(width)+width/2;
+    x = random(width)+width/3*2;
     y = random(height-h/2)+h/2;
     initial();
   }
@@ -305,7 +324,7 @@ class Sin extends MyObj{
   int omega;       //角速度（ラジアンではない
   
   Sin(){
-    x = random(width)+width/2;
+    x = random(width)+width/3*2;
     basicy = random(height/3*2) + h/2 + height/6;
     initial();
   }
@@ -380,7 +399,7 @@ class Parachuter extends Attacker{
   
   Parachuter(){
     g = 6;
-    x = random(width/2)+width/2;
+    x = random(width/2)+width/3*2;
     y = -height/3;
     initialize();
   }
@@ -574,7 +593,13 @@ class Player extends MyObj{
     for(int i = 0; i < enemys.size(); i++){
       MyObj e = enemys.get(i);
       
-      if((!bATflag || !e.bisOver) && e.isOver && e.hp != -1)  e.hp--;
+      if((!bATflag || !e.bisOver) && e.isOver && e.hp != -1){
+        e.hp--;
+        Energy += e.energy;
+        if(e.hp == 0){
+          Score += score(e);
+        }
+      }
     }
     if(erase != null)  erase.trigger();
   }
@@ -585,7 +610,6 @@ class Player extends MyObj{
       MyObj e = enemys.get(i);
       
       e.bisOver = e.isOver;
-      //if(!e.pol.isConvex)  println(db.objects[e.charanum]);
       
       if(judge(pol, e.pol))  e.isOver = true;
       else                   e.isOver = false;
