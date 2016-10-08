@@ -15,7 +15,9 @@ class Circle{
   float x,y,speed;
   public float elx=0; //円の横幅
   public float ely=0;  //円の縦幅
-  
+  final int r = 100;  //円の色
+  final int g = 100;
+  final int b = 250;
   Circle(float _x, float _y, float _speed){
     x = _x;
     y = _y;
@@ -29,9 +31,11 @@ class Circle{
   
   void display(){
     noFill();
-    stroke(100,100,250);
-    strokeWeight(5);
-    ellipse(x, y, elx, ely);
+    strokeWeight(1);
+    for(int i = -30;i < 0; i++){
+      stroke(r + i*5,g + i*5,b + i*5);
+      ellipse(x, y, elx + i*3, ely + i*3);
+    }
   }
   
   float getElx(){
