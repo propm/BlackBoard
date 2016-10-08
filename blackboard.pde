@@ -22,20 +22,21 @@ NetAddress address;
 
 Client myClient;
 
-ArrayList<MyObj>   enemys;
-ArrayList<Bullet>  bullets;
-ArrayList<Wall>    walls;
+ArrayList<MyObj>     enemys;
+ArrayList<Bullet>    bullets;
+ArrayList<Wall>      walls;
+ArrayList<Shuriken>  shurikens;
 Player player;
 Home home;
 
 boolean isStop;
-int Score, Energy;
+int score, choke;
 int bscore, benergy;
 
 void setup(){
   minim = new Minim(this);    //音楽・効果音用
-  //osc = new OscP5(this, 1234);
-  //address = new NetAddress("172.168.2.50", 1234);
+  osc = new OscP5(this, 1234);
+  address = new NetAddress("172.23.5.84", 1234);
   
   rt = new ReadText();
   db = new DataBase();        //データベース
@@ -57,13 +58,16 @@ void setup(){
   enemys = new ArrayList<MyObj>();
   bullets = new ArrayList<Bullet>();
   walls = new ArrayList<Wall>();
+  shurikens = new ArrayList<Shuriken>();
   player = new Player();
   
   home = new Home();
   
   //myClient = new Client(this, "172.23.6.216", 5204);
   
-  Score = Energy = 0;
+  enemys.add(new Cannon());
+  enemys.add(new Ninja());
+  score = choke = 0;
   isStop = false;
 }
 
@@ -74,8 +78,8 @@ void draw(){
 
 //処理用関数
 void process(){
-  bscore = Score;
-  benergy = Energy;
+  bscore = score;
+  benergy = choke;
   
   if(!isStop){
     tm.checksec();
@@ -100,8 +104,23 @@ void process(){
       Bullet bullet = bullets.get(i);
       bullet.move();
       
+      /*if(i == 0){
+        print(dist(bullet.owner.x, bullet.owner.y+bullet.owner.h/2, bullet.x, bullet.y));
+        println(" "+bullet.length.mag()+" "+bullet.maxlength);
+      }*/
+        
       if(bullet.isDie){
         bullets.remove(i);
+        i--;
+      }
+    }
+    
+    for(int i = 0; i < shurikens.size(); i++){
+      Shuriken s = shurikens.get(i);
+      s.move();
+      
+      if(s.isDie){
+        shurikens.remove(i);
         i--;
       }
     }
@@ -120,7 +139,9 @@ void process(){
     //自陣の処理
     home.move();
     
-    if(bscore != Score || benergy != Energy)  println("score: "+Score+"  energy: "+Energy);
+    if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);
+    
+    send();
   }           
 }
 
@@ -140,6 +161,11 @@ void drawing(){
   for(int i = 0; i < bullets.size(); i++){
     Bullet bullet = bullets.get(i);
     bullet.draw();
+  }
+  
+  for(int i = 0; i < shurikens.size(); i++){
+    Shuriken s = shurikens.get(i);
+    s.draw();
   }
   
   fill(255, 100, 100);
@@ -231,12 +257,13 @@ int readInt(){
   return e;
 }
 
-/*void send(){
+void send(){
   OscMessage mes = new OscMessage("/text");
   mes.add(score);
+  mes.add(choke);
   osc.send(mes, address);
 }
-*/
+
 
 
 
