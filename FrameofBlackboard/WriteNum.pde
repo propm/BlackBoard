@@ -1,14 +1,15 @@
 long score;
 int choke;
-int chokeMax = 100;  //チョークの最大値  
+int chokeMax = 1200;  //チョークの最大値  
 int gageColorBlue = 0;  //ゲージの青成分 
 boolean gageup = true;  //ゲージの増減
 
+public void getData(int _score, int _choke){
+  score = _score;
+  choke = _choke;
+}
+
 void UpdateNum(){
-  //数値の更新
-  score += 922324;
-  choke = 90;
-  
   //ゲージの点滅エフェクト
   if(gageColorBlue <= 0){
     gageup = true;

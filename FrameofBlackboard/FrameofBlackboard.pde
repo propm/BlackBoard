@@ -1,5 +1,12 @@
+import oscP5.*;
+import netP5.*;
 import processing.opengl.*;
 import codeanticode.syphon.*;  //Syphon用
+
+
+OscP5 osc;
+NetAddress address;
+OscMessage message;
 
 SyphonServer server;
 
@@ -15,6 +22,9 @@ void setup(){
 
   textSize(30);
   textFont(myFont);
+  
+  osc = new OscP5(this, 1234);
+  osc.plug(this,"getData","/text");
 
   CircleList = new ArrayList<Circle>();
   server = new SyphonServer(this, "BlackBoardFrame");
