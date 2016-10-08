@@ -61,7 +61,7 @@ class DataBase{
         case 3:
           e.rank = 3;
           e.bulletflag = true;
-          e.Bi = 20;
+          e.Bi = 50;
           
         case 0:
           e.hp = 2;
@@ -279,11 +279,11 @@ class MyObj{
           case 1:
           case 2:
           case 3:
-            bullets.add(new Bullet(x, y+h/2, new PVector(-db.bs/10.0, random(-1, 1), 0), this));
+            bullets.add(new Bullet(x, y+h/2, new PVector(-db.bs/10.0, random(-1, 1), 0)));
             wasAttack = true;
             break;
           case 4:
-            //bullets.add(new MegaBullet(x, y+h/2, new PVector(-db.bs/10.0, 0, 0)));
+            bullets.add(new MegaBullet(x, y+h/2, new PVector(-db.bs/5.0, 0, 0), this));
             break;
           case 5:
             shurikens.add(new Shuriken(x, y+h/2));
@@ -759,43 +759,40 @@ class Bullet{
   float x, y;      //弾の進行方向の先端上の座標
   float w, h;      //弾の幅
   float radian;    //横一直線を0としたときの角度　正方向は時計回り(-π < radian <= π)
-  int   num;       //bulletなら0, megabulletなら1
+  
+  int num;         //bulletなら0、megabulletなら1
+  
   PVector v;
-  PVector length;       //現在の長さ
-  float   maxlength;    //最大の長さ
+  PVector length;       //弾の長さ
   boolean isDie;
   
   Polygon pol;
-  MyObj   owner;        //この弾を出したオブジェクト
   
   Bullet(){}
   
-  Bullet(float x, float y, MyObj owner){
+  Bullet(float x, float y){
     this.x = x;
     this.y = y;
     v = new PVector(-1, 0);
-    this.owner = owner;
     
-    num = 0;
     initial();
   }
   
-  Bullet(float x, float y, PVector v, MyObj owner){
+  Bullet(float x, float y, PVector v){
     this.x = x;
     this.y = y;
     this.v = v;
-    this.owner = owner;
     
-    num = 0;
     initial();
   }
   
   void initial(){
+    num = 0;
+    
     length = v.get();
     length.setMag(50*db.scwhrate);
-    maxlength = 50*db.scwhrate;
     
-    h = (num == 0 ? 4 : 8)*db.scwhrate;
+    h = 4*db.scwhrate;
     
     radian = atan2(v.y, v.x);
     isDie = false;
@@ -817,17 +814,16 @@ class Bullet{
     x += v.x;
     y += v.y;
     
-    
-    //if(length.mag() < maxlength)       length.setMag(dist(owner.x, owner.y+owner.h/2, x, y));
-    //if(length.mag() > maxlength+1)     length.setMag(maxlength);
-    
     if((v.x <= 0 && x+abs(length.x) < 0) ||
         (v.x > 0 && x-abs(length.x) > width))  isDie = true;
         
-    setPolygonAngle();
+    if(num == 0)  setPolygonAngle();
   }
   
   void draw(){
+    
+    if(num == 1)    fill(255, 100, 0);
+    else            fill(255, 134, 0);
     pushMatrix();
     translate(x, y);
     rotate(radian);
@@ -842,7 +838,35 @@ class Bullet{
 //*************************************************************************************
 
 class MegaBullet extends Bullet{
+  float   maxlength;    //最大の長さ
   
+  MyObj   owner;        //この弾を出したオブジェクト
+  
+  MegaBullet(float x, float y, PVector v, MyObj owner){
+    this.x = x;
+    this.y = y;
+    this.v = v;
+    this.owner = owner;
+    initial();
+  }
+  
+  void initial(){
+    super.initial();
+    
+    num = 1;
+    h = 8*db.scwhrate;
+    maxlength = 400*db.scwhrate;
+    
+  }
+  
+  void move(){
+    super.move();
+    
+    if(length.mag() < maxlength)       length.setMag(dist(owner.x, owner.y+owner.h/2, x, y));
+    if(length.mag() > maxlength+1)     length.setMag(maxlength);
+    
+    setPolygonAngle();
+  }
 }
 
 //*************************************************************************************
