@@ -62,9 +62,10 @@ class DataBase{
           e.rank = 3;
           e.bulletflag = true;
           e.Bi = 50;
+          e.hp = 5;
           
         case 0:
-          e.hp = 2;
+          if(i == 0)  e.hp = 2;
           e.vx = -2*scwhrate;
           
           setImage(e, "attacker.png");
@@ -107,7 +108,7 @@ class DataBase{
           
           break;
         case 4:
-          e.hp = 2;
+          e.hp = 5;
           e.rank = 3;
           
           e.imgs.add(loadImage("cannon.png"));
@@ -205,6 +206,7 @@ class MyObj{
   int rank;                   //この敵のランク
   int hp;                                                       //体力(何回消されたら消えるか)
   int Bcount;                 //弾用時間カウント
+  int Acount;                 //壁に攻撃するカウント
   int count;                  //汎用カウント
   int Bi;                                                       //bullet interval
   int charanum;               //どの敵・プレイヤーか(0～5)
@@ -227,7 +229,7 @@ class MyObj{
   
   //初期設定をコピーする関数
   void initial(int num){
-    charanum = num;
+    charanum = num+1;
     MyObj oe = db.oriEnemys.get(db.objects[num]);
     
     die = oe.die;
@@ -246,11 +248,11 @@ class MyObj{
     rank = oe.rank;
     vx = oe.vx;
     
-    if(num == 2)  energy = 30;
-    else          energy = 10;
+    if(num == 2)  energy = 300;
+    else          energy = 100;
     
     isOver = false;
-    count = Bcount = 0;
+    count = Bcount = Acount = 0;
     
     switch(num){
       case 0:
@@ -276,17 +278,17 @@ class MyObj{
     if(Bcount++ > Bi){
       if(bulletflag) {
         switch(charanum){
-          case 1:
           case 2:
           case 3:
+          case 4:
             bullets.add(new Bullet(x, y+h/2, new PVector(-db.bs/10.0, random(-1, 1), 0)));
             wasAttack = true;
             break;
-          case 4:
+          case 5:
             bullets.add(new Laser(x, y+h/2, new PVector(-db.bs/5.0, 0, 0), this));
             wasAttack = true;
             break;
-          case 5:
+          case 6:
             shurikens.add(new Shuriken(x, y+h/2));
             wasAttack = true;
             break;
@@ -300,12 +302,13 @@ class MyObj{
   
   //攻撃
   void attack(){
+    
     if(bullet() && AT != null)  AT.trigger();
   }
   
   //死
   void die(){
-    if(hp == 0){
+    if(hp <= 0 && charanum != 6 || hp == 0){
       isDie = true;
       if(die != null)  die.trigger();
     }
@@ -357,7 +360,7 @@ class Sin extends MyObj{
   
   float basicy;    //角度が0のときの高さ
   int theta;       //角度(ラジアンではない)
-  int omega;       //角速度（ラジアンではない
+  int omega;       //角速度（ラジアンではない)
   
   Sin(){
     x = random(width)+width/3*2;
@@ -588,7 +591,11 @@ class Ninja extends MyObj{
     for(int i = 0; i < shurikens.size(); i++){
       Shuriken s = shurikens.get(i);
       if(s.isReflected){
-        if(judge(s.center, s.r/2, pol))  hp = 0;
+        if(judge(s.center, s.r/2, pol)){
+          hp = 0;
+          shurikens.remove(i);
+          i--;
+        }
       }
     }
   }
@@ -727,8 +734,9 @@ class Player extends MyObj{
   void createwall(){
     count++;
     
-    if(count/60 >= 1 && wallflag){
+    if(count/60 >= 1 && wallflag && choke >= 1100){
       walls.add(new Wall(x, y, w*2.5, h, radian));
+      choke -= 1100;
       wallflag = false;
       count = 0;
     }else if(count/60 >= 1){
@@ -906,40 +914,37 @@ class Laser extends Bullet{
 
 //*************************************************************************************
 
-class Wall{
-  float x, y;      //中心座標
-  float w, h;
+class Wall extends MyObj{
   float radian;    //単位はラジアン　正方向は反時計回り
-  int count;
-  
-  boolean isDie;
-  
-  Polygon pol;
   
   Wall(float x, float y, float w, float h, float radian){
     this.x = x;
     this.y = y;
-    this.w = w;
-    this.h = h;
+    this.w = (int)w;
+    this.h = (int)h;
     this.radian = radian;
     isDie = false;
+    hp = 100;
     
     pol = new Polygon();
     for(int i = 0; i < 4; i++)
       pol.Add(new PVector(0, 0, 0));
   }
   
-  void die(){
-    count++;
-    
-    if(count/60 >= 3)  isDie = true;
-  }
-  
   void update(){
     setPolygonAngle();
     dicision();
+    timer();
     
     die();
+  }
+  
+  void timer(){
+    count++;
+    if(count/60 >= 1){
+      hp -= 5;
+      count = 0;
+    }
   }
   
   void setPolygonAngle(){
@@ -956,8 +961,13 @@ class Wall{
       Bullet b = bullets.get(i);
       
       if(judge(pol, b.pol)){
-        bullets.remove(i);
-        i--;
+        if(b.num == 0){
+          bullets.remove(i);
+          hp -= 1;
+          i--;
+        }else{
+          hp = 0;
+        }
       }
     }
     
@@ -967,6 +977,15 @@ class Wall{
       if(judge(s.center, s.r/2, pol)){
         s.v.set(-s.v.x, -s.v.y, -s.v.z);
         s.isReflected = true;
+        hp -= 20;
+      }
+    }
+    
+    for(int i = 0; i < enemys.size(); i++){
+      MyObj e = enemys.get(i);
+      
+      if(judge(pol, e.pol)){
+        if(e.Acount++%30 == 0)  hp -= 1;
       }
     }
   }
