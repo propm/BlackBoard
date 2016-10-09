@@ -66,8 +66,6 @@ void setup(){
   
   //myClient = new Client(this, "172.23.6.216", 5204);
   
-  enemys.add(new Cannon());
-  enemys.add(new Ninja());
   score = choke = 0;
   isStop = false;
 }

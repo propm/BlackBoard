@@ -487,8 +487,8 @@ class Cannon extends MyObj{
   ArrayList<MyObj> chargeeffect;
   
   Cannon(){
-    x = width/4*3;
-    y = height;
+    x = random(width/4)+width/8*3;
+    y = random(height);
     initial();
   }
   
@@ -539,8 +539,8 @@ class Ninja extends MyObj{
   boolean isStealth;        //透明化するときtrue
   
   Ninja(){
-    x = width/2 - w/2;
-    y = height/2 - h/2;
+    x = random(width/4)+width/8*3;
+    y = random(height);
     initial();
   }
   
@@ -552,6 +552,9 @@ class Ninja extends MyObj{
   
   void initial(){
     initial(5);
+    
+    if(y < 0)         y = 0;
+    if(y > height-h)  y = height-h;
     
     alpha = ALPHA;
     alphav = 5;
