@@ -48,13 +48,12 @@ class TimeManager{
     if(ds.stringdata[0].equals("Parachuter"))
       if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Parachuter(ds.intdata[1], ds.intdata[2]));
       else                                                    enemys.add(new Parachuter());
-    /*if(ds.stringdata[0].equals("Cannon"))
+    if(ds.stringdata[0].equals("Cannon"))
       if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Cannon(ds.intdata[1], ds.intdata[2]));
       else                                                    enemys.add(new Cannon());
     if(ds.stringdata[0].equals("Ninja"))
       if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Ninja(ds.intdata[1], ds.intdata[2]));
       else                                                    enemys.add(new Ninja());
-    */
   }
 }
 

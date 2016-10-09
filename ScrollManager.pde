@@ -8,7 +8,7 @@ class ScrollManager{
   
   ScrollManager(){
     vy = 0;
-    vx = -1 * db.scwhrate;
+    vx = 1 * db.scwhrate;
     view = loadImage("space.jpg");
     
     m = 2;
@@ -18,9 +18,9 @@ class ScrollManager{
     viewx2 = view.width;
   }
   
-  void move(){
-    viewx += vx;
-    viewx2 += vx;
+  void update(){
+    viewx -= vx;
+    viewx2 -= vx;
     
     if(viewx2 + view.width <= 0 && width >= viewx + view.width)  viewx2 = viewx + view.width;
     if(viewx + view.width <= 0 && width >= viewx2 + view.width)  viewx = viewx2 + view.width;

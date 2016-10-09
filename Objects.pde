@@ -13,6 +13,7 @@ class DataBase{
   final float boardw  = 79.8913*2;
   
   final float boardrate = boardh/boardw;
+  final int MAXchoke = 1200;
   
   //効果音のファイル名
   String erase;
@@ -21,11 +22,14 @@ class DataBase{
                                        //1:突撃兵  2:サイン  3:タンジェント  4:パラシュート
                                        //5:大砲　　6:忍者
   Player oriplayer;
+  Shuriken orishuriken;
   
-  void setobjectnames(){
+  //中身を入れる
+  void initial(){
     objects = rt.objects.clone();
     oriEnemys = new HashMap<String, MyObj>(objects.length);
     oriplayer = new Player();
+    orishuriken = new Shuriken();
     
     for(int i = 0; i < objects.length; i++){
       oriEnemys.put(objects[i], new MyObj());
@@ -51,34 +55,48 @@ class DataBase{
     for(int i = 0; i < oriEnemys.size(); i++){
       
       MyObj e = oriEnemys.get(objects[i]);
+      e.pol = new Polygon();
       
       switch(i){
         case 3:
+          e.rank = 3;
           e.bulletflag = true;
-          e.Bi = 20;
+          e.Bi = 50;
+          e.hp = 5;
+          
         case 0:
-          e.hp = 2;
-          e.vx = -1*scwhrate;
+          if(i == 0)  e.hp = 2;
+          e.vx = -2*scwhrate;
           
           setImage(e, "attacker.png");
           
-          e.pol = new Polygon();
-          float[][] vectors1 = {{e.w/2, 0, 0}, {e.w*9/10, e.h*3/20, 0}, {e.w, e.h, 0}, 
+          float[][] vectors0 = {{e.w/2, 0, 0}, {e.w*9/10, e.h*3/20, 0}, {e.w, e.h, 0}, 
                                 {0, e.h*21/22, 0}, {e.w/5, e.h*3/25, 0}};
                                
-          for(int j = 0; j < vectors1.length; j++)  e.pol.Add(vectors1[j][0], vectors1[j][1], vectors1[j][2]);
+          for(int j = 0; j < vectors0.length; j++)  e.pol.Add(vectors0[j][0], vectors0[j][1], vectors0[j][2]);
           e.pol.Reverse(e.w);
           
-          if(i == 0)  e.bulletflag = false;
+          if(i == 0){
+            e.rank = 1;
+            e.bulletflag = false;
+          }
           break;
         case 1:
         case 2:
           e.hp = 1;
           
+          if(i == 1){
+            e.vx = -3*scwhrate;
+            e.rank = 2;
+          }
+          else if(i == 2){
+            e.vx = -6*scwhrate;
+            e.rank = 4;
+          }
+          
           setImage(e, "flyattacker.png");
           
           //多角形設定
-          e.pol = new Polygon();
           float[][] vectors2 = {{e.w, e.h*3/5, 0}, {e.w*16/21, e.h*100/106, 0}, {e.w/4, e.h, 0}, 
                                 {0, e.h*7/10, 0}, {e.w/7, 0, 0}, {e.w*4/5, e.h*4/25, 0}};
           
@@ -87,27 +105,50 @@ class DataBase{
           
           e.bulletflag = true;
           e.Bi = 75;
+          
           break;
         case 4:
-        
+          e.hp = 5;
+          e.rank = 3;
+          
+          e.imgs.add(loadImage("cannon.png"));
+          e.w = (int)(e.imgs.get(0).width/4.0*scwhrate);
+          e.h = (int)(e.imgs.get(0).height/4.0*scwhrate);
+          e.imgs.set(0, reSize(e.imgs.get(0), e.w, e.h));
+          
+          float[][] vectors4 = {{e.w/2, 0, 0}, {e.w*9/10, e.h*3/20, 0}, {e.w, e.h, 0}, 
+                                {0, e.h*21/22, 0}, {e.w/5, e.h*3/25, 0}};
+          for(int j = 0; j < vectors4.length; j++)  e.pol.Add(vectors4[j][0], vectors4[j][1], vectors4[j][2]);
+          e.bulletflag = true;
+          e.Bi = 60 * 3;
+          
+          break;
+          
         case 5:
           e.hp = -1;
           
+          e.rank = 4;
+          
           setImage(e, "attacker.png");
-          e.pol = new Polygon();
-          float[][] vectors3 = {{e.w/2, 0, 0}, {e.w*9/10, e.h*3/20, 0}, {e.w, e.h, 0}, 
+          float[][] vectors5 = {{e.w/2, 0, 0}, {e.w*9/10, e.h*3/20, 0}, {e.w, e.h, 0}, 
                                 {0, e.h*21/22, 0}, {e.w/5, e.h*3/25, 0}};
                                
-          for(int j = 0; j < vectors3.length; j++)  e.pol.Add(vectors3[j][0], vectors3[j][1], vectors3[j][2]);
+          for(int j = 0; j < vectors5.length; j++)  e.pol.Add(vectors5[j][0], vectors5[j][1], vectors5[j][2]);
           e.pol.Reverse(e.w);
           e.bulletflag = true;
-          e.Bi = 180;
+          e.Bi = 60 * 4;
           
           break;
       }
     }
     
     setPlayer();
+    
+    Shuriken s = orishuriken;
+    s.img = loadImage("shuriken.png");
+    s.w = s.img.width/10.0*scwhrate;
+    s.h = s.img.height/10.0*scwhrate;
+    s.img = reSize(s.img, (int)s.w, (int)s.h);
   }
   
   void setPlayer(){
@@ -162,8 +203,10 @@ class MyObj{
   float x, y, vx;             //画像左上(playerの場合は中心)の座標、横方向の速度
   int   w, h;                                                   //画像の大きさ
   int energy;                 //粉エネルギー
+  int rank;                   //この敵のランク
   int hp;                                                       //体力(何回消されたら消えるか)
   int Bcount;                 //弾用時間カウント
+  int Acount;                 //壁に攻撃するカウント
   int count;                  //汎用カウント
   int Bi;                                                       //bullet interval
   int charanum;               //どの敵・プレイヤーか(0～5)
@@ -186,7 +229,7 @@ class MyObj{
   
   //初期設定をコピーする関数
   void initial(int num){
-    charanum = num;
+    charanum = num+1;
     MyObj oe = db.oriEnemys.get(db.objects[num]);
     
     die = oe.die;
@@ -202,12 +245,17 @@ class MyObj{
     
     hp = oe.hp;
     Bi = oe.Bi;
+    rank = oe.rank;
+    vx = oe.vx;
+    
+    if(num == 2)  energy = 300;
+    else          energy = 100;
+    
     isOver = false;
-    count = Bcount = 0;
+    count = Bcount = Acount = 0;
     
     switch(num){
       case 0:
-        vx = oe.vx;
         y = height-h;
     }
   }
@@ -222,35 +270,45 @@ class MyObj{
   }
   
   //動く
-  void move(){}
+  void update(){}
   
   //弾で攻撃
-  void bullet(){
+  boolean bullet(){
+    boolean wasAttack = false;
     if(Bcount++ > Bi){
       if(bulletflag) {
         switch(charanum){
-          case 1:
           case 2:
           case 3:
-            bullets.add(new Bullet(x, y+h/2, new PVector(-db.bs/10.0, random(-1, 1), 0)));
-            break;
           case 4:
+            bullets.add(new Bullet(x, y+h/2, new PVector(-db.bs/10.0, random(-1, 1), 0)));
+            wasAttack = true;
+            break;
           case 5:
+            bullets.add(new Laser(x, y+h/2, new PVector(-db.bs/5.0, 0, 0), this));
+            wasAttack = true;
+            break;
+          case 6:
+            shurikens.add(new Shuriken(x, y+h/2));
+            wasAttack = true;
             break;
         }
       }
       Bcount = 0;
     }
+    
+    return wasAttack;
   }
   
   //攻撃
   void attack(){
-    bullet();
+    
+    if(bullet() && AT != null)  AT.trigger();
   }
   
   //死
   void die(){
-    if(hp == 0){
+    if(hp <= 0 && charanum != 6 || hp == 0){
       isDie = true;
       if(die != null)  die.trigger();
     }
@@ -270,7 +328,7 @@ class Attacker extends MyObj{
   boolean flag = false;
   
   Attacker(){
-    x = random(width)+width/2;
+    x = random(width)+width/3*2;
     y = random(height-h/2)+h/2;
     initial();
   }
@@ -286,9 +344,9 @@ class Attacker extends MyObj{
     setPolygon(x, y);  //座標の位置に多角形を移動
   }
   
-  void move(){
+  void update(){
     die();      //死んだかどうかの判定
-    x += vx+sm.vx;
+    x += vx;
     setPolygon(x, y);
     
     attack();   //攻撃
@@ -302,10 +360,10 @@ class Sin extends MyObj{
   
   float basicy;    //角度が0のときの高さ
   int theta;       //角度(ラジアンではない)
-  int omega;       //角速度（ラジアンではない
+  int omega;       //角速度（ラジアンではない)
   
   Sin(){
-    x = random(width)+width/2;
+    x = random(width)+width/3*2;
     basicy = random(height/3*2) + h/2 + height/6;
     initial();
   }
@@ -321,16 +379,15 @@ class Sin extends MyObj{
     initial(1);  //初期設定をコピー
     
     theta = 0;
-    vx = -2 * db.scwhrate;
     
     setPolygon(x, y);
   }
   
-  void move(){
+  void update(){
     die();
     theta+=2;
-    y = basicy - sin(theta*PI/180)*height/6 + sm.vy;
-    x += vx+sm.vx;
+    y = basicy - sin(theta*PI/180)*height/6;
+    x += vx;
     
     setPolygon(x, y);
     attack();
@@ -356,15 +413,14 @@ class Tangent extends Sin{
   void initialize(){
     initial(2);  //初期設定をコピー
     
-    vx = -5 * db.scwhrate;
     setPolygon(x, y);
   }
   
-  void move(){
+  void update(){
     die();
     theta+=2;
-    y = basicy - tan(theta*PI/180)*100 + sm.vy;
-    x += vx+sm.vx;
+    y = basicy - tan(theta*PI/180)*100;
+    x += vx;
     
     setPolygon(x, y);
     attack();
@@ -375,12 +431,13 @@ class Tangent extends Sin{
 
 //パラシュート
 class Parachuter extends Attacker{
+  float flyvx;           //飛んでいるときのvx
+  
   float g;               //重力（速度）
   boolean paraflag;      //地面に着地するまではパラシュート状態：true
   
   Parachuter(){
-    g = 6;
-    x = random(width/2)+width/2;
+    x = random(width/2)+width/3*2;
     y = -height/3;
     initialize();
   }
@@ -394,17 +451,17 @@ class Parachuter extends Attacker{
   void initialize(){
     initial(3);      //初期設定をコピー
     
+    flyvx = -2*db.scwhrate;
+    g = 2*db.scwhrate;
     paraflag = true;
-    
-    vx = -0.5 * db.scwhrate;
     setPolygon(x, y);
   }
   
-  void move(){
+  void update(){
     die();
     if(paraflag){
-      y += g * db.scwhrate+sm.vy;
-      x += vx+sm.vx;
+      y += g * db.scwhrate;
+      x += flyvx;
       
       setPolygon(x, y);
       attack();
@@ -415,7 +472,7 @@ class Parachuter extends Attacker{
       }
       
     }else{
-      super.move();
+      super.update();
     }
   }
 }
@@ -424,9 +481,51 @@ class Parachuter extends Attacker{
 
 //大砲
 class Cannon extends MyObj{
+  int     chargeframe;  //何フレームチャージするか
+  boolean once;
+  
+  ArrayList<MyObj> chargeeffect;
   
   Cannon(){
+    x = random(width/4)+width/8*3;
+    y = random(height);
+    initial();
+  }
+  
+  Cannon(float x, float y){
+    this.x = x;
+    this.y = y;
+    initial();
+  }
+  
+  void initial(){
     initial(4);
+    
+    if(y < 0)  y = 0;
+    if(y > height-h)  y = height-h;
+    
+    setPolygon(x, y);
+  }
+  
+  void update(){
+    die();
+    attack();
+  }
+  
+  void attack(){
+    super.attack();
+    
+    if(Bcount >= 60)  charge();
+    else             once = true;
+  }
+  
+  void charge(){
+    if(once){
+      chargeframe = Bi - Bcount;
+      once = false;
+    }
+    
+    
   }
 }
 
@@ -440,23 +539,37 @@ class Ninja extends MyObj{
   boolean isStealth;        //透明化するときtrue
   
   Ninja(){
+    x = random(width/4)+width/8*3;
+    y = random(height);
+    initial();
+  }
+  
+  Ninja(float x, float y){
+    this.x = x;
+    this.y = y;
     initial();
   }
   
   void initial(){
     initial(5);
-    x = width/2 - w/2;
-    y = height/2 - h/2;
+    
+    if(y < 0)         y = 0;
+    if(y > height-h)  y = height-h;
+    
     alpha = ALPHA;
     alphav = 5;
     isStealth = false;
     setPolygon(x, y);
   }
   
-  void move(){
-    die();      //死判定
+  void update(){
     attack();
-    
+    stealth();
+    dicision();
+    die();      //死判定
+  }
+  
+  void stealth(){
     //黒板消しが重なっていたら消える
     if(isOver)  isStealth = true;
     
@@ -472,6 +585,20 @@ class Ninja extends MyObj{
       if(alpha >= ALPHA){
         alpha = ALPHA;
         count = 0;
+      }
+    }
+  }
+  
+  //跳ね返された手裏剣との判定
+  void dicision(){
+    for(int i = 0; i < shurikens.size(); i++){
+      Shuriken s = shurikens.get(i);
+      if(s.isReflected){
+        if(judge(s.center, s.r/2, pol)){
+          hp = 0;
+          shurikens.remove(i);
+          i--;
+        }
       }
     }
   }
@@ -529,7 +656,7 @@ class Player extends MyObj{
   }
   
   //動作
-  void move(){
+  void update(){
     x = mouseX;
     y = mouseY;
     
@@ -553,7 +680,7 @@ class Player extends MyObj{
     y = abs(y2-y1);
     */
     
-    //setPolygon(x-w/2+sm.x, y-w/2+sm.y);
+    //setPolygon(x-w/2, y-w/2);
     
     setPolygonAngle();
     overlap();
@@ -574,7 +701,13 @@ class Player extends MyObj{
     for(int i = 0; i < enemys.size(); i++){
       MyObj e = enemys.get(i);
       
-      if((!bATflag || !e.bisOver) && e.isOver && e.hp != -1)  e.hp--;
+      if((!bATflag || !e.bisOver) && e.isOver && e.hp != -1){
+        e.hp--;
+        choke += e.energy;
+        if(e.hp == 0){
+          score += score(e);
+        }
+      }
     }
     if(erase != null)  erase.trigger();
   }
@@ -585,7 +718,6 @@ class Player extends MyObj{
       MyObj e = enemys.get(i);
       
       e.bisOver = e.isOver;
-      //if(!e.pol.isConvex)  println(db.objects[e.charanum]);
       
       if(judge(pol, e.pol))  e.isOver = true;
       else                   e.isOver = false;
@@ -605,8 +737,9 @@ class Player extends MyObj{
   void createwall(){
     count++;
     
-    if(count/60 >= 1 && wallflag){
+    if(count/60 >= 1 && wallflag && choke >= 1100){
       walls.add(new Wall(x, y, w*2.5, h, radian));
+      choke -= 1100;
       wallflag = false;
       count = 0;
     }else if(count/60 >= 1){
@@ -654,7 +787,7 @@ class Home{
     angle = 0;
   }
   
-  void move(){
+  void update(){
     angle += anglev;
     angle %= 360;
     y = sin(angle/180*PI)*4 + height/2;
@@ -672,16 +805,22 @@ class Bullet{
   float x, y;      //弾の進行方向の先端上の座標
   float w, h;      //弾の幅
   float radian;    //横一直線を0としたときの角度　正方向は時計回り(-π < radian <= π)
+  
+  int num;         //bulletなら0、megabulletなら1
+  
   PVector v;
-  PVector length;
+  PVector length;       //弾の長さ
   boolean isDie;
   
   Polygon pol;
+  
+  Bullet(){}
   
   Bullet(float x, float y){
     this.x = x;
     this.y = y;
     v = new PVector(-1, 0);
+    
     initial();
   }
   
@@ -689,12 +828,16 @@ class Bullet{
     this.x = x;
     this.y = y;
     this.v = v;
+    
     initial();
   }
   
   void initial(){
+    num = 0;
+    
     length = v.get();
     length.setMag(50*db.scwhrate);
+    
     h = 4*db.scwhrate;
     
     radian = atan2(v.y, v.x);
@@ -706,29 +849,32 @@ class Bullet{
   }
   
   void setPolygonAngle(){
-    pol.ver.set(0, new PVector(x, y, 0));
-    pol.ver.set(1, new PVector(x+length.mag()*cos(radian), y+length.mag()*sin(radian), 0));
-    pol.ver.set(2, new PVector(x+length.mag()*cos(radian)+h*cos(radian+PI/2), y+length.mag()*sin(radian)+h*sin(radian+PI/2), 0));
-    pol.ver.set(3, new PVector(x+h*cos(radian+PI/2), y+h*sin(radian+PI/2), 0));
+    pol.ver.set(0, new PVector(x+length.mag()*cos(radian-PI)+h/2*cos(radian+PI/2), y+length.mag()*sin(radian-PI)+h/2*sin(radian+PI/2), 0));
+    pol.ver.set(1, new PVector(x+length.mag()*cos(radian-PI)+h/2*cos(radian-PI/2), y+length.mag()*sin(radian-PI)+h/2*sin(radian-PI/2), 0));
+    pol.ver.set(2, new PVector(x+h/2*cos(radian-PI/2), y+h/2*sin(radian-PI/2), 0));
+    pol.ver.set(3, new PVector(x+h/2*cos(radian+PI/2), y+h/2*sin(radian+PI/2), 0));
     pol.Init();
   }
   
-  void move(){
-    x += v.x+sm.vx;
-    y += v.y+sm.vy;
+  void update(){
+    x += v.x;
+    y += v.y;
     
     if((v.x <= 0 && x+abs(length.x) < 0) ||
         (v.x > 0 && x-abs(length.x) > width))  isDie = true;
         
-    setPolygonAngle();
+    if(num == 0)  setPolygonAngle();
   }
   
   void draw(){
+    
+    if(num == 0)      fill(255, 134, 0);
+    else if(num == 1) fill(255, 20, 147);
     pushMatrix();
     translate(x, y);
     rotate(radian);
     noStroke();
-    rect(0, 0, length.mag(), h);
+    rect(-length.mag(), -h/2, length.mag(), h);
     popMatrix();
     
     pol.Draw();
@@ -737,40 +883,71 @@ class Bullet{
 
 //*************************************************************************************
 
-class Wall{
-  float x, y;      //中心座標
-  float w, h;
-  float radian;    //単位はラジアン　正方向は反時計回り
+class Laser extends Bullet{
   int count;
+  int maxcount;    //レーザーを打つ秒数
+
+  MyObj   owner;       //この弾を出したオブジェクト
   
-  boolean isDie;
+  Laser(float x, float y, PVector v, MyObj owner){
+    this.x = x;
+    this.y = y;
+    this.v = v;
+    this.owner = owner;
+    initial();
+  }
   
-  Polygon pol;
+  void initial(){
+    super.initial();
+    
+    num = 1;
+    h = 8*db.scwhrate;
+    count = 0;
+    maxcount = 60 * 1;
+  }
+  
+  void update(){
+    super.update();
+    
+    if(count++ < maxcount)       length.setMag(dist(owner.x, owner.y+owner.h/2, x, y));
+    
+    setPolygonAngle();
+  }
+}
+
+//*************************************************************************************
+
+class Wall extends MyObj{
+  float radian;    //単位はラジアン　正方向は反時計回り
   
   Wall(float x, float y, float w, float h, float radian){
     this.x = x;
     this.y = y;
-    this.w = w;
-    this.h = h;
+    this.w = (int)w;
+    this.h = (int)h;
     this.radian = radian;
     isDie = false;
+    hp = 100;
     
     pol = new Polygon();
     for(int i = 0; i < 4; i++)
       pol.Add(new PVector(0, 0, 0));
   }
   
-  void die(){
-    count++;
-    
-    if(count/60 >= 3)  isDie = true;
-  }
-  
-  void move(){
+  void update(){
     setPolygonAngle();
     dicision();
+    timer();
     
     die();
+  }
+  
+  void timer(){
+    count++;
+    if(count/60 >= 1){
+      hp -= 5;
+      count = 0;
+    }
   }
   
   void setPolygonAngle(){
@@ -787,8 +964,31 @@ class Wall{
       Bullet b = bullets.get(i);
       
       if(judge(pol, b.pol)){
-        bullets.remove(i);
-        i--;
+        if(b.num == 0){
+          bullets.remove(i);
+          hp -= 1;
+          i--;
+        }else{
+          hp = 0;
+        }
+      }
+    }
+    
+    for(int i = 0; i < shurikens.size(); i++){
+      Shuriken s = shurikens.get(i);
+      
+      if(judge(s.center, s.r/2, pol)){
+        s.v.set(-s.v.x, -s.v.y, -s.v.z);
+        s.isReflected = true;
+        hp -= 20;
+      }
+    }
+    
+    for(int i = 0; i < enemys.size(); i++){
+      MyObj e = enemys.get(i);
+      
+      if(judge(pol, e.pol)){
+        if(e.Acount++%30 == 0)  hp -= 1;
       }
     }
   }
@@ -805,6 +1005,66 @@ class Wall{
   }
 }
 
+//************************************************************************************************
+
+class Shuriken{
+  float w, h;
+  float r;        //当たり判定の円の直径
+  float angle;    //単位は度　(0 <= angle < 360)
+  PVector center;     //中心座標
+  PVector v;
+  
+  boolean isReflected;
+  boolean isDie;
+  
+  PImage img;
+  
+  Shuriken(){}
+  
+  Shuriken(float x, float y){
+    initial(x, y);
+  }
+  
+  void initial(float x, float y){
+    center = new PVector(x, y, 0);
+    
+    Shuriken s = db.orishuriken;
+    img = s.img;
+    w = s.w;
+    h = s.h;
+    r = 54;
+    
+    v = new PVector(-3, 0);
+    isReflected = false;
+    isDie = false;
+    angle = 0;
+  }
+  
+  void update(){
+    center.x += v.x;
+    center.y += v.y;
+    
+    angle += 0.2;
+    angle %= 360;
+  }
+  
+  void die(){
+    if(center.x+w/2 < 0  || center.x-w/2 > width || center.y+h/2 < 0 | center.y-h/2 > height)  isDie = true;
+    
+  }
+  
+  void draw(){
+    pushMatrix();
+    translate(center.x, center.y);
+    rotate(-angle);
+    image(img, -w/2, -h/2);
+    popMatrix();
+    
+    noFill();
+    ellipse(center.x, center.y, r, r);
+  }
+  
+}
 
 
 

@@ -1,3 +1,6 @@
+import oscP5.*;
+import netP5.*;
+
 import ddf.minim.spi.*;
 import ddf.minim.signals.*;
 import ddf.minim.*;
@@ -12,34 +15,39 @@ DataBase db;
 TimeManager tm;
 CheckText ct;
 
-Minim minim;
+Minim       minim;
 AudioPlayer bgm;
+OscP5       osc;
+NetAddress address;
 
 Client myClient;
 
-ArrayList<MyObj>   enemys;
-ArrayList<Bullet>  bullets;
-ArrayList<Wall>    walls;
+ArrayList<MyObj>     enemys;
+ArrayList<Bullet>    bullets;
+ArrayList<Wall>      walls;
+ArrayList<Shuriken>  shurikens;
 Player player;
 Home home;
 
 boolean isStop;
+int score, choke;
+int bscore, benergy;
+final int maxEnergy = 3300;
 
 void setup(){
-  rt = new ReadText();
-  isStop = false;
-  
   minim = new Minim(this);    //音楽・効果音用
+  osc = new OscP5(this, 1234);
+  address = new NetAddress("172.23.5.84", 1234);
+  
+  rt = new ReadText();
   db = new DataBase();        //データベース
+  tm = new TimeManager();
   
   db.screenw = 1600;          //スクリーンwidth
-  
-  tm = new TimeManager();
-  db.setobjectnames();
+  db.initial();
   
   //if(rt.check())  System.exit(0);
   rt.readCommands();
-  
   db.screenh = (int)(db.screenw*db.boardrate);
   
   size(db.screenw, db.screenh);
@@ -51,11 +59,15 @@ void setup(){
   enemys = new ArrayList<MyObj>();
   bullets = new ArrayList<Bullet>();
   walls = new ArrayList<Wall>();
+  shurikens = new ArrayList<Shuriken>();
   player = new Player();
   
   home = new Home();
   
   //myClient = new Client(this, "172.23.6.216", 5204);
+  
+  score = choke = 0;
+  isStop = false;
 }
 
 void draw(){
@@ -65,17 +77,20 @@ void draw(){
 
 //処理用関数
 void process(){
+  bscore = score;
+  benergy = choke;
+  
   if(!isStop){
     tm.checksec();
-    sm.move();
+    sm.update();
     
     //プレイヤーの動きの処理
-    player.move();
+    player.update();
     
     //敵の動きの処理
     for(int i = 0; i < enemys.size(); i++){
       MyObj enemy = enemys.get(i);
-      enemy.move();
+      enemy.update();
       
       if(enemy.isDie){
         enemys.remove(i);
@@ -86,10 +101,20 @@ void process(){
     //弾の処理
     for(int i = 0; i < bullets.size(); i++){
       Bullet bullet = bullets.get(i);
-      bullet.move();
-      
+      bullet.update();
+        
       if(bullet.isDie){
         bullets.remove(i);
+        i--;
+      }
+    }
+    
+    for(int i = 0; i < shurikens.size(); i++){
+      Shuriken s = shurikens.get(i);
+      s.update();
+      
+      if(s.isDie){
+        shurikens.remove(i);
         i--;
       }
     }
@@ -97,7 +122,7 @@ void process(){
     //壁の処理
     for(int i = 0; i < walls.size(); i++){
       Wall wall = walls.get(i);
-      wall.move();
+      wall.update();
       
       if(wall.isDie){
         walls.remove(i);
@@ -106,7 +131,11 @@ void process(){
     }
     
     //自陣の処理
-    home.move();
+    home.update();
+    
+    if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);
+    
+    send();
   }           
 }
 
@@ -126,6 +155,11 @@ void drawing(){
   for(int i = 0; i < bullets.size(); i++){
     Bullet bullet = bullets.get(i);
     bullet.draw();
+  }
+  
+  for(int i = 0; i < shurikens.size(); i++){
+    Shuriken s = shurikens.get(i);
+    s.draw();
   }
   
   fill(255, 100, 100);
@@ -158,6 +192,21 @@ PImage reverse(PImage img){
   }
 
   return img;
+}
+
+int score(MyObj e){
+  switch(e.rank){
+    case 1:
+      return 1000;
+    case 2:
+      return 1200;
+    case 3:
+      return 1500;
+    case 4:
+      return 3000;
+  }
+  
+  return 0;
 }
 
 void mousePressed(){
@@ -201,6 +250,14 @@ int readInt(){
   int e = (a<<24)|(b<<16)|(c<<8)|d;
   return e;
 }
+
+void send(){
+  OscMessage mes = new OscMessage("/text");
+  mes.add(score);
+  mes.add(choke);
+  osc.send(mes, address);
+}
+
 
 
 
