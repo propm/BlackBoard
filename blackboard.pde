@@ -83,15 +83,15 @@ void process(){
   
   if(!isStop){
     tm.checksec();
-    sm.move();
+    sm.update();
     
     //プレイヤーの動きの処理
-    player.move();
+    player.update();
     
     //敵の動きの処理
     for(int i = 0; i < enemys.size(); i++){
       MyObj enemy = enemys.get(i);
-      enemy.move();
+      enemy.update();
       
       if(enemy.isDie){
         enemys.remove(i);
@@ -102,12 +102,7 @@ void process(){
     //弾の処理
     for(int i = 0; i < bullets.size(); i++){
       Bullet bullet = bullets.get(i);
-      bullet.move();
-      
-      /*if(i == 0){
-        print(dist(bullet.owner.x, bullet.owner.y+bullet.owner.h/2, bullet.x, bullet.y));
-        println(" "+bullet.length.mag()+" "+bullet.maxlength);
-      }*/
+      bullet.update();
         
       if(bullet.isDie){
         bullets.remove(i);
@@ -117,7 +112,7 @@ void process(){
     
     for(int i = 0; i < shurikens.size(); i++){
       Shuriken s = shurikens.get(i);
-      s.move();
+      s.update();
       
       if(s.isDie){
         shurikens.remove(i);
@@ -128,7 +123,7 @@ void process(){
     //壁の処理
     for(int i = 0; i < walls.size(); i++){
       Wall wall = walls.get(i);
-      wall.move();
+      wall.update();
       
       if(wall.isDie){
         walls.remove(i);
@@ -137,7 +132,7 @@ void process(){
     }
     
     //自陣の処理
-    home.move();
+    home.update();
     
     if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);
     

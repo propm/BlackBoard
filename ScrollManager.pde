@@ -18,7 +18,7 @@ class ScrollManager{
     viewx2 = view.width;
   }
   
-  void move(){
+  void update(){
     viewx -= vx;
     viewx2 -= vx;
     

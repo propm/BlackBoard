@@ -96,13 +96,21 @@ PVector sub(PVector p1, PVector p2) {
   return new PVector(p1.x - p2.x, p1.y - p2.y, p1.z - p2.z);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////追加
+// p1 dot p2
+float dot(PVector p1, PVector p2) {
+  return p1.x * p2.x + p1.y * p2.y + p1.z * p2.z;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // p1 cross p2
 float cross(PVector p1, PVector p2) {
   return p1.x * p2.y - p1.y * p2.x;
 }
 
+// 大きさを求める
 float length(PVector v) {
-  return sqrt(v.x*v.x + v.y*v.y);
+  return sqrt(dot(v, v));
 }
 
 // p1, p2, p3で構成された三角形の面積を求める
@@ -121,11 +129,58 @@ boolean isIntersectSS(PVector a1, PVector a2, PVector b1, PVector b2) {
           cross(sub(b2, b1), sub(a1, b1)) * cross(sub(b2, b1), sub(a2, b1)) <= EPS;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////追加
+//線分と点との距離を求める
+float distanceSP(PVector st, PVector ed, PVector p) {
+  PVector a = sub(p, st), b = sub(p, ed);
+  PVector c = sub(ed, st);
+  
+  if (dot(c, a) < -EPS) return length(a);
+  if (dot(c, a) > dot(c, c) + EPS) return length(b);
+  return abs(cross(c, a)) / length(c);                //平行四辺形の面積/底辺
+}
+
+// 円と多角形（接している場合は判定なし） rは半径
+boolean judge(PVector center, float r, Polygon polygon) {
+    ArrayList<PVector> p = polygon.ver;
+    
+    //デバッグ用
+    if (p.size() < 3) {
+      println("多角形じゃない！！");
+      println("circle x polygon");
+      return false;
+    }
+    ////////////
+    
+    float s = 0.0; // 円の中心点とpolygonの各点で計算した面積
+         
+    for (int i = 0; i < p.size(); i++)
+      s += square(p.get(i), p.get((i + 1) % p.size()), center);
+    if (abs(polygon.square - s) < EPS) return true;
+    
+    for (int i = 0; i < p.size(); i++) {
+      if (distanceSP(p.get(i), p.get((i + 1) % p.size()), center) < r - EPS)
+        return true;
+    }
+    
+    return false;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // 凸多角形同士の判定 境界は含まない(辺が交差したときのみ判定あり)
 // polygon2内にpolygon1が完全に含まれている場合は判定あり(polygon1 = 自機 polygon2 = 敵)
 boolean judge(Polygon polygon1, Polygon polygon2) {
     ArrayList<PVector> p1 = polygon1.ver;
     ArrayList<PVector> p2 = polygon2.ver;
+    
+    //デバッグ用
+    if (p1.size() < 3 || p2.size() < 3) {
+      println("多角形じゃない！！");
+      if (p1.size() < 3) println("polygon1");
+      if (p2.size() < 3) println("polygon2");
+      return false;
+    }
+    ////////////
     
     // 片方または両方が凸多角形ではない場合
     if (!polygon1.isConvex || !polygon2.isConvex) {
@@ -139,9 +194,8 @@ boolean judge(Polygon polygon1, Polygon polygon2) {
       //polygon1 の中心点とpolygon2の各点で計算した面積？
       float s = 0.0;
 
-      for (int i = 0; i < p2.size(); i++){
+      for (int i = 0; i < p2.size(); i++)
         s += square(p2.get(i), p2.get((i + 1) % p2.size()), polygon1.center);
-      }
       
       if (abs(polygon2.square - s) < EPS) return true;
       
