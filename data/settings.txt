@@ -37,7 +37,7 @@ die(オブジェクト名), erase(), attacked(オブジェクト名)
 <appear>Cannon:						  6s, 18s
 <bgm>  "toxo.mp3":					  0s
 <bgm> "yugata_majojou.mp3":	  12s
-<appear>Tangent:						11s, 22s, 33s
+<appear>Tangent:					    11s, 22s, 33s
 <appear>Attacker:						13s, 14s, 16s, 18s, 20s, 22s, 24s, 26s, 28s, 30s
 
 

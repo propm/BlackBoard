@@ -8,10 +8,10 @@ class ScrollManager{
   
   ScrollManager(){
     vy = 0;
-    vx = 1 * db.scwhrate;
+    vx = 10 * db.scwhrate;
     view = loadImage("space.jpg");
     
-    m = 2;
+    m = ceil(width/view.width);
     view.resize((int)(view.width*m*db.scwhrate), (int)(view.height*m*db.scwhrate));
     
     viewx = 0;
