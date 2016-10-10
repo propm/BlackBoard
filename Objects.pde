@@ -229,18 +229,22 @@ class MyObj{
   int energy;            //粉エネルギー
   int rank;              //この敵のランク
   int hp;                                                  //体力(何回消されたら消えるか)
+  int bhp;
   int Bcount;            //弾用時間カウント
   int Acount;            //壁に攻撃するカウント
   int count;             //汎用カウント
   int Bi;                                                  //bullet interval
   int charanum;          //どの敵・プレイヤーか(0～5)
   int damage;            //与えるダメージ
+  float alpha;
+  float minusalpha;      //体力が減るごとに減る不透明度
   
   boolean isDie;         //死んでいるならtrue
   boolean bulletflag;                                      //弾を発射するオブジェクトならtrue
   boolean isOver;        //プレイヤーと重なっているならtrue
   boolean bisOver;       //1フレーム前のisOver
   boolean isCollide;
+  boolean onceinitial;   //initialを呼ぶのが一回目ならtrue
   
   PVector v;                      //移動速度
   ArrayList<PImage> imgs;         //画像
@@ -250,8 +254,8 @@ class MyObj{
   AudioSample die, AT;  //効果音
   
   MyObj(){
-    isDie = false;
     imgs = new ArrayList<PImage>();    //アニメーションさせるために10枚ほど絵が必要
+    onceinitial = true;
   }
   
   //******処理系関数******//
@@ -272,22 +276,31 @@ class MyObj{
     h = oe.h;
     bulletflag = oe.bulletflag;
     
-    hp = oe.hp;
+    bhp = hp = oe.hp;
     Bi = oe.Bi;
     rank = oe.rank;
     v = oe.v.get();
     damage = oe.damage;
     
+    if(onceinitial){
+      minusalpha = 255.0/hp;
+      alpha = 255;
+    }else{
+      minusalpha = alpha/hp;
+    }
+    
     if(num == 2)  energy = 300;
     else          energy = 100;
     
-    isOver = isStop = false;
+    isOver = isStop = isDie = false;
     count = Bcount = Acount = 0;
     
     switch(num-1){
       case 0:
         y = height-h;
     }
+    
+    onceinitial = false;
   }
   
   //多角形更新     x, y: 左上の座標
@@ -303,6 +316,8 @@ class MyObj{
   void move(){
     x += v.x;
     y += v.y;
+    alpha();
+    bhp = hp;
   }
   
   //更新
@@ -341,7 +356,6 @@ class MyObj{
   
   //攻撃
   void attack(){
-    
     if(bullet() && AT != null)  AT.trigger();
   }
   
@@ -353,9 +367,16 @@ class MyObj{
     }
   }
   
+  //hpに応じて不透明度変更
+  void alpha(){
+    if(bhp != hp)  alpha -= minusalpha;
+  }
+  
   //描画
   void draw(){
+    tint(255, alpha);
     image(imgs.get(0), x, y);
+    tint(255, 255);
     pol.Draw();
   }
 }
@@ -384,11 +405,11 @@ class Attacker extends MyObj{
   }
   
   void update(){
-    die();      //死んだかどうかの判定
     move();
-    setPolygon(x, y);
     
-    attack();   //攻撃
+    attack();
+    setPolygon(x, y);
+    die();
   }
 }
 
@@ -546,6 +567,8 @@ class Cannon extends MyObj{
   }
   
   void update(){
+    alpha();
+    bhp = hp;
     attack();
     die();
   }
@@ -572,7 +595,6 @@ class Cannon extends MyObj{
 //忍者
 class Ninja extends MyObj{
   final float ALPHA = 100;  //最大不透明度
-  float alpha;              //不透明度
   float alphav;             //不透明度の増減の速さ(1フレームにどれだけ不透明度が変化するか)
   boolean isStealth;        //透明化するときtrue
   
@@ -639,13 +661,6 @@ class Ninja extends MyObj{
         }
       }
     }
-  }
-  
-  void draw(){
-    tint(255, alpha);
-    image(imgs.get(0), x, y);
-    tint(255, 255);
-    pol.Draw();
   }
 }
 
@@ -783,12 +798,12 @@ class Player extends MyObj{
   void createwall(){
     count++;
     
-    if(/*count/60 >= 1 &&*/ wallflag /*&& choke >= 1100*/){
+    if(count/60 >= 1 && wallflag /*&& choke >= 1100*/){
       walls.add(new Wall(x, y, w*2.5, h, radian));
       choke -= 1100;
       wallflag = false;
       count = 0;
-    }else if(count/6 >= 1){
+    }else if(count/60 >= 1){
       wallflag = true;
       count = 0;
     }
@@ -1061,7 +1076,6 @@ class Beam extends Bullet{
   
   void dicision(){
     boolean notprevent = true;
-    float relatelength = 0;
     
     for(int i = 0; i < walls.size(); i++){
       float plength = x - beamdicision(walls.get(i).pol.ver, new PVector(x, y));
