@@ -133,7 +133,7 @@ void process(){
     //自陣の処理
     home.update();
     
-    //if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
+    if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
     send();
   }           
 }

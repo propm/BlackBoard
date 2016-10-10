@@ -247,6 +247,7 @@ class MyObj{
   boolean onceinitial;   //initialを呼ぶのが一回目ならtrue
   
   PVector v;                      //移動速度
+  PVector move;                   //移動した距離
   ArrayList<PImage> imgs;         //画像
   
   Polygon pol;                    //当たり判定用多角形
@@ -280,6 +281,7 @@ class MyObj{
     Bi = oe.Bi;
     rank = oe.rank;
     v = oe.v.get();
+    move = new PVector(0, 0);
     damage = oe.damage;
     
     if(onceinitial){
@@ -314,6 +316,8 @@ class MyObj{
   
   //動く
   void move(){
+    bx = x;
+    by = y;
     x += v.x;
     y += v.y;
     alpha();
@@ -372,6 +376,10 @@ class MyObj{
     if(bhp != hp)  alpha -= minusalpha;
   }
   
+  void getmove(){
+    move.set(x - bx, y - by);
+  }
+  
   //描画
   void draw(){
     tint(255, alpha);
@@ -406,6 +414,7 @@ class Attacker extends MyObj{
   
   void update(){
     move();
+    getmove();
     
     attack();
     setPolygon(x, y);
@@ -444,6 +453,8 @@ class Sin extends MyObj{
   
   void update(){
     move();
+    getmove();
+    
     attack();
     setPolygon(x, y);
     die();
@@ -481,6 +492,7 @@ class Tangent extends Sin{
   
   void update(){
     move();
+    getmove();
     
     if(x < width)  attack();
     setPolygon(x, y);
@@ -528,6 +540,7 @@ class Parachuter extends Attacker{
       initial(1);
       once = false;
     }
+    getmove();
     
     attack();
     setPolygon(x, y);
@@ -861,7 +874,7 @@ class Home{
     y = sin(angle/180*PI)*4 + height/2;
     
     damage();
-    //if(bhp != hp)  println("hp: "+hp);
+    if(bhp != hp)  println("hp: "+hp);
   }
   
   void damage(){
@@ -890,18 +903,18 @@ class Home{
         case 1:
           Laser l = (Laser)b;
           if(l.x <= border && l.x+l.length.x >= border){
-            if(++l.Hcount >= 6){
+            if(++l.Hcount%6 == 0){
               hp -= l.damage;
-              l.Hcount = 0;
+              if(l.Hcount >= 6)  l.Hcount = 0;
             }
           }
           break;
         case 2:
           Beam be = (Beam)b;
           if(be.x-be.length <= border && be.x >= border){
-            if(++be.Hcount >= 6){
+            if(++be.Hcount%6 == 0){
               hp -= be.damage;
-              be.Hcount = 0;
+              if(be.Hcount >= 6)  be.Hcount = 0;
             }
           }
           break;
@@ -1061,7 +1074,7 @@ class Beam extends Bullet{
     
     h = 6;
     Hcount = 0;
-    damage = 5;
+    damage = 2;
     margin = 15;
     length = width;
   }
@@ -1213,10 +1226,8 @@ class Wall extends MyObj{
       MyObj e = enemys.get(i);
       
       if(judge(pol, e.pol)){
-        e.isCollide = true;
+        collision(e);
         if(e.Acount++%30 == 0)  hp -= 1;
-      }else{
-        e.isCollide = false;
       }
     }
     
@@ -1225,6 +1236,11 @@ class Wall extends MyObj{
         enemys.get(i).isCollide = false;
       }
     }
+  }
+  
+  //敵との衝突判定
+  void collision(MyObj e){
+    
   }
   
   void draw(){
@@ -1295,6 +1311,7 @@ class Shuriken{
     popMatrix();
     
     noFill();
+    stroke(255, 255, 0);
     ellipse(center.x, center.y, r, r);
   }
   
