@@ -114,7 +114,7 @@ class DataBase{
           e.rank = 4;
           e.v = new PVector(-6*scwhrate, 0);
           e.bulletflag = true;
-          e.Bi = 75;
+          e.Bi = 0;
           e.damage = 50;
           
           setImage(e, "flyattacker.png");
@@ -461,7 +461,7 @@ class Tangent extends Sin{
   void update(){
     move();
     
-    attack();
+    if(x < width)  attack();
     setPolygon(x, y);
     die();
   }
@@ -783,12 +783,12 @@ class Player extends MyObj{
   void createwall(){
     count++;
     
-    if(count/60 >= 1 && wallflag /*&& choke >= 1100*/){
+    if(/*count/60 >= 1 &&*/ wallflag /*&& choke >= 1100*/){
       walls.add(new Wall(x, y, w*2.5, h, radian));
       choke -= 1100;
       wallflag = false;
       count = 0;
-    }else if(count/60 >= 1){
+    }else if(count/6 >= 1){
       wallflag = true;
       count = 0;
     }
@@ -846,7 +846,7 @@ class Home{
     y = sin(angle/180*PI)*4 + height/2;
     
     damage();
-    if(bhp != hp)  println("hp: "+hp);
+    //if(bhp != hp)  println("hp: "+hp);
   }
   
   void damage(){
@@ -1055,11 +1055,23 @@ class Beam extends Bullet{
     x = owner.x-margin;
     y = owner.y+owner.h/2;
     
-    /*for(int i = 0; i < walls.size(); i++){
-      length = width - beamdicision(walls.get(i).pol.ver, new PVector(x, y));
-    }*/
-    
+    dicision();
     if(owner.isDie)  isDie = true;
+  }
+  
+  void dicision(){
+    boolean notprevent = true;
+    float relatelength = 0;
+    
+    for(int i = 0; i < walls.size(); i++){
+      float plength = x - beamdicision(walls.get(i).pol.ver, new PVector(x, y));
+      if(plength < x && plength >= 0){
+        if(length > plength)  length = plength;
+        notprevent = false;
+      }
+    }
+    
+    if(notprevent)   length = width;
   }
   
   void draw(){
@@ -1067,6 +1079,48 @@ class Beam extends Bullet{
     noStroke();
     rect(x-length, y-h/2, length, h);
     ellipse(x, y, margin*2, margin*2);
+  }
+  
+  float beamdicision(ArrayList<PVector> pv, PVector point){
+    ArrayList<float[]> number = new ArrayList<float[]>(pv.size());
+    
+    for(int i = 0; i < pv.size(); i++){
+      float y1 = pv.get(i).y;
+      float y2 = pv.get((i+1)%pv.size()).y;
+      
+      if(y1 < y2){
+        if(y1 <= point.y && y2 >= point.y){
+          float[] y = {i, y1, 0};
+          number.add(y);
+        }
+      }else{
+        if(y1 >= point.y && y2 <= point.y){
+          float y[] = {i, y2, 0};
+          number.add(y);
+        }
+      }
+    }
+    
+    float[] max = null;
+    for(int i = 0; i < number.size(); i++){
+      int a = (int)number.get(i)[0];
+      float x1 = pv.get(a).x;
+      float x2 = pv.get((a+1)%pv.size()).x;
+      if(x1 > x2)  number.get(i)[2] = x1;
+      else         number.get(i)[2] = x2;
+      
+      if(max == null || max[2] < number.get(i)[2])  max = number.get(i);
+    }
+    
+    if(max == null)  return 0;
+    
+    float x = 0;
+    int a = (int)max[0];
+    float ylength = abs(pv.get(a).y - pv.get((a+1) % pv.size()).y);
+    float xlength = abs(pv.get(a).x - pv.get((a+1) % pv.size()).x);
+    
+    x = (point.y - max[1])/ylength * xlength;
+    return max[2] - x;
   }
 }
 
@@ -1118,13 +1172,15 @@ class Wall extends MyObj{
     for(int i = 0; i < bullets.size(); i++){
       Bullet b = bullets.get(i);
       
-      if(judge(pol, b.pol)){
-        if(b.num == 0){
-          bullets.remove(i);
-          hp -= 1;
-          i--;
-        }else{
-          hp = 0;
+      if(b.num == 0){
+        if(judge(pol, b.pol)){
+          if(b.num == 0){
+            bullets.remove(i);
+            hp -= 1;
+            i--;
+          }else{
+            hp = 0;
+          }
         }
       }
     }
