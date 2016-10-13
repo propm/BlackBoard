@@ -169,8 +169,8 @@ class DataBase{
     
     Shuriken s = orishuriken;
     s.img = loadImage("shuriken.png");
-    s.w = s.img.width/10.0*scwhrate;
-    s.h = s.img.height/10.0*scwhrate;
+    s.w = (int)(s.img.width/10.0*scwhrate);
+    s.h = (int)(s.img.height/10.0*scwhrate);
     s.img = reSize(s.img, (int)s.w, (int)s.h);
   }
   
@@ -224,7 +224,6 @@ class DataBase{
 //オブジェクト
 class MyObj implements Cloneable{
   float x, y;            //画像左上(playerの場合は中心)の座標
-  float bx, by;          //前フレームの座標
   int   w, h;                                              //画像の大きさ
   int energy;            //粉エネルギー
   int rank;              //この敵のランク
@@ -247,7 +246,6 @@ class MyObj implements Cloneable{
   boolean onceinitial;   //initialを呼ぶのが一回目ならtrue
   
   PVector v;                      //移動速度
-  PVector move;                   //移動した距離
   ArrayList<PImage> imgs;         //画像
   
   Polygon pol;                    //当たり判定用多角形
@@ -281,7 +279,6 @@ class MyObj implements Cloneable{
     Bi = oe.Bi;
     rank = oe.rank;
     v = oe.v.get();
-    move = new PVector(0, 0);
     damage = oe.damage;
     
     if(onceinitial){
@@ -309,7 +306,6 @@ class MyObj implements Cloneable{
     MyObj o = new MyObj();
     try{
       o = (MyObj)super.clone();
-      o.move = this.move.get();
       o.imgs = new ArrayList<PImage>(imgs);
       o.pol = pol.clone();
       o.oripol = oripol.clone();
@@ -331,8 +327,6 @@ class MyObj implements Cloneable{
   
   //動く
   void move(){
-    bx = x;
-    by = y;
     x += v.x;
     y += v.y;
     alpha();
@@ -396,7 +390,7 @@ class MyObj implements Cloneable{
   
   //死
   void die(){
-    if(hp <= 0 && charanum != 6 || hp == 0){
+    if((hp <= 0 && charanum != 6) || hp == 0){
       isDie = true;
       if(die != null)  die.trigger();
     }
@@ -405,10 +399,6 @@ class MyObj implements Cloneable{
   //hpに応じて不透明度変更
   void alpha(){
     if(bhp != hp)  alpha -= minusalpha;
-  }
-  
-  void getmove(){
-    move.set(x - bx, y - by);
   }
   
   //描画
@@ -445,7 +435,6 @@ class Attacker extends MyObj{
   
   void update(){
     move();
-    getmove();
     
     attack();
     setPolygon(x, y);
@@ -484,7 +473,6 @@ class Sin extends MyObj{
   
   void update(){
     move();
-    getmove();
     
     attack();
     setPolygon(x, y);
@@ -525,7 +513,6 @@ class Tangent extends Sin{
   
   void update(){
     move();
-    getmove();
     
     if(x < width && once){
       bullet();
@@ -576,7 +563,6 @@ class Parachuter extends Attacker{
       initial(1);
       once = false;
     }
-    getmove();
     
     attack();
     setPolygon(x, y);
@@ -919,7 +905,7 @@ class Home{
     y = sin(angle/180*PI)*4 + height/2;
     
     damage();
-    if(bhp != hp)  println("hp: "+hp);
+    //if(bhp != hp)  println("hp: "+hp);
   }
   
   void damage(){
@@ -928,9 +914,7 @@ class Home{
       
       if(e.x < border){
         hp -= e.damage;
-        e.isDie = true;
-        enemys.remove(i);
-        i--;
+        e.hp = 0;
       }
     }
     
@@ -948,11 +932,18 @@ class Home{
             break;
           case 1:
             Laser l = (Laser)b;
-            if(l.x <= border && l.x+l.length.x >= border){
-              if(++l.Hcount%6 == 0){
-                hp -= l.damage;
-                if(l.Hcount >= 6)  l.Hcount = 0;
+            if(l.x+abs(l.length.x) >= border){
+              if(l.x <= border){
+                l.x = border;
+                l.length.setMag(l.length.mag()+l.v.x);
+                l.setPolygonAngle();
+                if(++l.Hcount%6 == 0){
+                  hp -= l.damage;
+                  if(l.Hcount >= 6)  l.Hcount = 0;
+                }
               }
+            }else{
+              l.hp = 0;
             }
             break;
           case 2:
@@ -980,20 +971,12 @@ class Home{
 //******************************************************************************************************
 
 //敵の弾丸
-class Bullet{
-  float x, y;      //弾の進行方向の先端上の座標
-  float w, h;      //弾の幅
+class Bullet extends MyObj{
   float radian;    //横一直線を0としたときの角度　正方向は時計回り(-π < radian <= π)
   int   damage;    //与えるダメージ
-  int   hp;
+  int num;         //bulletなら0、laserなら1、beamなら2
   
-  int num;         //bulletなら0、megabulletなら1
-  
-  PVector v;
   PVector length;       //弾の長さ
-  boolean isDie;
-  
-  Polygon pol;
   
   Bullet(){}
   
@@ -1019,7 +1002,7 @@ class Bullet{
     length = v.get();
     length.setMag(50*db.scwhrate);
     
-    h = 4*db.scwhrate;
+    h = (int)(4*db.scwhrate);
     damage = 2;
     hp = 1;
     radian = atan2(v.y, v.x);
@@ -1047,6 +1030,8 @@ class Bullet{
         (v.x > 0 && x-abs(length.x) > width))  isDie = true;
         
     if(num == 0)  setPolygonAngle();
+    
+    die();
   }
   
   void die(){
@@ -1075,7 +1060,7 @@ class Laser extends Bullet{
   int maxcount;    //レーザーを打つ秒数
   int Hcount;      //自陣に当たったときのカウント
 
-  MyObj   owner;       //この弾を出したオブジェクト
+  MyObj   owner;   //この弾を出したオブジェクト
   
   Laser(float x, float y, PVector v, MyObj owner){
     this.x = x;
@@ -1089,7 +1074,7 @@ class Laser extends Bullet{
     super.initial();
     
     num = 1;
-    h = 8*db.scwhrate;
+    h = (int)(8*db.scwhrate);
     count = Hcount = 0;
     maxcount = 60 * 1;
     damage = 4;
@@ -1249,11 +1234,8 @@ class Wall extends MyObj{
       
       if(b.num == 0){
         if(judge(pol, b.pol)){
-          if(b.num == 0){
-            bullets.remove(i);
-            hp -= 1;
-            i--;
-          }
+          hp -= b.damage;
+          b.hp = 0;
         }
       }else if(b.num == 1){
         hp = 0;
@@ -1266,7 +1248,7 @@ class Wall extends MyObj{
       if(judge(s.center, s.r/2, pol)){
         s.v.set(-s.v.x, -s.v.y, -s.v.z);
         s.isReflected = true;
-        hp -= 20;
+        hp -= s.damage;
       }
     }
     
@@ -1277,13 +1259,6 @@ class Wall extends MyObj{
         if(e.Acount++%30 == 0)  hp -= 1;
       }
     }
-    
-    if(hp == 0){}
-  }
-  
-  //敵との衝突判定
-  void collision(MyObj e){
-    
   }
   
   void draw(){
@@ -1300,16 +1275,13 @@ class Wall extends MyObj{
 
 //************************************************************************************************
 
-class Shuriken{
-  float w, h;
+class Shuriken extends MyObj{
   float r;        //当たり判定の円の直径
   float angle;    //単位は度　(0 <= angle < 360)
   PVector center;     //中心座標
-  PVector v;
+  int damage;
   
   boolean isReflected;
-  boolean isDie;
-  
   PImage img;
   
   Shuriken(){}
@@ -1326,6 +1298,8 @@ class Shuriken{
     w = s.w;
     h = s.h;
     r = 54;
+    damage = 20;
+    hp = 1;
     
     v = new PVector(-3, 0);
     isReflected = false;
@@ -1339,11 +1313,13 @@ class Shuriken{
     
     angle += 0.2;
     angle %= 360;
+    
+    die();
   }
   
   void die(){
-    if(center.x+w/2 < 0  || center.x-w/2 > width || center.y+h/2 < 0 | center.y-h/2 > height)  isDie = true;
-    
+    if((center.x+w/2 < 0 || center.x-w/2 > width || 
+        center.y+h/2 < 0 || center.y-h/2 > height) || hp == 0)  isDie = true;
   }
   
   void draw(){

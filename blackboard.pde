@@ -60,6 +60,9 @@ void setup(){
   bullets = new ArrayList<Bullet>();
   walls = new ArrayList<Wall>();
   shurikens = new ArrayList<Shuriken>();
+  
+  
+  
   player = new Player();
   
   home = new Home();
@@ -89,49 +92,30 @@ void process(){
     
     //敵の動きの処理
     for(int i = 0; i < enemys.size(); i++){
-      MyObj enemy = enemys.get(i);
-      enemy.update();
-      
-      if(enemy.isDie){
-        enemys.remove(i);
-        i--;
-      }
+      enemys.get(i).update();
     }
     
     //弾の処理
     for(int i = 0; i < bullets.size(); i++){
-      Bullet bullet = bullets.get(i);
-      bullet.update();
-        
-      if(bullet.isDie){
-        bullets.remove(i);
-        i--;
-      }
+      bullets.get(i).update();
     }
     
     for(int i = 0; i < shurikens.size(); i++){
-      Shuriken s = shurikens.get(i);
-      s.update();
-      
-      if(s.isDie){
-        shurikens.remove(i);
-        i--;
-      }
+      shurikens.get(i).update();
     }
     
     //壁の処理
     for(int i = 0; i < walls.size(); i++){
-      Wall wall = walls.get(i);
-      wall.update();
-      
-      if(wall.isDie){
-        walls.remove(i);
-        i--;
-      }
+      walls.get(i).update();
     }
     
     //自陣の処理
     home.update();
+    
+    //死んだオブジェクトの処理
+    cadaver(enemys);
+    cadaver(bullets);
+    cadaver(shurikens);
     
     if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
     send();
@@ -206,6 +190,17 @@ int score(MyObj e){
   }
   
   return 0;
+}
+
+//死んだオブジェクトの処理
+void cadaver(ArrayList<?> obj){
+  for(int i = 0; i < obj.size(); i++){
+    MyObj o = (MyObj)obj.get(i);
+    if(o.isDie){
+      obj.remove(i);
+      i--;
+    }
+  }
 }
 
 void mousePressed(){
