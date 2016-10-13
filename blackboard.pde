@@ -32,7 +32,7 @@ Home home;
 boolean isStop;
 int score, choke;
 int bscore, benergy;
-final int maxEnergy = 3300;
+final int maxEnergy = 11100;
 
 void setup(){
   minim = new Minim(this);    //音楽・効果音用
