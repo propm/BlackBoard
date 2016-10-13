@@ -948,14 +948,25 @@ class Home{
             break;
           case 2:
             Beam be = (Beam)b;
-            if(be.x-be.length <= border && be.x >= border){
-              if(++be.Hcount%6 == 0){
-                hp -= be.damage;
-                if(be.Hcount >= 6)  be.Hcount = 0;
+            if(be.x >= border){
+              if(be.x-be.length <= border){
+                if(++be.Hcount%6 == 0){
+                  hp -= be.damage;
+                  if(be.Hcount >= 6)  be.Hcount = 0;
+                }
               }
             }
             break;
         }
+      }
+    }
+    
+    for(int i = 0; i < shurikens.size(); i++){
+      Shuriken s = shurikens.get(i);
+      
+      if(s.center.x-s.r/2 <= border){
+        hp -= s.damage;
+        s.hp = 0;
       }
     }
   }
@@ -1119,8 +1130,9 @@ class Beam extends Bullet{
     if(owner.isDie)  isDie = true;
   }
   
+  //被防御判定
   void dicision(){
-    boolean notprevent = true;
+    boolean notprevent = true;  //妨げられていなければtrue
     
     for(int i = 0; i < walls.size(); i++){
       float plength = x - beamdicision(walls.get(i).pol.ver, new PVector(x, y));
@@ -1130,7 +1142,7 @@ class Beam extends Bullet{
       }
     }
     
-    if(notprevent)   length = width;
+    if(notprevent)   length = x - home.border;
   }
   
   void draw(){
