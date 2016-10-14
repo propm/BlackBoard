@@ -1,9 +1,9 @@
 
 //敵の弾丸
-class Bullet extends Enemy{
+class Bullet extends MyObj{
   float radian;    //横一直線を0としたときの角度　正方向は時計回り(-π < radian <= π)
   int   damage;    //与えるダメージ
-  int num;         //bulletなら0、laserなら1、beamなら2
+  int   num;       //bulletなら0、laserなら1、beamなら2
   
   PVector length;       //弾の長さ
   
@@ -58,12 +58,11 @@ class Bullet extends Enemy{
     if((v.x <= 0 && x+abs(length.x) < 0) ||
         (v.x > 0 && x-abs(length.x) > width))  isDie = true;
         
-    if(num == 0)  setPolygonAngle();
-    
+    plus();
   }
   
-  void die(){
-    if(hp <= 0)  isDie = true;
+  void plus(){
+    setPolygonAngle();
   }
   
   void draw(){
@@ -108,11 +107,8 @@ class Laser extends Bullet{
     damage = 4;
   }
   
-  void update(){
-    super.update();
-    
+  void plus(){
     if(count++ < maxcount && !owner.isDie)  length.setMag(dist(owner.x, owner.y+owner.h/2, x, y));
-    
     setPolygonAngle();
   }
 }
@@ -147,6 +143,8 @@ class Beam extends Bullet{
     if(owner.isDie)  isDie = true;
   }
   
+  void die(){}
+  
   //被防御判定
   void dicision(){
     boolean notprevent = true;  //妨げられていなければtrue
@@ -166,7 +164,7 @@ class Beam extends Bullet{
     fill(255, 20, 147);
     noStroke();
     rect(x-length, y-h/2, length, h);
-    ellipse(x, y, margin*2, margin*2);
+    if(x >= home.border)  ellipse(x, y, margin*2, margin*2);
   }
   
   float beamdicision(ArrayList<PVector> pv, PVector point){

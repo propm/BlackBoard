@@ -238,7 +238,7 @@ int score(Enemy e){
 //死んだオブジェクトの処理
 void cadaver(ArrayList<?> obj){
   for(int i = 0; i < obj.size(); i++){
-    Enemy o = (Enemy)obj.get(i);
+    MyObj o = (MyObj)obj.get(i);
     o.die();
     
     if(o.isDie){

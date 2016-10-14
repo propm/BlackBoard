@@ -229,6 +229,7 @@ class MyObj implements Cloneable{
   ArrayList<PImage> imgs;
   
   Polygon pol;
+  AudioSample die;
   
   MyObj(){
     x = y = 0;
@@ -237,6 +238,14 @@ class MyObj implements Cloneable{
     isDie = false;
     v = new PVector(0, 0);
     imgs = new ArrayList<PImage>(2);
+  }
+  
+  //死判定
+  void die(){
+    if(hp <= 0){
+      isDie = true;
+      if(die != null)  die.trigger();
+    }
   }
 }
 
@@ -267,7 +276,7 @@ class Enemy extends MyObj{
   boolean isMoveobj;     //動くオブジェクトならtrue
   
   Polygon oripol;                 //形のみを保持する多角形
-  AudioSample die, AT;  //効果音
+  AudioSample AT;  //効果音
   
   Enemy(){
     onceinitial = true;
@@ -373,14 +382,6 @@ class Enemy extends MyObj{
   //攻撃
   void attack(){
     if(bullet() && AT != null)  AT.trigger();
-  }
-  
-  //死
-  void die(){
-    if((hp <= 0 && charanum != 6) || hp == 0){
-      isDie = true;
-      if(die != null)  die.trigger();
-    }
   }
   
   //hpに応じて不透明度変更
@@ -572,6 +573,7 @@ class Parachuter extends Attacker{
     formChange();
   }
   
+  //形態変化
   void formChange(){
     if(y >= stopy && once){
       y = stopy;
@@ -665,6 +667,10 @@ class Ninja extends Enemy{
     dicision();
   }
   
+  void die(){
+    if(hp == 0)  super.die();
+  }
+  
   void stealth(){
     //黒板消しが重なっていたら消える
     if(isOver)  isStealth = true;
@@ -747,6 +753,7 @@ class Boss extends Enemy{
     attack();
   }
   
+  //死処理
   void cadaver(){
     if(hp == 0)  isDie = true;
   }
