@@ -1,6 +1,6 @@
 
 //当たり判定用多角形
-class Polygon {
+class Polygon implements Cloneable{
   ArrayList<PVector> ver; //時計回りに定義
   boolean isConvex; //凸多角形であるか
   PVector center; // 中心点
@@ -14,6 +14,18 @@ class Polygon {
   Polygon(ArrayList<PVector> po) {
     ver = new ArrayList<PVector>(po);
     isConvex = CheckConvex();
+  }
+  
+  Polygon clone(){
+    Polygon pol = new Polygon();
+    try{
+      pol.ver = new ArrayList<PVector>(ver);
+      pol.center = center.get();
+    }catch(Exception e){
+      e.printStackTrace();
+    }
+    
+    return pol;
   }
   
   void Add(PVector point) {
