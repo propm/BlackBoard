@@ -684,7 +684,7 @@ class Ninja extends MyObj{
     for(int i = 0; i < shurikens.size(); i++){
       Shuriken s = shurikens.get(i);
       if(s.isReflected){
-        if(judge(s.center, s.r/2, pol)){
+        if(judge(new PVector(s.x, s.y), s.r/2, pol)){
           hp = 0;
           shurikens.remove(i);
           i--;
@@ -959,7 +959,7 @@ class Home{
     for(int i = 0; i < shurikens.size(); i++){
       Shuriken s = shurikens.get(i);
       
-      if(s.center.x-s.r/2 <= border){
+      if(s.x-s.r/2 <= border){
         hp -= s.damage;
         s.hp = 0;
       }
@@ -1211,7 +1211,6 @@ class Wall extends MyObj{
   void update(){
     setPolygonAngle();
     dicision();
-    println(hp);
     timer();
   }
   
@@ -1250,9 +1249,9 @@ class Wall extends MyObj{
     for(int i = 0; i < shurikens.size(); i++){
       Shuriken s = shurikens.get(i);
       
-      if(judge(s.center, s.r/2, pol)){
+      if(judge(new PVector(s.x, s.y), s.r/2, pol)){
         s.v.set(-s.v.x, -s.v.y, -s.v.z);
-        s.center.set(x+h/2.0+s.r/2.0, s.center.y);
+        s.x = x+h/2.0+s.r/2.0;
         s.isReflected = true;
         hp -= s.damage;
       }
@@ -1284,7 +1283,6 @@ class Wall extends MyObj{
 class Shuriken extends MyObj{
   float r;        //当たり判定の円の直径
   float angle;    //単位は度　(0 <= angle < 360)
-  PVector center;     //中心座標
   int damage;
   
   boolean isReflected;
@@ -1292,12 +1290,14 @@ class Shuriken extends MyObj{
   
   Shuriken(){}
   
+  //x, yは中心座標
   Shuriken(float x, float y){
     initial(x, y);
   }
   
   void initial(float x, float y){
-    center = new PVector(x, y, 0);
+    this.x = x;
+    this.y = y;
     
     Shuriken s = db.orishuriken;
     img = s.img;
@@ -1314,8 +1314,8 @@ class Shuriken extends MyObj{
   }
   
   void update(){
-    center.x += v.x;
-    center.y += v.y;
+    x += v.x;
+    y += v.y;
     
     angle += 0.2;
     angle %= 360;
@@ -1323,20 +1323,20 @@ class Shuriken extends MyObj{
   }
   
   void die(){
-    if((center.x+w/2 < 0 || center.x-w/2 > width || 
-        center.y+h/2 < 0 || center.y-h/2 > height) || hp == 0)  isDie = true;
+    if((x+w/2 < 0 || x-w/2 > width || 
+        y+h/2 < 0 || y-h/2 > height) || hp == 0)  isDie = true;
   }
   
   void draw(){
     pushMatrix();
-    translate(center.x, center.y);
+    translate(x, y);
     rotate(-angle);
     image(img, -w/2, -h/2);
     popMatrix();
     
     noFill();
     stroke(255, 255, 0);
-    ellipse(center.x, center.y, r, r);
+    ellipse(x, y, r, r);
   }
   
 }
