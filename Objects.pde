@@ -709,12 +709,11 @@ class Player extends MyObj{
   
   boolean ATflag;      //マウスクリック時true
   boolean bATflag;
-  boolean wallflag;    //壁作ってるときtrue
   
   AudioSample erase;    //消すときの音
   
   Player(){
-    ATflag = wallflag = false;
+    ATflag = false;
     
     initial();
   }
@@ -729,7 +728,6 @@ class Player extends MyObj{
       erase = p.erase;
       radian = 0;
       key = 0;
-      wallflag = true;
       energy = maxEnergy/3;
       x = y = z = 0;
       
@@ -836,13 +834,9 @@ class Player extends MyObj{
   void createwall(){
     count++;
     
-    if(count/60 >= 1 && wallflag /*&& choke >= 1100*/){
+    if(count/60 >= 1 && choke >= 3700){
       walls.add(new Wall(x, y, height/2.0, h*2, PI/2));
       choke -= energy;
-      wallflag = false;
-      count = 0;
-    }else if(count/60 >= 1){
-      wallflag = true;
       count = 0;
     }
   }
