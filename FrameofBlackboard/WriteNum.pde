@@ -4,6 +4,8 @@ int chokeMax = 11100;  //チョークの最大値
 int gageColorBlue = 0;  //ゲージの青成分 
 boolean gageup = true;  //ゲージの増減
 
+boolean dataDisplay = true;
+
 public void getData(int _score, int _choke){
   score = _score;
   choke = _choke;

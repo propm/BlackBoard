@@ -11,6 +11,7 @@ OscMessage message;
 SyphonServer server;
 
 ArrayList<Circle> CircleList;
+ArrayList<Line> lines;
 
 PFont myFont;
 
@@ -25,9 +26,14 @@ void setup(){
   
   osc = new OscP5(this, 1234);
   osc.plug(this,"getData","/text");
-
+  lines = new ArrayList<Line> ();
   CircleList = new ArrayList<Circle>();
   server = new SyphonServer(this, "BlackBoardFrame");
+  
+  for (int i = 0; i < 80; i++)
+  {
+    lines.add(new Line(80*i));
+  }
 }
 
 void draw(){
@@ -45,7 +51,10 @@ void update(){
 void display(){
   DisplayBackground();
   UpdateCircle();
-  DisplayNum();
+  if(dataDisplay == true){
+    DisplayNum();
+  }
+  bossDisplay();
 }
 
 void keyPressed(){
@@ -57,5 +66,5 @@ void keyPressed(){
     red = 250;
     grn = 250;
   }
-  
 }
+  
