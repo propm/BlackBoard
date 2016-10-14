@@ -196,6 +196,8 @@ int score(MyObj e){
 void cadaver(ArrayList<?> obj){
   for(int i = 0; i < obj.size(); i++){
     MyObj o = (MyObj)obj.get(i);
+    o.die();
+    
     if(o.isDie){
       obj.remove(i);
       i--;

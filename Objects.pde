@@ -438,7 +438,6 @@ class Attacker extends MyObj{
     
     attack();
     setPolygon(x, y);
-    die();
   }
 }
 
@@ -476,7 +475,6 @@ class Sin extends MyObj{
     
     attack();
     setPolygon(x, y);
-    die();
   }
   
   void move(){
@@ -519,7 +517,6 @@ class Tangent extends Sin{
       once = false;
     }
     setPolygon(x, y);
-    die();
   }
   
   void move(){
@@ -566,7 +563,6 @@ class Parachuter extends Attacker{
     
     attack();
     setPolygon(x, y);
-    die();
   }
     
 }
@@ -605,7 +601,6 @@ class Cannon extends MyObj{
     alpha();
     bhp = hp;
     attack();
-    die();
   }
   
   void attack(){
@@ -661,7 +656,6 @@ class Ninja extends MyObj{
     attack();
     stealth();
     dicision();
-    die();      //死判定
   }
   
   void stealth(){
@@ -1042,7 +1036,6 @@ class Bullet extends MyObj{
         
     if(num == 0)  setPolygonAngle();
     
-    die();
   }
   
   void die(){
@@ -1218,8 +1211,6 @@ class Wall extends MyObj{
     setPolygonAngle();
     dicision();
     timer();
-    
-    die();
   }
   
   void timer(){
@@ -1326,7 +1317,6 @@ class Shuriken extends MyObj{
     angle += 0.2;
     angle %= 360;
     
-    die();
   }
   
   void die(){
