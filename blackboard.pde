@@ -22,17 +22,22 @@ NetAddress address;
 
 Client myClient;
 
-ArrayList<MyObj>     enemys;
+ArrayList<Enemy>     enemys;
 ArrayList<Bullet>    bullets;
 ArrayList<Wall>      walls;
 ArrayList<Shuriken>  shurikens;
+Boss boss;
 Player player;
 Home home;
+
+final int MAXchoke = 11100;
+final int bosstime = 60*90;  //ボス戦が始まる時間
 
 boolean isStop;
 int score, choke;
 int bscore, benergy;
-final int maxEnergy = 11100;
+int wholecount;      //道中が始まってからのカウント
+int mode;            //1:タイトル　2:難易度選択　3:道中　4:ボス　5:スコア画面  6:ランキング
 
 void setup(){
   minim = new Minim(this);    //音楽・効果音用
@@ -56,21 +61,20 @@ void setup(){
   sm = new ScrollManager();
   db.setobjects();
   
-  enemys = new ArrayList<MyObj>();
+  enemys = new ArrayList<Enemy>();
   bullets = new ArrayList<Bullet>();
   walls = new ArrayList<Wall>();
   shurikens = new ArrayList<Shuriken>();
   
-  
-  
   player = new Player();
-  
   home = new Home();
   
   //myClient = new Client(this, "172.23.6.216", 5204);
   
   score = choke = 0;
   isStop = false;
+  mode = 3;
+  wholecount = 0;
 }
 
 void draw(){
@@ -80,47 +84,85 @@ void draw(){
 
 //処理用関数
 void process(){
-  bscore = score;
-  benergy = choke;
-  
   if(!isStop){
-    tm.checksec();
-    sm.update();
+    bscore = score;
+    benergy = choke;
     
-    //プレイヤーの動きの処理
-    player.update();
-    
-    //敵の動きの処理
-    for(int i = 0; i < enemys.size(); i++){
-      enemys.get(i).update();
+    switch(mode){
+      case 3:
+        tm.checksec();
+        sm.update();
+        
+        //プレイヤーの動きの処理
+        player.update();
+        
+        //敵の動きの処理
+        for(int i = 0; i < enemys.size(); i++){
+          enemys.get(i).update();
+        }
+        
+        //弾の処理
+        for(int i = 0; i < bullets.size(); i++){
+          bullets.get(i).update();
+        }
+        
+        //手裏剣の処理
+        for(int i = 0; i < shurikens.size(); i++){
+          shurikens.get(i).update();
+        }
+        
+        //壁の処理
+        for(int i = 0; i < walls.size(); i++){
+          walls.get(i).update();
+        }
+        
+        //自陣の処理
+        home.update();
+        
+        //死んだオブジェクトの処理
+        cadaver(enemys);
+        cadaver(bullets);
+        cadaver(shurikens);
+        cadaver(walls);
+        
+        if(++wholecount >= bosstime)  mode = 4;
+        break;
+      
+      case 4:
+        boss = new Boss(width/8.0, height/2.0);
+        
+        sm.update();
+        
+        //プレイヤーの動きの処理
+        player.update();
+        
+        //弾の処理
+        for(int i = 0; i < bullets.size(); i++){
+          bullets.get(i).update();
+        }
+        
+        //壁の処理
+        for(int i = 0; i < walls.size(); i++){
+          walls.get(i).update();
+        }
+        
+        //ボスの処理
+        boss.update();
+        
+        //自陣の処理
+        home.update();
+        
+        //死体の処理
+        cadaver(bullets);
+        cadaver(walls);
+        boss.cadaver();
+        
+        break;
     }
-    
-    //弾の処理
-    for(int i = 0; i < bullets.size(); i++){
-      bullets.get(i).update();
-    }
-    
-    for(int i = 0; i < shurikens.size(); i++){
-      shurikens.get(i).update();
-    }
-    
-    //壁の処理
-    for(int i = 0; i < walls.size(); i++){
-      walls.get(i).update();
-    }
-    
-    //自陣の処理
-    home.update();
-    
-    //死んだオブジェクトの処理
-    cadaver(enemys);
-    cadaver(bullets);
-    cadaver(shurikens);
-    cadaver(walls);
-    
-    if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
-    send();
-  }           
+  }
+  
+  if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
+  send();
 }
 
 //描画用関数
@@ -132,7 +174,7 @@ void drawing(){
   
   //敵
   for(int i = 0; i < enemys.size(); i++){
-    MyObj enemy = enemys.get(i);
+    Enemy enemy = enemys.get(i);
     enemy.draw();
   }
   
@@ -178,7 +220,7 @@ PImage reverse(PImage img){
   return img;
 }
 
-int score(MyObj e){
+int score(Enemy e){
   switch(e.rank){
     case 1:
       return 1000;
@@ -196,7 +238,7 @@ int score(MyObj e){
 //死んだオブジェクトの処理
 void cadaver(ArrayList<?> obj){
   for(int i = 0; i < obj.size(); i++){
-    MyObj o = (MyObj)obj.get(i);
+    Enemy o = (Enemy)obj.get(i);
     o.die();
     
     if(o.isDie){
