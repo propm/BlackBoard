@@ -642,6 +642,7 @@ class Ninja extends MyObj{
   
   void initial(){
     initial(6);
+    Bi = 30;
     
     if(y < 0)         y = 0;
     if(y > height-h)  y = height-h;
@@ -1210,6 +1211,7 @@ class Wall extends MyObj{
   void update(){
     setPolygonAngle();
     dicision();
+    println(hp);
     timer();
   }
   
@@ -1250,6 +1252,7 @@ class Wall extends MyObj{
       
       if(judge(s.center, s.r/2, pol)){
         s.v.set(-s.v.x, -s.v.y, -s.v.z);
+        s.center.set(x+h/2.0+s.r/2.0, s.center.y);
         s.isReflected = true;
         hp -= s.damage;
       }

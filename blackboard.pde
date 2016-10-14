@@ -116,6 +116,7 @@ void process(){
     cadaver(enemys);
     cadaver(bullets);
     cadaver(shurikens);
+    cadaver(walls);
     
     if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
     send();
