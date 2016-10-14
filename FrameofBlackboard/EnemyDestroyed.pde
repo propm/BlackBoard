@@ -32,9 +32,9 @@ class Circle{
   void display(){
     noFill();
     strokeWeight(1);
-    for(int i = -30;i < 0; i++){
+    for(int i = -15;i < 0; i++){
       stroke(r + i*5,g + i*5,b + i*5);
-      ellipse(x, y, elx + i*3, ely + i*3);
+      ellipse(x, y, elx + i*2, ely + i*2);
     }
   }
   
