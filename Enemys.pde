@@ -14,6 +14,12 @@ class DataBase{
   int bs;                        //弾速
   int screenw, screenh;
   
+  //多角形の点を保持
+  float[][][] vectors = {{{29.0/40, 133.0/800}, {141.0/160, 31.0/40}, {61.0/81, 17.0/20}, {13.0/40, 33.0/40}, 
+                          {1/4.0, 3/4.0}, {5.0/16, 3.0/8}, {7.0/16, 27.0/160}}, 
+                         {{33.0/160, 9.0/40}, {9.0/10, 49.0/160}, {9.0/10, 5.0/8}, {11.0/20, 59.0/80},
+                          {1.0/4, 29.0/40}, {27.0/160, 41.0/80}}};
+  
   //効果音のファイル名
   String erase;
   
@@ -51,6 +57,7 @@ class DataBase{
   //敵・プレイヤーの設定
   void setobjects(){
     bs *= scwhrate;
+    float[] wh;
     
     for(int i = 1; i <= oriEnemys.size(); i++){
       
@@ -69,16 +76,8 @@ class DataBase{
           
           setImage(e, "突撃兵タコ.png");
           setImage(e, "突撃兵タコ 攻撃.png");
-          float[][] vectors0 = {{e.w*29.0/40, e.h*133.0/800}, {e.w*141.0/160, e.h*31.0/40}, {e.w*61.0/81, e.h*17.0/20}, 
-                                {e.w*13.0/40, e.h*33.0/40}, {e.w/4.0, e.h*3/4.0}, {e.w*5.0/16, e.h*3.0/8},
-                                {e.w*3.0/8, e.h*27.0/160}};
-                               
-          for(int j = 0; j < vectors0.length; j++)  e.pol.Add(vectors0[j][0], vectors0[j][1], 0);
-          float[] wh4 = e.pol.getWH();
-          e.w = (int)wh4[0];
-          e.h = (int)wh4[1];
-          e.marginx = wh4[2];
-          e.marginy = wh4[3];
+          setOriPolygon(e, i);
+          
           
           break;
         case 1:
@@ -90,17 +89,7 @@ class DataBase{
           
           setImage(e, "突撃兵タコ.png");
           setImage(e, "突撃兵タコ 攻撃.png");
-          
-          float[][] vectors1 = {{e.w*29.0/40, e.h*133.0/800}, {e.w*141.0/160, e.h*31.0/40}, {e.w*61.0/81, e.h*17.0/20}, 
-                                {e.w*13.0/40, e.h*33.0/40}, {e.w/4.0, e.h*3/4.0}, {e.w*5.0/16, e.h*3.0/8},
-                                {e.w*3.0/8, e.h*27.0/160}};
-                               
-          for(int j = 0; j < vectors1.length; j++)  e.pol.Add(vectors1[j][0], vectors1[j][1], 0);
-          float[] wh1 = e.pol.getWH();
-          e.w = (int)wh1[0];
-          e.h = (int)wh1[1];
-          e.marginx = wh1[2];
-          e.marginy = wh1[3];
+          setOriPolygon(e, i);
           
           break;
         case 2:
@@ -111,13 +100,9 @@ class DataBase{
           e.Bi = 75;
           e.damage = 20;
           
-          setImage(e, "flyattacker.png");
-          
-          float[][] vectors2 = {{e.w, e.h*3/5, 0}, {e.w*16/21, e.h*100/106, 0}, {e.w/4, e.h, 0}, 
-                                {0, e.h*7/10, 0}, {e.w/7, 0, 0}, {e.w*4/5, e.h*4/25, 0}};
-          
-          for(int j = 0; j < vectors2.length; j++)  e.pol.Add(vectors2[j][0], vectors2[j][1], vectors2[j][2]);
-          e.pol.Reverse(e.w);
+          setImage(e, "フライングタコ1.png");
+          setImage(e, "フライングタコ2.png");
+          setOriPolygon(e, i);
           break;
         
         case 3:
@@ -128,7 +113,9 @@ class DataBase{
           e.Bi = 0;
           e.damage = 50;
           
-          setImage(e, "flyattacker.png");
+          setImage(e, "flyattacker.png", 30.0);
+          for(int j = 0; j < e.imgs.size(); j++)
+            e.imgs.set(j, Reverse(e.imgs.get(j)));
           
           //多角形設定
           float[][] vectors3 = {{e.w, e.h*3/5, 0}, {e.w*16/21, e.h*100/106, 0}, {e.w/4, e.h, 0}, 
@@ -164,7 +151,9 @@ class DataBase{
           e.bulletflag = true;
           e.Bi = 60 * 4;
           
-          setImage(e, "attacker.png");
+          setImage(e, "attacker.png", 30.0);
+          for(int j = 0; j < e.imgs.size(); j++)
+            e.imgs.set(j, Reverse(e.imgs.get(j)));
           
           float[][] vectors6 = {{e.w/2, 0, 0}, {e.w*9/10, e.h*3/20, 0}, {e.w, e.h, 0}, 
                                 {0, e.h*21/22, 0}, {e.w/5, e.h*3/25, 0}};
@@ -207,13 +196,33 @@ class DataBase{
   
   //画像設定
   void setImage(Enemy e, String filename){
-    
+    setImage(e, filename, 40.0);
+  }
+  
+  void setImage(Enemy e, String filename, float divnum){
     e.imgs.add(loadImage(filename));
     int a = e.imgs.size()-1;
-    e.w = (int)(e.imgs.get(a).width/30.0*scwhrate);
-    e.h = (int)(e.imgs.get(a).height/30.0*scwhrate);
+    e.w = (int)(e.imgs.get(a).width/divnum*scwhrate);
+    e.h = (int)(e.imgs.get(a).height/divnum*scwhrate);
     
     e.imgs.set(a, reSize(e.imgs.get(a), e.w, e.h));
+  }
+  
+  void setOriPolygon(Enemy e, int num){
+    float[] wh;
+    int vecnum = 0;
+    switch(num){
+      case 1:
+      case 4:  vecnum = 0;  break;
+      case 2:  vecnum = 1;  break;
+    }
+    for(int j = 0; j < vectors[vecnum].length; j++)  e.pol.Add(e.w*vectors[vecnum][j][0], e.h*vectors[vecnum][j][1], 0);
+    
+    wh = e.pol.getWH();
+    e.w = (int)wh[0];
+    e.h = (int)wh[1];
+    e.marginx = wh[2];
+    e.marginy = wh[3];
   }
   
    //反転
@@ -348,10 +357,8 @@ class Enemy extends MyObj{
     v = oe.v.get();
     damage = oe.damage;
     
-    if(charanum == 1 || charanum == 4){
-      marginx = oe.marginx;
-      marginy = oe.marginy;
-    }
+    marginx = oe.marginx;
+    marginy = oe.marginy;
   }
   
   //クローン
@@ -384,10 +391,9 @@ class Enemy extends MyObj{
       x += v.x;
       y += v.y;
     }
-    if(charanum == 1 || charanum == 4){
-      imgx = x - marginx;
-      imgy = y - marginy;
-    }
+    imgx = x - marginx;
+    imgy = y - marginy;
+    
     plus();
   }
   
@@ -397,8 +403,7 @@ class Enemy extends MyObj{
     alpha();
     attack();
     if(isMoveobj){
-      if(charanum == 1 || charanum == 4)  setPolygon(imgx, imgy);
-      else                                setPolygon(x, y);
+      setPolygon(imgx, imgy);
     }
   }
   
@@ -470,8 +475,7 @@ class Enemy extends MyObj{
   //描画
   void draw(){
     tint(255, alpha);
-    if(charanum == 1 || charanum == 4){ /*println(imgx+" "+x+" "+imgy+" "+y);*/ image(imgs.get(0), imgx, imgy);}
-    else                                image(imgs.get(0), x, y);
+    image(imgs.get(0), imgx, imgy);
     tint(255, 255);
     pol.Draw();
   }
@@ -508,10 +512,15 @@ class Sin extends Enemy{
   float basicy;    //角度が0のときの高さ
   int theta;       //角度(ラジアンではない)
   int omega;       //角速度（ラジアンではない)
+  boolean isSin;
   
   Sin(){
-    x = random(width)+width/3*2;
-    basicy = random(height/3*2) + h/2 + height/6;
+    isSin = false;
+    initial();
+  }
+  
+  Sin(boolean sin){
+    isSin = true;
     initial();
   }
   
@@ -523,7 +532,9 @@ class Sin extends Enemy{
   }
   
   void initial(){
-    initial(2);  //初期設定をコピー
+    x = random(width)+width/3*2;
+    basicy = random(height/3*2) + h/2 + height/6;
+    if(isSin)  initial(2);  //初期設定をコピー
     
     theta = 0;
   }

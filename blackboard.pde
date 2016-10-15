@@ -33,6 +33,8 @@ Home home;
 final int MAXchoke = 11100;
 final int bosstime = 60*90;  //ボス戦が始まる時間
 
+boolean firstinitial;
+boolean backspace, space;    //backspace、spaceが押されている間true
 boolean isStop;
 int score, choke;
 int bscore, benergy;
@@ -43,6 +45,7 @@ void setup(){
   minim = new Minim(this);    //音楽・効果音用
   osc = new OscP5(this, 1234);
   address = new NetAddress("172.23.5.84", 1234);
+  //myClient = new Client(this, "172.23.6.216", 5204);
   
   rt = new ReadText();
   db = new DataBase();        //データベース
@@ -58,23 +61,10 @@ void setup(){
   size(db.screenw, db.screenh);
   db.scwhrate = width/1600.0;
   
-  sm = new ScrollManager();
   db.setobjects();
-  
-  enemys = new ArrayList<Enemy>();
-  bullets = new ArrayList<Bullet>();
-  walls = new ArrayList<Wall>();
-  shurikens = new ArrayList<Shuriken>();
-  
-  player = new Player();
-  home = new Home();
-  
-  //myClient = new Client(this, "172.23.6.216", 5204);
-  
-  score = choke = 0;
-  isStop = false;
-  mode = 3;
-  wholecount = 0;
+  firstinitial = true;
+  backspace = space = false;
+  allInitial();
 }
 
 void draw(){
@@ -115,6 +105,8 @@ void process(){
         for(int i = 0; i < walls.size(); i++){
           walls.get(i).update();
         }
+        
+        if(enemys.size() > 0)  println("x: "+enemys.get(0).x);
         
         //自陣の処理
         home.update();
@@ -200,6 +192,31 @@ void drawing(){
 
 }
 
+//やり直し
+void allInitial(){
+  if(!firstinitial){
+    tm = new TimeManager();
+    rt.readCommands();
+  }else{
+    firstinitial = false;
+  }
+  
+  sm = new ScrollManager();
+  
+  enemys = new ArrayList<Enemy>();
+  bullets = new ArrayList<Bullet>();
+  walls = new ArrayList<Wall>();
+  shurikens = new ArrayList<Shuriken>();
+  
+  player = new Player();
+  home = new Home();
+  
+  score = choke = 0;
+  isStop = false;
+  mode = 3;
+  wholecount = 0;
+}
+
 //画像反転用関数
 PImage reverse(PImage img){
   
@@ -266,9 +283,17 @@ void keyPressed(){
       break;
   }
   
-  if(key == ' ' ){
+  if(key == BACKSPACE && !backspace){
+    allInitial();
+    backspace = true;
+    println("やり直し");
+  }
+  
+  if(key == ' ' && !space){
     if(!isStop)  isStop = true;
     else         isStop = false;
+    space = true;
+    println("一時停止");
   }
 }
 
@@ -279,6 +304,9 @@ void keyReleased(){
       player.key = 0;
       break;
   }
+  
+  if(key == BACKSPACE)  backspace = false;
+  if(key == ' ')        space = false;
 }
 
 int readInt(){
