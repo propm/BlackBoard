@@ -41,7 +41,7 @@ class TimeManager{
       else                                                    enemys.add(new Attacker());
     if(ds.stringdata[0].equals("Sin"))
       if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Sin(ds.intdata[1], ds.intdata[2]));
-      else                                                    enemys.add(new Sin());
+      else                                                    enemys.add(new Sin(true));
     if(ds.stringdata[0].equals("Tangent"))
       if(ds.intdata[1] != -10000 && ds.intdata[2] != -10000)  enemys.add(new Tangent(ds.intdata[1], ds.intdata[2]));
       else                                                    enemys.add(new Tangent());

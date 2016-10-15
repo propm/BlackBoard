@@ -5,15 +5,18 @@ class Polygon implements Cloneable{
   boolean isConvex; //凸多角形であるか
   PVector center; // 中心点
   float square; // 面積
+  boolean isBoss;
   
   Polygon() {
     ver = new ArrayList<PVector>();
     isConvex = true;
+    isBoss = false;
   }
   
   Polygon(ArrayList<PVector> po) {
     ver = new ArrayList<PVector>(po);
     isConvex = CheckConvex();
+    isBoss = false;
   }
   
   Polygon clone(){
@@ -46,6 +49,26 @@ class Polygon implements Cloneable{
     for(int i = 0; i < ver.size(); i++){
       ver.set(i, new PVector(w - ver.get(i).x, ver.get(i).y));
     }
+  }
+  
+  //判定用のx, y座標とw,hを取得
+  float[] getWH(){
+    
+    float xmin, xmax, ymin, ymax;
+    xmin = xmax = ver.get(0).x;
+    ymin = ymax = ver.get(0).y;
+    for(int i = 1; i < ver.size(); i++){
+      float x = ver.get(i).x;
+      float y = ver.get(i).y;
+      if(xmin > x)  xmin = x;
+      if(xmax < x)  xmax = x;
+      if(ymin > y)  ymin = y;
+      if(ymax < y)  ymax = y;
+    }
+    
+    float[] a = {xmax - xmin, ymax - ymin, xmin, ymin};
+    
+    return a;
   }
   
   // 凸多角形かどうか調べる
@@ -83,13 +106,15 @@ class Polygon implements Cloneable{
   }
   
   void Draw() {
-    for (int i = 0; i < ver.size(); i++) {
-      PVector p1 = ver.get(i);
-      PVector p2 = ver.get((i + 1) % ver.size());
-      
-      stroke(255, 255, 0);
-      strokeWeight(1);
-      line(p1.x, p1.y, p2.x, p2.y);
+    if(!isBoss && isDebag){
+      for (int i = 0; i < ver.size(); i++) {
+        PVector p1 = ver.get(i);
+        PVector p2 = ver.get((i + 1) % ver.size());
+        
+        stroke(255, 255, 0);
+        strokeWeight(1);
+        line(p1.x, p1.y, p2.x, p2.y);
+      }
     }
   }
 }

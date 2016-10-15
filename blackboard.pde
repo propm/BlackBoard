@@ -22,22 +22,32 @@ NetAddress address;
 
 Client myClient;
 
-ArrayList<MyObj>     enemys;
+ArrayList<Enemy>     enemys;
 ArrayList<Bullet>    bullets;
 ArrayList<Wall>      walls;
 ArrayList<Shuriken>  shurikens;
+Boss boss;
 Player player;
 Home home;
 
+final int MAXchoke = 11100;
+final int bosstime = 60*90;  //ボス戦が始まる時間
+
+boolean firstinitial;
+boolean backspace, space;    //backspace、spaceが押されている間true
 boolean isStop;
+boolean isDebag;             //デバッグモードならtrue
 int score, choke;
 int bscore, benergy;
-final int maxEnergy = 11100;
+int wholecount;      //道中が始まってからのカウント
+int scene;            //1:タイトル　2:難易度選択　3:道中　4:ボス　5:スコア画面  6:ランキング
+int debagcounter;    //どこが重いか確認する用
 
 void setup(){
   minim = new Minim(this);    //音楽・効果音用
   osc = new OscP5(this, 1234);
   address = new NetAddress("172.23.5.84", 1234);
+  //myClient = new Client(this, "172.23.6.216", 5204);
   
   rt = new ReadText();
   db = new DataBase();        //データベース
@@ -46,31 +56,18 @@ void setup(){
   db.screenw = 1600;          //スクリーンwidth
   db.initial();
   
-  //if(rt.check())  System.exit(0);
+  if(rt.check())  System.exit(0);
   rt.readCommands();
   db.screenh = (int)(db.screenw*db.boardrate);
   
   size(db.screenw, db.screenh);
   db.scwhrate = width/1600.0;
   
-  sm = new ScrollManager();
   db.setobjects();
-  
-  enemys = new ArrayList<MyObj>();
-  bullets = new ArrayList<Bullet>();
-  walls = new ArrayList<Wall>();
-  shurikens = new ArrayList<Shuriken>();
-  
-  
-  
-  player = new Player();
-  
-  home = new Home();
-  
-  //myClient = new Client(this, "172.23.6.216", 5204);
-  
-  score = choke = 0;
-  isStop = false;
+  firstinitial = true;
+  isDebag = true;
+  backspace = space = false;
+  allInitial();
 }
 
 void draw(){
@@ -80,46 +77,89 @@ void draw(){
 
 //処理用関数
 void process(){
-  bscore = score;
-  benergy = choke;
-  
   if(!isStop){
-    tm.checksec();
-    sm.update();
+    bscore = score;
+    benergy = choke;
+    wholecount++;
     
-    //プレイヤーの動きの処理
-    player.update();
-    
-    //敵の動きの処理
-    for(int i = 0; i < enemys.size(); i++){
-      enemys.get(i).update();
+    switch(scene){
+      case 3:
+        if(wholecount >= bosstime){
+          changeScene();
+          process();
+          break;
+        }
+      
+        tm.checksec();
+        sm.update();
+        
+        //プレイヤーの動きの処理
+        player.update();
+        
+        //敵の動きの処理
+        for(int i = 0; i < enemys.size(); i++){
+          enemys.get(i).update();
+        }
+        
+        //弾の処理
+        for(int i = 0; i < bullets.size(); i++){
+          bullets.get(i).update();
+        }
+        
+        //手裏剣の処理
+        for(int i = 0; i < shurikens.size(); i++){
+          shurikens.get(i).update();
+        }
+        
+        //壁の処理
+        for(int i = 0; i < walls.size(); i++){
+          walls.get(i).update();
+        }
+        
+        //自陣の処理
+        home.update();
+        
+        //死んだオブジェクトの処理
+        cadaver(enemys);
+        cadaver(bullets);
+        cadaver(shurikens);
+        cadaver(walls);
+        
+        break;
+      
+      case 4:
+        sm.update();
+        
+        //プレイヤーの動きの処理
+        player.update();
+        
+        //弾の処理
+        for(int i = 0; i < bullets.size(); i++){
+          bullets.get(i).update();
+        }
+        
+        //壁の処理
+        for(int i = 0; i < walls.size(); i++){
+          walls.get(i).update();
+        }
+        
+        //ボスの処理
+        boss.update();
+        
+        //自陣の処理
+        home.update();
+        
+        //死体の処理
+        cadaver(bullets);
+        cadaver(walls);
+        boss.cadaver();
+        
+        break;
     }
-    
-    //弾の処理
-    for(int i = 0; i < bullets.size(); i++){
-      bullets.get(i).update();
-    }
-    
-    for(int i = 0; i < shurikens.size(); i++){
-      shurikens.get(i).update();
-    }
-    
-    //壁の処理
-    for(int i = 0; i < walls.size(); i++){
-      walls.get(i).update();
-    }
-    
-    //自陣の処理
-    home.update();
-    
-    //死んだオブジェクトの処理
-    cadaver(enemys);
-    cadaver(bullets);
-    cadaver(shurikens);
-    
-    if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
-    send();
-  }           
+  }
+  
+  if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
+  send();
 }
 
 //描画用関数
@@ -129,10 +169,26 @@ void drawing(){
   //自陣
   home.draw();
   
-  //敵
-  for(int i = 0; i < enemys.size(); i++){
-    MyObj enemy = enemys.get(i);
-    enemy.draw();
+  //壁
+  fill(255, 100, 100);
+  for(int i = 0; i < walls.size(); i++){
+    Wall wall = walls.get(i);
+    wall.draw();
+  }
+  
+  if(scene == 4){
+    boss.draw();
+  }else if(scene == 3){
+    //敵
+    for(int i = 0; i < enemys.size(); i++){
+      Enemy enemy = enemys.get(i);
+      enemy.draw();
+    }
+    
+    for(int i = 0; i < shurikens.size(); i++){
+      Shuriken s = shurikens.get(i);
+      s.draw();
+    }
   }
   
   for(int i = 0; i < bullets.size(); i++){
@@ -140,21 +196,44 @@ void drawing(){
     bullet.draw();
   }
   
-  for(int i = 0; i < shurikens.size(); i++){
-    Shuriken s = shurikens.get(i);
-    s.draw();
-  }
-  
-  fill(255, 100, 100);
-  for(int i = 0; i < walls.size(); i++){
-    Wall wall = walls.get(i);
-    wall.draw();
-  }
-  
   //プレイヤー
   fill(255, 134, 0);
   player.draw();
 
+}
+
+//やり直し
+void allInitial(){
+  if(!firstinitial){
+    tm = new TimeManager();
+    rt.readCommands();
+  }else{
+    firstinitial = false;
+  }
+  
+  sm = new ScrollManager();
+  
+  enemys = new ArrayList<Enemy>();
+  bullets = new ArrayList<Bullet>();
+  walls = new ArrayList<Wall>();
+  shurikens = new ArrayList<Shuriken>();
+  
+  player = new Player();
+  home = new Home();
+  
+  score = choke = 0;
+  isStop = false;
+  scene = 3;
+  wholecount = 0;
+}
+
+void changeScene(){
+  scene++;
+  switch(scene){
+    case 4:
+      boss = new Boss(width/8.0*7, height/2.0);
+      break;
+  }
 }
 
 //画像反転用関数
@@ -177,7 +256,7 @@ PImage reverse(PImage img){
   return img;
 }
 
-int score(MyObj e){
+int score(Enemy e){
   switch(e.rank){
     case 1:
       return 1000;
@@ -223,9 +302,17 @@ void keyPressed(){
       break;
   }
   
-  if(key == ' ' ){
+  if(key == BACKSPACE && !backspace){
+    allInitial();
+    backspace = true;
+    println("やり直し");
+  }
+  
+  if(key == ' ' && !space){
     if(!isStop)  isStop = true;
     else         isStop = false;
+    space = true;
+    println("一時停止");
   }
 }
 
@@ -236,6 +323,9 @@ void keyReleased(){
       player.key = 0;
       break;
   }
+  
+  if(key == BACKSPACE)  backspace = false;
+  if(key == ' ')        space = false;
 }
 
 int readInt(){

@@ -1,6 +1,7 @@
 ﻿＜説明＞
 
-オブジェクト名：突撃兵			Attacker
+オブジェクト名↓
+敵名：突撃兵			Attacker
 		フライングタコ		Sin
 		タンジェントタコ	Tangent
 		パラシュートタコ	Parachuter
@@ -10,17 +11,19 @@
 ＜タグについて＞
 
 //<size>width
-//<appear>オブジェクト名:x座標,y座標:秒数s(, 秒数s, 秒数s, ...)
+//<appear>敵名:x座標,y座標:秒数s(, 秒数s, 秒数s, ...)
 //<bgm>"ファイル名":秒数s
 //<sound>"ファイル名" >> コマンド
-//<bs>弾速
 ※sizeの横幅を200未満にすると表示がおかしくなります。
    appearの秒数は複数指定することができる
 
 soundのコマンド 　　
-die(オブジェクト名), erase(), attacked(オブジェクト名)
-※オブジェクト名が書かれていない場合、全ての敵のオブジェクトについてコマンドを設定します。
+die(敵名), erase(), attack(敵名)
+die()			()内に指定した敵が死ぬときに出る音
+erase()  	敵のhpを黒板消しで1削ったときの音
+attack() 	()内に指定したオブジェクトが攻撃するときに出る音
 
+※オブジェクト名が書かれていない場合、全ての敵のオブジェクトについてコマンドを設定します。
 
 ※上から秒数順に書き、効果音の設定など、秒数の指定がないものは一番上にまとめて書いたほうがわかりやすいと思います。
 半角空白、タブはどこに入れても大丈夫です。
@@ -28,16 +31,14 @@ die(オブジェクト名), erase(), attacked(オブジェクト名)
 **********************************************************************************************************************
 
 <size>2000
-<sound>"punch.mp3" >> die()
-<bs>30
+<sound>"enemydestroyed.mp3" >> die()
 
 <appear>Parachuter:	 	              1s,3s,5s,9s, 15s, 21s, 28s
 <appear>Sin:							  3s, 6s, 9s, 12s, 15s, 18s, 21s, 24s, 27s, 30s
 <appear>Ninja:							  4s, 12s
 <appear>Cannon:						  6s, 18s
-<bgm>  "toxo.mp3":					  0s
-<bgm> "yugata_majojou.mp3":	  12s
-<appear>Tangent:					    11s, 22s, 33s
+<bgm>  "normal.mp3":				0s
+<appear>Tangent:					    1s, 22s, 33s
 <appear>Attacker:						13s, 14s, 16s, 18s, 20s, 22s, 24s, 26s, 28s, 30s
 
 

@@ -2,8 +2,8 @@
 //エラーがないか確認する
 class CheckText{
   
-  final String[] tags = {"<size>", "<sound>", "<appear>" , "<bgm>", "<bs>"};
-  final String[] commands = {"die", "erase", "attacked"};
+  final String[] tags = {"<size>", "<sound>", "<appear>" , "<bgm>"};
+  final String[] commands = {"die", "erase", "attack"};
   final String[] objects = {"Attacker", "Sin", "Tangent", "Parachuter", "Cannon", "Ninja"};
   
   String[] blines;
@@ -87,10 +87,6 @@ class CheckText{
             
           case 4:
             bgmError(code, 4, i);
-            break;
-            
-          case 5:
-            bsError(code, 5, i);
             break;
         }
       }
@@ -219,15 +215,6 @@ class CheckText{
     
     //ファイルが存在するかの確認
     if(conffile(filename, i)){
-      isError = true;
-      return;
-    }
-  }
-  
-  void bsError(String code, int tagnum, int i){
-    //書式通りに記入されてなかった場合の処理
-    if(!Pattern.matches(tags[tagnum-1]+"[0-9]+", lines[i])){
-      println("書式通り記入してください。 行数： "+(i+1));
       isError = true;
       return;
     }
