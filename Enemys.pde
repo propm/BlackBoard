@@ -55,9 +55,14 @@ class Sin extends Enemy{
     theta = 0;
   }
   
-  void plus(){
+  void move(){
     theta += 2;
-    if(charanum == 2)       y = basicy - sin(theta*PI/180)*height/6;
+    sety();
+    super.move();
+  }
+  
+  void sety(){
+    y = basicy - sin(theta*PI/180)*height/6;
   }
 }
 
@@ -65,7 +70,10 @@ class Sin extends Enemy{
 
 //タンジェント
 class Tangent extends Sin{
+  //  x, yは中心座標
   boolean once;
+  int angle;
+  float r;
   
   Tangent(){
     initialize();
@@ -81,12 +89,25 @@ class Tangent extends Sin{
   void initialize(){
     initial(3);  //初期設定をコピー
     
+    float imgw = imgs.get(0).width;
+    r = imgw/5.0*4;
+    marginx = imgw/100.0*49;
+    marginy = imgw/100.0*47;
+    
+    pol = new Polygon();
+    pol.isCircle = true;
+    pol.owner = this;
+    
     once = true;
   }
   
-  void plus(){
-    super.plus();
+  void sety(){
     y = basicy - tan(theta*PI/180)*100;
+  }
+  
+  void plus(){
+    angle += 8;
+    angle %= 360;
   }
   
   void attack(){
@@ -94,6 +115,18 @@ class Tangent extends Sin{
       bullet();
       once = false;
     }
+  }
+  
+  void draw(){
+    pushMatrix();
+    translate(x, y);
+    rotate(angle/180.0*PI);
+    tint(255, alpha);
+    image(imgs.get(0), -marginx, -marginy);
+    tint(255, 255);
+    popMatrix();
+    
+    pol.Draw();
   }
 }
 

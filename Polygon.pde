@@ -6,17 +6,19 @@ class Polygon implements Cloneable{
   PVector center; // 中心点
   float square; // 面積
   boolean isBoss;
+  boolean isCircle;
+  MyObj owner;
   
   Polygon() {
     ver = new ArrayList<PVector>();
     isConvex = true;
-    isBoss = false;
+    isBoss = isCircle = false;
   }
   
   Polygon(ArrayList<PVector> po) {
     ver = new ArrayList<PVector>(po);
     isConvex = CheckConvex();
-    isBoss = false;
+    isBoss = isCircle = false;
   }
   
   Polygon clone(){
@@ -107,13 +109,20 @@ class Polygon implements Cloneable{
   
   void Draw() {
     if(!isBoss && isDebag){
-      for (int i = 0; i < ver.size(); i++) {
-        PVector p1 = ver.get(i);
-        PVector p2 = ver.get((i + 1) % ver.size());
-        
-        stroke(255, 255, 0);
-        strokeWeight(1);
-        line(p1.x, p1.y, p2.x, p2.y);
+      stroke(255, 255, 0);
+      strokeWeight(1);
+      
+      if(isCircle){
+        Tangent t = (Tangent)owner;
+        noFill();
+        ellipse(t.x, t.y, t.r, t.r);
+      }else{
+        for (int i = 0; i < ver.size(); i++) {
+          PVector p1 = ver.get(i);
+          PVector p2 = ver.get((i + 1) % ver.size());
+          
+          line(p1.x, p1.y, p2.x, p2.y);
+        }
       }
     }
   }
@@ -212,9 +221,9 @@ boolean judge(Polygon polygon1, Polygon polygon2) {
     
     //デバッグ用
     if (p1.size() < 3 || p2.size() < 3) {
-      println("多角形じゃない！！");
+      //println("多角形じゃない！！");
       if (p1.size() < 3) println("polygon1");
-      if (p2.size() < 3) println("polygon2");
+      //if (p2.size() < 3) println("polygon2");
       return false;
     }
     ////////////
