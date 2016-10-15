@@ -48,6 +48,26 @@ class Polygon implements Cloneable{
     }
   }
   
+  //判定用のx, y座標とw,hを取得
+  float[] getWH(){
+    
+    float xmin, xmax, ymin, ymax;
+    xmin = xmax = ver.get(0).x;
+    ymin = ymax = ver.get(0).y;
+    for(int i = 1; i < ver.size(); i++){
+      float x = ver.get(i).x;
+      float y = ver.get(i).y;
+      if(xmin > x)  xmin = x;
+      if(xmax < x)  xmax = x;
+      if(ymin > y)  ymin = y;
+      if(ymax < y)  ymax = y;
+    }
+    
+    float[] a = {xmax - xmin, ymax - ymin, xmin, ymin};
+    
+    return a;
+  }
+  
   // 凸多角形かどうか調べる
   boolean CheckConvex() {
     if (ver.size() <= 2) return false;

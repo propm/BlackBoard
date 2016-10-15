@@ -67,12 +67,18 @@ class DataBase{
           e.damage = 30;
           
           
-          setImage(e, "attacker.png");
-          float[][] vectors0 = {{e.w/2, 0, 0}, {e.w*9/10, e.h*3/20, 0}, {e.w, e.h, 0}, 
-                                {0, e.h*21/22, 0}, {e.w/5, e.h*3/25, 0}};
+          setImage(e, "突撃兵タコ.png");
+          setImage(e, "突撃兵タコ 攻撃.png");
+          float[][] vectors0 = {{e.w*29.0/40, e.h*133.0/800}, {e.w*141.0/160, e.h*31.0/40}, {e.w*61.0/81, e.h*17.0/20}, 
+                                {e.w*13.0/40, e.h*33.0/40}, {e.w/4.0, e.h*3/4.0}, {e.w*5.0/16, e.h*3.0/8},
+                                {e.w*3.0/8, e.h*27.0/160}};
                                
-          for(int j = 0; j < vectors0.length; j++)  e.pol.Add(vectors0[j][0], vectors0[j][1], vectors0[j][2]);
-          e.pol.Reverse(e.w);
+          for(int j = 0; j < vectors0.length; j++)  e.pol.Add(vectors0[j][0], vectors0[j][1], 0);
+          float[] wh4 = e.pol.getWH();
+          e.w = (int)wh4[0];
+          e.h = (int)wh4[1];
+          e.marginx = wh4[2];
+          e.marginy = wh4[3];
           
           break;
         case 1:
@@ -82,13 +88,19 @@ class DataBase{
           e.v = new PVector(-2*scwhrate, 0);
           e.damage = 10;
           
-          setImage(e, "attacker.png");
+          setImage(e, "突撃兵タコ.png");
+          setImage(e, "突撃兵タコ 攻撃.png");
           
-          float[][] vectors1 = {{e.w/2, 0, 0}, {e.w*9/10, e.h*3/20, 0}, {e.w, e.h, 0}, 
-                                {0, e.h*21/22, 0}, {e.w/5, e.h*3/25, 0}};
+          float[][] vectors1 = {{e.w*29.0/40, e.h*133.0/800}, {e.w*141.0/160, e.h*31.0/40}, {e.w*61.0/81, e.h*17.0/20}, 
+                                {e.w*13.0/40, e.h*33.0/40}, {e.w/4.0, e.h*3/4.0}, {e.w*5.0/16, e.h*3.0/8},
+                                {e.w*3.0/8, e.h*27.0/160}};
                                
-          for(int j = 0; j < vectors1.length; j++)  e.pol.Add(vectors1[j][0], vectors1[j][1], vectors1[j][2]);
-          e.pol.Reverse(e.w);
+          for(int j = 0; j < vectors1.length; j++)  e.pol.Add(vectors1[j][0], vectors1[j][1], 0);
+          float[] wh1 = e.pol.getWH();
+          e.w = (int)wh1[0];
+          e.h = (int)wh1[1];
+          e.marginx = wh1[2];
+          e.marginy = wh1[3];
           
           break;
         case 2:
@@ -197,13 +209,11 @@ class DataBase{
   void setImage(Enemy e, String filename){
     
     e.imgs.add(loadImage(filename));
-    e.w = (int)(e.imgs.get(0).width/30.0*scwhrate);
-    e.h = (int)(e.imgs.get(0).height/30.0*scwhrate);
+    int a = e.imgs.size()-1;
+    e.w = (int)(e.imgs.get(a).width/30.0*scwhrate);
+    e.h = (int)(e.imgs.get(a).height/30.0*scwhrate);
     
-    for(int j = 0; j < e.imgs.size(); j++){
-      e.imgs.set(j, reSize(e.imgs.get(j), e.w, e.h));
-      e.imgs.set(j, Reverse(e.imgs.get(j)));
-    }
+    e.imgs.set(a, reSize(e.imgs.get(a), e.w, e.h));
   }
   
    //反転
@@ -222,6 +232,8 @@ class DataBase{
 //オブジェクト
 class MyObj implements Cloneable{
   float x, y;
+  float imgx, imgy;   //画像左上の座標
+  float marginx, marginy;  //画像左上の座標と判定の座標の差分
   int   w, h;
   int   hp;
   boolean isDie;
@@ -233,6 +245,7 @@ class MyObj implements Cloneable{
   
   MyObj(){
     x = y = 0;
+    imgx = imgy = 0;
     w = h = 0;
     hp = 0;
     isDie = false;
@@ -289,11 +302,12 @@ class Enemy extends MyObj{
     charanum = num;
     copy();
     
-    isOver = isStop = isDie = false;
     count = Bcount = Acount = 0;
     
-    //initialを呼ぶのが2回目なら
+    //initialを呼ぶのが1回目なら
     if(onceinitial){
+      isOver = isDie = false;
+      
       minusalpha = 255.0/hp;
       alpha = 255;
       onceinitial = false;
@@ -333,6 +347,11 @@ class Enemy extends MyObj{
     rank = oe.rank;
     v = oe.v.get();
     damage = oe.damage;
+    
+    if(charanum == 1 || charanum == 4){
+      marginx = oe.marginx;
+      marginy = oe.marginy;
+    }
   }
   
   //クローン
@@ -365,6 +384,10 @@ class Enemy extends MyObj{
       x += v.x;
       y += v.y;
     }
+    if(charanum == 1 || charanum == 4){
+      imgx = x - marginx;
+      imgy = y - marginy;
+    }
     plus();
   }
   
@@ -373,7 +396,10 @@ class Enemy extends MyObj{
     move();
     alpha();
     attack();
-    if(isMoveobj)  setPolygon(x, y);
+    if(isMoveobj){
+      if(charanum == 1 || charanum == 4)  setPolygon(imgx, imgy);
+      else                                setPolygon(x, y);
+    }
   }
   
   //追加したい処理を記入する
@@ -444,7 +470,8 @@ class Enemy extends MyObj{
   //描画
   void draw(){
     tint(255, alpha);
-    image(imgs.get(0), x, y);
+    if(charanum == 1 || charanum == 4){ /*println(imgx+" "+x+" "+imgy+" "+y);*/ image(imgs.get(0), imgx, imgy);}
+    else                                image(imgs.get(0), x, y);
     tint(255, 255);
     pol.Draw();
   }
