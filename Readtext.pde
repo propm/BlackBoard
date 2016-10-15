@@ -42,25 +42,17 @@ class ReadText extends CheckText{
         
         //タグごとの処理
         switch(tagnum){
-          
           case 1:
             sizepro(code);
             break;
-          
           case 2:
             soundpro(code, i);
             break;
-          
           case 3:
             appearpro(code, tagnum, i);
             break;
-            
           case 4:
             bgmpro(code, tagnum, i);
-            break;
-            
-          case 5:
-            bspro(code, tagnum, i);
             break;
         }
       }
@@ -202,15 +194,6 @@ class ReadText extends CheckText{
     
     ds.stringdata[0] = filename;
     tm.Add(ds);
-  }
-  
-  //*****************************************************************************************************************
-  
-  //bsタグの処理
-  void bspro(String code, int tagnum, int i){
-    
-    //弾速取得
-    db.bs = Integer.parseInt(code.substring(0, code.length()));
   }
   
   //*****************************************************************************************************************

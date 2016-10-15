@@ -1,87 +1,4 @@
 
-//敵の弾丸
-class Bullet extends MyObj{
-  float radian;    //横一直線を0としたときの角度　正方向は時計回り(-π < radian <= π)
-  int   damage;    //与えるダメージ
-  int   num;       //bulletなら0、laserなら1、beamなら2
-  
-  PVector length;       //弾の長さ
-  
-  Bullet(){}
-  
-  Bullet(float x, float y){
-    this.x = x;
-    this.y = y;
-    v = new PVector(-1, 0);
-    
-    initial();
-  }
-  
-  Bullet(float x, float y, PVector v){
-    this.x = x;
-    this.y = y;
-    this.v = v;
-    
-    initial();
-  }
-  
-  void initial(){
-    num = 0;
-    
-    length = v.get();
-    length.setMag(50*db.scwhrate);
-    
-    h = (int)(4*db.scwhrate);
-    damage = 2;
-    hp = 1;
-    radian = atan2(v.y, v.x);
-    isDie = false;
-    
-    pol = new Polygon();
-    for(int i = 0; i < 4; i++)
-      pol.Add(new PVector(0, 0, 0));
-  }
-  
-  //radianが0のとき、右上から時計回り（右上が0）
-  void setPolygonAngle(){
-    pol.ver.set(0, new PVector(x+h/2*cos(radian-PI/2), y+h/2*sin(radian-PI/2), 0));
-    pol.ver.set(1, new PVector(x+h/2*cos(radian+PI/2), y+h/2*sin(radian+PI/2), 0));
-    pol.ver.set(2, new PVector(x+length.mag()*cos(radian-PI)+h/2*cos(radian+PI/2), y+length.mag()*sin(radian-PI)+h/2*sin(radian+PI/2), 0));
-    pol.ver.set(3, new PVector(x+length.mag()*cos(radian-PI)+h/2*cos(radian-PI/2), y+length.mag()*sin(radian-PI)+h/2*sin(radian-PI/2), 0));
-    pol.Init();
-  }
-  
-  void update(){
-    x += v.x;
-    y += v.y;
-    
-    if((v.x <= 0 && x+abs(length.x) < 0) ||
-        (v.x > 0 && x-abs(length.x) > width))  isDie = true;
-        
-    plus();
-  }
-  
-  void plus(){
-    setPolygonAngle();
-  }
-  
-  void draw(){
-    
-    if(num == 0)      fill(255, 134, 0);
-    else if(num == 1) fill(255, 20, 147);
-    pushMatrix();
-    translate(x, y);
-    rotate(radian);
-    noStroke();
-    rect(-length.mag(), -h/2, length.mag(), h);
-    popMatrix();
-    
-    pol.Draw();
-  }
-}
-
-//*************************************************************************************
-
 class Laser extends Bullet{
   int count;
   int maxcount;    //レーザーを打つ秒数
@@ -99,12 +16,17 @@ class Laser extends Bullet{
   
   void initial(){
     super.initial();
+    if(num == 2)  return;
     
     num = 1;
     h = (int)(8*db.scwhrate);
     count = Hcount = 0;
     maxcount = 60 * 1;
     damage = 4;
+    
+    col[0] = 255;
+    col[1] = 20;
+    col[2] = 147;
   }
   
   void plus(){
@@ -119,6 +41,7 @@ class Beam extends Bullet{
   int margin;
   float length;
   Enemy owner;
+  AudioSample hit;
   
   Beam(Enemy owner){
     this.owner = owner;
@@ -127,6 +50,9 @@ class Beam extends Bullet{
   
   void initial(){
     num = 2;
+    super.initial();
+    
+    hit = minim.loadSample("beam_hit.mp3");
     
     h = 6;
     Hcount = 0;
@@ -148,7 +74,7 @@ class Beam extends Bullet{
   //被防御判定
   void dicision(){
     boolean notprevent = true;  //妨げられていなければtrue
-    
+             
     for(int i = 0; i < walls.size(); i++){
       float plength = x - beamdicision(walls.get(i).pol.ver, new PVector(x, y));
       if(plength < x && plength >= 0){
@@ -255,6 +181,8 @@ class Shuriken extends Enemy{
   }
   
   void die(){
+    super.die();
+    
     if((x+w/2 < 0 || x-w/2 > width || 
         y+h/2 < 0 || y-h/2 > height) || hp == 0)  isDie = true;
   }
@@ -276,16 +204,33 @@ class Shuriken extends Enemy{
 
 //通常
 class Standard extends Bullet{
+  float theta;
+  float plustheta;
+  float basicy;
   
   Standard(float x, float y){
     this.x = x;
-    this.y = y;
-    v = new PVector(-db.bs/10.0, 0);
+    this.basicy = y;
+    v = new PVector(-db.bs/20.0*db.scwhrate, 0);
     
+    initial();
+    
+    theta = 0;
+    damage = 5;
+    hp = 1;
+    plustheta = PI/width*7.0*-v.x;  //黒板の1/7進むごとにPIだけ進むようにする
+    
+    col = new int[3];
+    col[0] = 129;
+    col[1] = 41;
+    col[2] = 139;
   }
   
-  void update(){
-    
+  void move(){
+    x += v.x;
+    theta += plustheta;
+    theta %= 360;
+    y = height/2.0*sin(theta) + basicy;
   }
 }
 

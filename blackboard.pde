@@ -36,10 +36,12 @@ final int bosstime = 60*90;  //ボス戦が始まる時間
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
 boolean isStop;
+boolean isDebag;             //デバッグモードならtrue
 int score, choke;
 int bscore, benergy;
 int wholecount;      //道中が始まってからのカウント
-int mode;            //1:タイトル　2:難易度選択　3:道中　4:ボス　5:スコア画面  6:ランキング
+int scene;            //1:タイトル　2:難易度選択　3:道中　4:ボス　5:スコア画面  6:ランキング
+int debagcounter;    //どこが重いか確認する用
 
 void setup(){
   minim = new Minim(this);    //音楽・効果音用
@@ -54,7 +56,7 @@ void setup(){
   db.screenw = 1600;          //スクリーンwidth
   db.initial();
   
-  //if(rt.check())  System.exit(0);
+  if(rt.check())  System.exit(0);
   rt.readCommands();
   db.screenh = (int)(db.screenw*db.boardrate);
   
@@ -63,6 +65,7 @@ void setup(){
   
   db.setobjects();
   firstinitial = true;
+  isDebag = true;
   backspace = space = false;
   allInitial();
 }
@@ -77,9 +80,16 @@ void process(){
   if(!isStop){
     bscore = score;
     benergy = choke;
+    wholecount++;
     
-    switch(mode){
+    switch(scene){
       case 3:
+        if(wholecount >= bosstime){
+          changeScene();
+          process();
+          break;
+        }
+      
         tm.checksec();
         sm.update();
         
@@ -106,8 +116,6 @@ void process(){
           walls.get(i).update();
         }
         
-        if(enemys.size() > 0)  println("x: "+enemys.get(0).x);
-        
         //自陣の処理
         home.update();
         
@@ -117,12 +125,9 @@ void process(){
         cadaver(shurikens);
         cadaver(walls);
         
-        if(++wholecount >= bosstime)  mode = 4;
         break;
       
       case 4:
-        boss = new Boss(width/8.0, height/2.0);
-        
         sm.update();
         
         //プレイヤーの動きの処理
@@ -164,26 +169,31 @@ void drawing(){
   //自陣
   home.draw();
   
-  //敵
-  for(int i = 0; i < enemys.size(); i++){
-    Enemy enemy = enemys.get(i);
-    enemy.draw();
+  //壁
+  fill(255, 100, 100);
+  for(int i = 0; i < walls.size(); i++){
+    Wall wall = walls.get(i);
+    wall.draw();
+  }
+  
+  if(scene == 4){
+    boss.draw();
+  }else if(scene == 3){
+    //敵
+    for(int i = 0; i < enemys.size(); i++){
+      Enemy enemy = enemys.get(i);
+      enemy.draw();
+    }
+    
+    for(int i = 0; i < shurikens.size(); i++){
+      Shuriken s = shurikens.get(i);
+      s.draw();
+    }
   }
   
   for(int i = 0; i < bullets.size(); i++){
     Bullet bullet = bullets.get(i);
     bullet.draw();
-  }
-  
-  for(int i = 0; i < shurikens.size(); i++){
-    Shuriken s = shurikens.get(i);
-    s.draw();
-  }
-  
-  fill(255, 100, 100);
-  for(int i = 0; i < walls.size(); i++){
-    Wall wall = walls.get(i);
-    wall.draw();
   }
   
   //プレイヤー
@@ -213,8 +223,17 @@ void allInitial(){
   
   score = choke = 0;
   isStop = false;
-  mode = 3;
+  scene = 3;
   wholecount = 0;
+}
+
+void changeScene(){
+  scene++;
+  switch(scene){
+    case 4:
+      boss = new Boss(width/8.0*7, height/2.0);
+      break;
+  }
 }
 
 //画像反転用関数
