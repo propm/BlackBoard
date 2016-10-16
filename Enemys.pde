@@ -153,7 +153,7 @@ class Parachuter extends Attacker{
     initial(4);      //初期設定をコピー
     
     once = true;
-    stopy = height - h;
+    stopy = random(height/3.0*2-h)+height/3.0;
   }
   
   void plus(){
@@ -163,8 +163,10 @@ class Parachuter extends Attacker{
   //形態変化
   void formChange(){
     if(y >= stopy && once){
-      y = stopy;
       initial(1);
+      y = stopy;
+      image = imgs.get(1);
+      v.set(v.x*5, 0);
       once = false;
     }
   }
