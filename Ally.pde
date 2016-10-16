@@ -258,6 +258,8 @@ class Home{
                   if(be.Hcount >= 6)  be.Hcount = 0;
                 }
               }
+            }else{
+              be.isDie = true;
             }
             break;
         }

@@ -68,7 +68,6 @@ class Beam extends Bullet{
     y = owner.y;
     
     dicision();
-    if(owner.isDie)  isDie = true;
   }
   
   void die(){}
