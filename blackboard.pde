@@ -31,7 +31,7 @@ Player player;
 Home home;
 
 final int MAXchoke = 11100;
-final int bosstime = 60*90;  //ボス戦が始まる時間
+final int bosstime = 60;  //ボス戦が始まる時間
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true

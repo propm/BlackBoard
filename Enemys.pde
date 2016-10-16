@@ -301,11 +301,13 @@ class Boss extends Enemy{
   final int lashtime  = 60*3;
   final int standardi = 60*1;
   final int reflecti  = 60*5;
+  final float standardbs = db.bs/20.0*db.scwhrate;
   
   float basicy;
   int sc;     //通常弾count
   int rc;     //反射系弾count
-  int theta;            //単位:度
+  float theta;            //単位:度
+  float plustheta;
   boolean isStrong;     //次に発射するのが反射可能弾ならtrue
   
   Boss(){}
@@ -323,6 +325,7 @@ class Boss extends Enemy{
     
     this.x = x-w/2;
     this.basicy = y-h/2;
+    plustheta = 360.0/width*7.0*standardbs;
     
     charanum = 7;
     hp = 100;
@@ -336,17 +339,17 @@ class Boss extends Enemy{
   void move(){
     super.move();
     
-    theta += 2;
+    theta += plustheta;
     theta %= 360;
-    y = height/8.0*sin(PI/180*theta) + basicy;
+    y = height/2.0*sin(PI/180*theta) + basicy;
   }
   
   void alpha(){}
   
   void attack(){
     if(++sc <= lashtime){
-      if(sc%rapidi == 0)  bullets.add(new Standard(x+w/2, y+h/2));
-    }else if(sc >= standardi)  sc = 0;
+      if(sc%rapidi == 0)  bullets.add(new Standard(x+w/2, y+h/2, new PVector(-standardbs, 0)));
+    }else if(sc >= lashtime + standardi)  sc = 0;
     
     if(++rc >= reflecti){
       if(isStrong)  bullets.add(new Reflect());
