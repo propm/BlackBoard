@@ -34,11 +34,11 @@ attack() 	()内に指定したオブジェクトが攻撃するときに出る�
 <sound>"enemydestroyed.mp3" >> die()
 
 <appear>Parachuter:	 	              1s,3s,5s,9s, 15s, 21s, 28s
-<appear>Sin:							  3s, 6s, 9s, 12s, 15s, 18s, 21s, 24s, 27s, 30s
-<appear>Ninja:							  4s, 12s
-<appear>Cannon:						  6s, 18s
+//<appear>Sin:							  3s, 6s, 9s, 12s, 15s, 18s, 21s, 24s, 27s, 30s
+/<appear>Ninja:							  4s, 12s
+/<appear>Cannon:						  6s, 18s
 <bgm>  "normal.mp3":				0s
-<appear>Tangent:					    1s, 22s, 33s
-<appear>Attacker:						13s, 14s, 16s, 18s, 20s, 22s, 24s, 26s, 28s, 30s
+/<appear>Tangent:					    1s, 22s, 33s
+/<appear>Attacker:						13s, 14s, 16s, 18s, 20s, 22s, 24s, 26s, 28s, 30s
 
 

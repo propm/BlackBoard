@@ -39,12 +39,13 @@ class Laser extends Bullet{
 class Beam extends Bullet{
   int Hcount;
   int margin;
+  int r;
   float length;
-  Enemy owner;
+  Tangent owner;
   AudioSample hit;
   
   Beam(Enemy owner){
-    this.owner = owner;
+    this.owner = (Tangent)owner;
     initial();
   }
   
@@ -57,16 +58,16 @@ class Beam extends Bullet{
     h = 6;
     Hcount = 0;
     damage = 5;
-    margin = 15;
+    margin = (int)(owner.r/2.0);
+    r = 30;
     length = width;
   }
   
   void update(){
     x = owner.x-margin;
-    y = owner.y+owner.h/2;
+    y = owner.y;
     
     dicision();
-    if(owner.isDie)  isDie = true;
   }
   
   void die(){}
@@ -90,7 +91,7 @@ class Beam extends Bullet{
     fill(255, 20, 147);
     noStroke();
     rect(x-length, y-h/2, length, h);
-    if(x >= home.border)  ellipse(x, y, margin*2, margin*2);
+    if(x >= home.border)  ellipse(x, y, r, r);
   }
   
   float beamdicision(ArrayList<PVector> pv, PVector point){
@@ -204,33 +205,21 @@ class Shuriken extends Enemy{
 
 //通常
 class Standard extends Bullet{
-  float theta;
-  float plustheta;
-  float basicy;
   
-  Standard(float x, float y){
+  Standard(float x, float y, PVector v){
     this.x = x;
-    this.basicy = y;
-    v = new PVector(-db.bs/20.0*db.scwhrate, 0);
+    this.y = y;
+    this.v = v.get();
     
     initial();
     
-    theta = 0;
     damage = 5;
     hp = 1;
-    plustheta = PI/width*7.0*-v.x;  //黒板の1/7進むごとにPIだけ進むようにする
     
     col = new int[3];
     col[0] = 129;
     col[1] = 41;
     col[2] = 139;
-  }
-  
-  void move(){
-    x += v.x;
-    theta += plustheta;
-    theta %= 360;
-    y = height/2.0*sin(theta) + basicy;
   }
 }
 

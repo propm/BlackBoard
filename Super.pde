@@ -8,7 +8,8 @@ class MyObj implements Cloneable{
   int   hp;
   boolean isDie;
   PVector v;
-  ArrayList<PImage> imgs;
+  ArrayList<PImage> imgs;    //使う画像を保存
+  PImage image;              //今使われているimage
   
   Polygon pol;
   AudioSample die;
@@ -104,7 +105,8 @@ class Enemy extends MyObj{
     die = oe.die;
     AT =  oe.AT;
     
-    imgs.add(oe.imgs.get(0));
+    imgs = new ArrayList<PImage>(oe.imgs);
+    image = imgs.get(0);
     oripol = new Polygon(oe.pol.ver);
     pol    = new Polygon(oe.pol.ver);
     
@@ -236,7 +238,7 @@ class Enemy extends MyObj{
   //描画
   void draw(){
     tint(255, alpha);
-    image(imgs.get(0), imgx, imgy);
+    image(image, imgx, imgy);
     tint(255, 255);
     pol.Draw();
   }

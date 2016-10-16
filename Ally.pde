@@ -116,8 +116,14 @@ class Player extends Enemy{
       
       e.bisOver = e.isOver;
       
-      if(judge(pol, e.pol))  e.isOver = true;
-      else                   e.isOver = false;
+      if(e.charanum != 3 && e.charanum != 7){
+        if(judge(pol, e.pol))  e.isOver = true;
+        else                   e.isOver = false;
+      }else{
+        Tangent t = (Tangent)e;
+        if(judge(new PVector(t.x, t.y), t.r, pol))  e.isOver = true;
+        else                                        e.isOver = false;
+      }
     }
   }
   
@@ -202,9 +208,17 @@ class Home{
     for(int i = 0; i < enemys.size(); i++){
       Enemy e = enemys.get(i);
       
-      if(e.x < border){
-        hp -= e.damage;
-        e.hp = 0;
+      if(e.charanum == 3){
+        Tangent t = (Tangent)e;
+        if(t.x-t.r/2.0 < border){
+          hp -= e.damage;
+          e.hp = 0;
+        }
+      }else if(e.charanum != 7){
+        if(e.x < border && e.charanum != 3){
+          hp -= e.damage;
+          e.hp = 0;
+        }
       }
     }
     
@@ -216,8 +230,7 @@ class Home{
           case 0:
             if(b.x <= border){
               hp -= b.damage;
-              bullets.remove(i);
-              i--;
+              b.hp = 0;
             }
             break;
           case 1:
@@ -245,6 +258,8 @@ class Home{
                   if(be.Hcount >= 6)  be.Hcount = 0;
                 }
               }
+            }else{
+              be.isDie = true;
             }
             break;
         }

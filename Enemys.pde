@@ -55,9 +55,14 @@ class Sin extends Enemy{
     theta = 0;
   }
   
-  void plus(){
+  void move(){
     theta += 2;
-    if(charanum == 2)       y = basicy - sin(theta*PI/180)*height/6;
+    sety();
+    super.move();
+  }
+  
+  void sety(){
+    y = basicy - sin(theta*PI/180)*height/6;
   }
 }
 
@@ -65,7 +70,10 @@ class Sin extends Enemy{
 
 //タンジェント
 class Tangent extends Sin{
+  //  x, yは中心座標
   boolean once;
+  int angle;
+  float r;
   
   Tangent(){
     initialize();
@@ -81,12 +89,25 @@ class Tangent extends Sin{
   void initialize(){
     initial(3);  //初期設定をコピー
     
+    float imgw = imgs.get(0).width;
+    r = imgw/5.0*4;
+    marginx = imgw/100.0*49;
+    marginy = imgw/100.0*47;
+    
+    pol = new Polygon();
+    pol.isCircle = true;
+    pol.owner = this;
+    
     once = true;
   }
   
-  void plus(){
-    super.plus();
+  void sety(){
     y = basicy - tan(theta*PI/180)*100;
+  }
+  
+  void plus(){
+    angle += 8;
+    angle %= 360;
   }
   
   void attack(){
@@ -94,6 +115,18 @@ class Tangent extends Sin{
       bullet();
       once = false;
     }
+  }
+  
+  void draw(){
+    pushMatrix();
+    translate(x, y);
+    rotate(angle/180.0*PI);
+    tint(255, alpha);
+    image(imgs.get(0), -marginx, -marginy);
+    tint(255, 255);
+    popMatrix();
+    
+    pol.Draw();
   }
 }
 
@@ -120,7 +153,7 @@ class Parachuter extends Attacker{
     initial(4);      //初期設定をコピー
     
     once = true;
-    stopy = height - h;
+    stopy = random(height/3.0*2-h)+height/3.0;
   }
   
   void plus(){
@@ -130,8 +163,10 @@ class Parachuter extends Attacker{
   //形態変化
   void formChange(){
     if(y >= stopy && once){
-      y = stopy;
       initial(1);
+      y = stopy;
+      image = imgs.get(1);
+      v.set(v.x*5, 0);
       once = false;
     }
   }
@@ -264,15 +299,17 @@ class Ninja extends Enemy{
 
 //ボス
 class Boss extends Enemy{
-  final int rapidi    = 20;           //interbal
+  final float rapidi  = 60/7.0;           //interbal
   final int lashtime  = 60*3;
   final int standardi = 60*1;
   final int reflecti  = 60*5;
+  final float standardbs = db.bs/20.0*db.scwhrate;
   
   float basicy;
   int sc;     //通常弾count
   int rc;     //反射系弾count
-  int theta;            //単位:度
+  float theta;            //単位:度
+  float plustheta;
   boolean isStrong;     //次に発射するのが反射可能弾ならtrue
   
   Boss(){}
@@ -287,9 +324,11 @@ class Boss extends Enemy{
     w = (int)(imgs.get(0).width/10.0);
     h = (int)(imgs.get(0).height/10.0);
     imgs.get(0).resize(w, h);
+    image = imgs.get(0);
     
     this.x = x-w/2;
     this.basicy = y-h/2;
+    plustheta = 360.0/width*7.0*standardbs;
     
     charanum = 7;
     hp = 100;
@@ -303,17 +342,17 @@ class Boss extends Enemy{
   void move(){
     super.move();
     
-    theta += 2;
+    theta += plustheta;
     theta %= 360;
-    y = height/8.0*sin(PI/180*theta) + basicy;
+    y = height/2.0*sin(PI/180*theta) + basicy;
   }
   
   void alpha(){}
   
   void attack(){
     if(++sc <= lashtime){
-      if(sc%rapidi == 0)  bullets.add(new Standard(x+w/2, y+h/2));
-    }else if(sc >= standardi)  sc = 0;
+      if(sc%rapidi < 1)  bullets.add(new Standard(x+w/2, y+h/2, new PVector(-standardbs, 0)));
+    }else if(sc >= lashtime + standardi)  sc = 0;
     
     if(++rc >= reflecti){
       if(isStrong)  bullets.add(new Reflect());

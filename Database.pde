@@ -112,16 +112,8 @@ class DataBase{
           e.Bi = 0;
           e.damage = 50;
           
-          setImage(e, "flyattacker.png", 30.0);
-          for(int j = 0; j < e.imgs.size(); j++)
-            e.imgs.set(j, Reverse(e.imgs.get(j)));
-          
-          //多角形設定
-          float[][] vectors3 = {{e.w, e.h*3/5, 0}, {e.w*16/21, e.h*100/106, 0}, {e.w/4, e.h, 0}, 
-                                {0, e.h*7/10, 0}, {e.w/7, 0, 0}, {e.w*4/5, e.h*4/25, 0}};
-          
-          for(int j = 0; j < vectors3.length; j++)  e.pol.Add(vectors3[j][0], vectors3[j][1], vectors3[j][2]);
-          e.pol.Reverse(e.w);
+          setImage(e, "tangent1.png");
+          setImage(e, "tangent2.png");
           
           break;
         case 5:
