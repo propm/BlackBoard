@@ -116,8 +116,14 @@ class Player extends Enemy{
       
       e.bisOver = e.isOver;
       
-      if(judge(pol, e.pol))  e.isOver = true;
-      else                   e.isOver = false;
+      if(e.charanum != 3 && e.charanum != 7){
+        if(judge(pol, e.pol))  e.isOver = true;
+        else                   e.isOver = false;
+      }else{
+        Tangent t = (Tangent)e;
+        if(judge(new PVector(t.x, t.y), t.r, pol))  e.isOver = true;
+        else                                        e.isOver = false;
+      }
     }
   }
   
