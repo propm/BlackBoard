@@ -299,7 +299,7 @@ class Ninja extends Enemy{
 
 //ボス
 class Boss extends Enemy{
-  final int rapidi    = 20;           //interbal
+  final float rapidi  = 60/7.0;           //interbal
   final int lashtime  = 60*3;
   final int standardi = 60*1;
   final int reflecti  = 60*5;
@@ -324,6 +324,7 @@ class Boss extends Enemy{
     w = (int)(imgs.get(0).width/10.0);
     h = (int)(imgs.get(0).height/10.0);
     imgs.get(0).resize(w, h);
+    image = imgs.get(0);
     
     this.x = x-w/2;
     this.basicy = y-h/2;
@@ -350,7 +351,7 @@ class Boss extends Enemy{
   
   void attack(){
     if(++sc <= lashtime){
-      if(sc%rapidi == 0)  bullets.add(new Standard(x+w/2, y+h/2, new PVector(-standardbs, 0)));
+      if(sc%rapidi < 1)  bullets.add(new Standard(x+w/2, y+h/2, new PVector(-standardbs, 0)));
     }else if(sc >= lashtime + standardi)  sc = 0;
     
     if(++rc >= reflecti){
