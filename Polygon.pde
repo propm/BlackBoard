@@ -7,22 +7,25 @@ class Polygon implements Cloneable{
   float square; // 面積
   boolean isBoss;
   boolean isCircle;
+  boolean flag;
   MyObj owner;
   
   Polygon() {
     ver = new ArrayList<PVector>();
     isConvex = true;
-    isBoss = isCircle = false;
+    isBoss = isCircle = flag = false;
   }
   
   Polygon(ArrayList<PVector> po) {
     ver = new ArrayList<PVector>(po);
     isConvex = CheckConvex();
     isBoss = isCircle = false;
+    flag = false;
   }
   
   Polygon clone(){
     Polygon pol = new Polygon();
+    
     try{
       pol.ver = new ArrayList<PVector>(ver);
       pol.center = center.get();
@@ -130,7 +133,7 @@ class Polygon implements Cloneable{
 
 /////////
 
-final float EPS = 0.04;
+final float EPS = 0.00004;
 
 // p1 + p2
 PVector add(PVector p1, PVector p2) {
@@ -173,6 +176,28 @@ float square(PVector p1, PVector p2, PVector p3) {
 boolean isIntersectSS(PVector a1, PVector a2, PVector b1, PVector b2) {
   return  cross(sub(a2, a1), sub(b1, a1)) * cross(sub(a2, a1), sub(b2, a1)) <= EPS &&
           cross(sub(b2, b1), sub(a1, b1)) * cross(sub(b2, b1), sub(a2, b1)) <= EPS;
+}
+
+//2つのベクトルの外積のz座標の正負を調べる（正なら1、負なら0、２つのベクトルが平行なら0）
+int directionCross(PVector a, PVector b){
+  float direction = a.cross(b).z;
+  if(direction > EPS)  return 1;
+  else if(direction < -EPS)  return -1;
+  else  return 0;
+}
+
+//三角形に点が含まれるかどうか調べる(線上も含まれる)  v1, v2, v3は三角形の頂点の座標
+boolean isinTriangle(PVector v1, PVector v2, PVector v3, PVector point){
+  PVector[] vertex = {v1, v2, v3};
+  float[] z = new float[3];
+  for(int i = 0; i < 3; i++){
+    PVector vertextopoint = sub(point, vertex[i]);
+    PVector side          = sub(vertex[(i+1)%vertex.length], vertex[i]);
+    z[i] = directionCross(side, vertextopoint);
+    //println(z[i]);
+  }
+  boolean result = ((z[0] >= 0 && z[1] >= 0 && z[2] >= 0) || (z[0] <= 0 && z[1] <= 0 && z[2] <= 0));
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////追加

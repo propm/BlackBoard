@@ -31,7 +31,7 @@ Player player;
 Home home;
 
 final int MAXchoke = 11100;
-final int bosstime = 60;  //ボス戦が始まる時間
+final int bosstime = 60*90;  //ボス戦が始まる時間
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
@@ -71,6 +71,7 @@ void setup(){
 }
 
 void draw(){
+  if(!isStop)sm.drawView();
   process();    //処理
   drawing();    //描画
 }
@@ -164,7 +165,7 @@ void process(){
 
 //描画用関数
 void drawing(){
-  sm.drawView();
+  //sm.drawView();
   
   //自陣
   home.draw();
