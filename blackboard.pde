@@ -31,7 +31,7 @@ Player player;
 Home home;
 
 final int MAXchoke = 11100;
-final int bosstime = 60;  //ボス戦が始まる時間
+final int bosstime = 60*90;  //ボス戦が始まる時間
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
@@ -138,7 +138,6 @@ void process(){
         for(int i = 0; i < bullets.size(); i++){
           bullets.get(i).update();
         }
-        println(bullets.size()); 
         
         //壁の処理
         for(int i = 0; i < walls.size(); i++){
@@ -234,6 +233,8 @@ void changeScene(){
   switch(scene){
     case 4:
       boss = new Boss(width/8.0*7, height/2.0);
+      for(int i = 0; i < enemys.size(); i++)
+        enemys.remove(0);
       break;
   }
 }
