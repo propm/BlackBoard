@@ -51,9 +51,7 @@ void update(){
 void display(){
   DisplayBackground();
   UpdateCircle();
-  if(dataDisplay == true){
-    DisplayNum();
-  }
+  DisplayNum();
   bossDisplay();
 }
 
