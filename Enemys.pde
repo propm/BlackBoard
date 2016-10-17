@@ -303,7 +303,9 @@ class Boss extends Enemy{
   final int lashtime  = 60*3;
   final int standardi = 60*1;
   final int reflecti  = 60*5;
-  final float standardbs = db.bs/20.0*db.scwhrate;
+  final float standardbs = 1.5*db.scwhrate;
+  final int rbs = 20;
+  final float reffreq = 2.5;
   
   float basicy;
   int sc;     //通常弾count
@@ -355,9 +357,13 @@ class Boss extends Enemy{
     }else if(sc >= lashtime + standardi)  sc = 0;
     
     if(++rc >= reflecti){
-      if(isStrong)  bullets.add(new Reflect());
-      else          bullets.add(new Strong());
+      if(isStrong){
+        bullets.add(new Reflect(x, y+h/3.0, new PVector(-rbs*cos(45*PI/180.0), rbs*sin(45*PI/180.0))));
+        bullets.add(new Reflect(x, y+h/3.0, new PVector(-rbs*cos(-45*PI/180.0), rbs*sin(-45*PI/180.0))));
+      }
+      else          bullets.add(new Strong(x, y+h/2));
       isStrong = !isStrong;
+      rc = 0;
     }
   }
   

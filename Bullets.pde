@@ -215,6 +215,7 @@ class Standard extends Bullet{
     
     damage = 5;
     hp = 1;
+    num = 3;
     
     col = new int[3];
     col[0] = 129;
@@ -227,14 +228,71 @@ class Standard extends Bullet{
 
 //反射弾
 class Reflect extends Bullet{
+  int r;
   
+  Reflect(){}
+  
+  //x, yは中心座標
+  Reflect(float x, float y, PVector v){
+    this.x = x;
+    this.y = y; 
+    this.v = v.get();
+    
+    r = 15;
+    num = 4;
+    hp = 2;
+    damage = 10;
+    
+    col = new int[3];
+    col[0] = col[1] = 0;
+    col[2] = 255;
+  }
+  
+  void plus(){
+    //反射
+    if(y >= height-r/2){
+      v.set(v.x, -v.y);
+      y = height-r/2;
+    }else if(y <= r/2){
+      v.set(v.x, -v.y);
+      y = r/2;
+    }
+  }
+  
+  void outdicision(){
+    if(x-r/2 > width || x+r/2 < 0)  isDie = true;
+  }
+  
+  void draw(){
+    fill(col[0], col[1], col[2]);
+    ellipse(x, y, r, r);
+  }
 }
 
 //******************************************************************************
 
 //反射可能
 class Strong extends Reflect{
+  boolean reflected;
   
+  //x, yは中心座標
+  Strong(float x, float y){
+    this.x = x;
+    this.y = y;
+    v = new PVector(-6*db.scwhrate, 0);
+    
+    hp = 7;
+    damage = 15;
+    num = 5;
+    r = 100;
+    reflected = false;
+    
+    col = new int[3];
+    col[0] = col[1] = 255;
+    col[2] = 0;
+  }
+  
+  void plus(){}
 }
 
 
