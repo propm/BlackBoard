@@ -1,5 +1,6 @@
 import oscP5.*;
 import netP5.*;
+import java.nio.ByteBuffer;
 
 import ddf.minim.spi.*;
 import ddf.minim.signals.*;
@@ -20,7 +21,7 @@ AudioPlayer bgm;
 OscP5       osc;
 NetAddress address;
 
-Client myClient;
+Client client;
 
 ArrayList<Enemy>     enemys;
 ArrayList<Bullet>    bullets;
@@ -31,7 +32,7 @@ Player player;
 Home home;
 
 final int MAXchoke = 11100;
-final int bosstime = 60;  //ボス戦が始まる時間
+final int bosstime = 60*90;  //ボス戦が始まる時間
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
@@ -43,11 +44,11 @@ int wholecount;      //道中が始まってからのカウント
 int scene;            //1:タイトル　2:難易度選択　3:道中　4:ボス　5:スコア画面  6:ランキング
 int debagcounter;    //どこが重いか確認する用
 
-void setup(){
+void settings(){
   minim = new Minim(this);    //音楽・効果音用
   osc = new OscP5(this, 1234);
   address = new NetAddress("172.23.5.84", 1234);
-  //myClient = new Client(this, "172.23.6.216", 5204);
+  client = new Client(this, "172.23.6.216", 50000);
   
   rt = new ReadText();
   db = new DataBase();        //データベース
@@ -61,6 +62,9 @@ void setup(){
   db.screenh = (int)(db.screenw*db.boardrate);
   
   size(db.screenw, db.screenh);
+}
+
+void setup(){
   db.scwhrate = width/1600.0;
   
   db.setobjects();
@@ -138,7 +142,6 @@ void process(){
         for(int i = 0; i < bullets.size(); i++){
           bullets.get(i).update();
         }
-        println(bullets.size()); 
         
         //壁の処理
         for(int i = 0; i < walls.size(); i++){
@@ -234,6 +237,8 @@ void changeScene(){
   switch(scene){
     case 4:
       boss = new Boss(width/8.0*7, height/2.0);
+      for(int i = 0; i < enemys.size(); i++)
+        enemys.remove(0);
       break;
   }
 }
@@ -330,13 +335,9 @@ void keyReleased(){
   if(key == ' ')        space = false;
 }
 
-int readInt(){
-  int a = myClient.read();
-  int b = myClient.read();
-  int c = myClient.read();
-  int d = myClient.read();
-  int e = (a<<24)|(b<<16)|(c<<8)|d;
-  return e;
+int readInt()
+{
+    return Integer.reverseBytes(ByteBuffer.wrap(client.readBytes(4)).getInt());
 }
 
 void send(){
@@ -345,23 +346,3 @@ void send(){
   mes.add(choke);
   osc.send(mes, address);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
