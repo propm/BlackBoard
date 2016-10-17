@@ -194,6 +194,130 @@ class Enemy extends MyObj{
     o.move();
     o.setPolygon(o.imgx, o.imgy);
     
+    //凸包作成
+    Polygon convex = createConvex(o);
+    if(convex == null)  return;
+    convex.Draw();
+    
+    //補正
+    //correction(o);
+    
+  }
+  
+  //補正
+  /*void correction(Enemy o){
+    
+    //ぶつかる可能性がある壁の検出
+    final int RIGHT = 1;
+    PVector move = sub(o.pol.ver.get(0), pol.ver.get(0));
+    int a, b;    //右側を1として時計回り
+    a = b = 0;
+    ArrayList<PVector> vers = new ArrayList<PVector>(pol.ver);
+    
+    if(move.x > 0)  a = 1;
+    if(move.x < 0)  a = 3;
+    if(move.y > 0)  a = 4;
+    if(move.y < 0)  a = 2;
+    
+    if(a == 0 && b == 0)  return;
+    
+    ArrayList<float[]> wallside = new ArrayList<float[]>(vers.size());  //要素1: どの辺にぶつかっているか
+                                                                        //要素2: その辺との距離
+    if(a == 0 || b == 0){
+      if(b != 0)  a = b;
+      int element = a%walls.get(0).pol.vers.size();
+      for(int i = 0; i < walls.size(); i++){
+        ArrayList<PVector> wallvs = new ArrayList<PVector>(walls.get(i).pol.ver);
+        for(int j = 0; j < vers.size(); j++){
+          float[] f = new float[2];    //1つ目の要素が1なら壁の横の辺、2なら壁の縦の辺
+          
+          if(isIntersectSS(wallvs.get(element), wallvs.get((element+1)%wallvs.size()), pol.ver.get(j), o.pol.ver.get(j)){
+            f[0] = 1;
+            f[1] = distance(wallvs.get(element), wallvs.get((element+1)%wallvs.size()), pol.ver.get(j), o.pol.ver.get(j), move);
+          }else{
+            a[0] = a[1] = 0;
+          }
+          
+          wallside.add(a);
+        }
+      }
+      
+    }else{
+      int element1 = a%walls.get(0).pol.vers.size();
+      int element2 = b%walls.get(0).pol.vers.size();
+      for(int i = 0; i < walls.size(); i++){
+        ArrayList<PVector> wallvs = new ArrayList<PVector>(walls.get(i).pol.ver);
+        for(int j = 0; j < vers.size(); j++){
+          float[] f = new float[2];    //1つ目の要素が1なら壁の横の辺、2なら壁の縦の辺
+          
+          if(isIntersectSS(wallvs.get(element1), wallvs.get((element1+1)%wallvs.size()), pol.ver.get(j), o.pol.ver.get(j)){
+            f[0] = 1;
+            f[1] = distance(wallvs.get(element1), wallvs.get((element1+1)%wallvs.size()), pol.ver.get(j), o.pol.ver.get(j), move);
+          }else if(isIntersectSS(wallvs.get(element2), wallvs.get((element2+1)%wallvs.size()), pol.ver.get(j), o.pol.ver.get(j)){
+            f[0] = 2;
+            f[1] = distance(wallvs.get(element2), wallvs.get((element2+1)%wallvs.size()), pol.ver.get(j), o.pol.ver.get(j));
+          }else{
+            a[0] = a[1] = 0;
+          }
+          
+          wallside.add(a);
+        }
+      }
+    }
+    
+    //緑線の取得
+    ArrayList<Float> distance = new ArrayList<Float>();
+    boolean throughIf = false;
+    for(int i = 0; i < wallside.size(); i++){
+      PVector ss1, ss2, point1, point2;
+      if(wallside.get(i)[0] == 0){
+        if(wallside.get((i+1)%wallside.size())[0] == 1){  
+          ss2 = vers.get((i+1)%wallside.size());
+        }
+        if(wallside.get((i-1+wallside.size())%wallside.size())[0] == 1){  
+          ss2 = vers.get((i-1+wallside.size())%wallside.size());
+        }
+        if(ss2 != null){
+          point1 = 
+        }
+      }
+  }
+  
+  //緑線取得  a, b: ぶつかる可能性がある壁の辺の番号（右が1）
+  void getGreen(int a, int b, ArrayList<float[]> wallside){
+    boolean isTwoside = true;    //ぶつかる可能性がある壁が2つならtrue
+    if(b == 0){
+      a = b;
+      isTwoside = false;
+    }
+    
+    ArrayList<Float> distance = new ArrayList<Float>();
+    boolean throughIf = false;
+    for(int i = 0; i < wallside.size(); i++){
+      PVector ss1, ss2, point1, point2;
+      if(wallside.get(i)[0] == 0){
+        if(wallside.get((i+1)%wallside.size())[0] == 1 && !throughIf){  
+          ss2 = vers.get((i+1)%wallside.size());
+          i--;
+          throughIf = true;
+        }
+        if(wallside.get((i-1+wallside.size())%wallside.size())[0] == 1 && throughIf){  
+          ss2 = vers.get((i+1)%wallside.size());
+          throughIf = false;
+        }
+        if(ss2 != null){
+          point1 = 
+        }
+      }
+    }
+  }
+  
+  void getGreen(int a){
+    getGreen(a, 0);
+  }*/
+  
+  //凸包作成
+  Polygon createConvex(Enemy o){
     ArrayList<PVector> vers = new ArrayList<PVector>(pol.ver.size()*2);
     for(int i = 0; i < pol.ver.size(); i++){
       vers.add(pol.ver.get(i));
@@ -357,18 +481,10 @@ class Enemy extends MyObj{
       }
     }else{
       println("バグってます2");
-      return;
+      return null;
     }
     
-    convex.Draw();
-    
-    /*
-    for(int i = 0; i < walls.size(); i++){
-      Wall wall = walls.get(i);
-      if(judge(convex, wall.pol)){
-        
-      }
-    }*/
+    return convex;
   }
   
   //弾で攻撃
@@ -390,7 +506,7 @@ class Enemy extends MyObj{
             break;
           //固定砲台
           case 5:
-            bullets.add(new Laser(x, y+h/2, new PVector(-db.bs/5.0*db.scwhrate, 0, 0), this));
+            bullets.add(new Laser(x, y+h/2, new PVector(-6*db.scwhrate, 0, 0), this));
             wasAttack = true;
             break;
           //忍者
@@ -432,7 +548,7 @@ class collisionCompa implements Comparator<float[]>{
 class Bullet extends MyObj{
   float radian;    //横一直線を0としたときの角度　正方向は時計回り(-π < radian <= π)
   int   damage;    //与えるダメージ
-  int   num;       //bulletなら0、laserなら1、beamなら2
+  int   num;       //bulletなら0、laserなら1、beamなら2、standardなら3、reflectなら4、strongなら5
   int[] col;       //色
   
   PVector length;       //弾の長さ
@@ -496,11 +612,14 @@ class Bullet extends MyObj{
   
   void update(){
     move();
-    
+    outdicision();
+    plus();
+  }
+  
+  //場外判定
+  void outdicision(){
     if((v.x <= 0 && x+abs(length.x) < 0) ||
         (v.x > 0 && x-abs(length.x) > width))  isDie = true;
-        
-    plus();
   }
   
   void plus(){

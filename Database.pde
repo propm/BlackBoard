@@ -83,7 +83,7 @@ class DataBase{
           e.hp = 2;
           e.rank = 1;
           e.bulletflag = false;
-          e.v = new PVector(-2*scwhrate, 0);
+          e.v = new PVector(-10*scwhrate, 0);
           e.damage = 10;
           
           setImage(e, "attacker.png");
