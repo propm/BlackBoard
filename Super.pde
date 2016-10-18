@@ -170,7 +170,7 @@ class Enemy extends MyObj{
     if(isMoveobj){
       setPolygon(imgx, imgy);
     }
-    collision();
+    //collision();
   }
   
   //追加したい処理を記入する

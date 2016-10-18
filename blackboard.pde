@@ -48,7 +48,7 @@ void settings(){
   minim = new Minim(this);    //音楽・効果音用
   osc = new OscP5(this, 1234);
   address = new NetAddress("172.23.5.84", 1234);
-  client = new Client(this, "172.23.6.216", 50000);
+  client = new Client(this, "172.23.6.216", 50005);
   
   rt = new ReadText();
   db = new DataBase();        //データベース

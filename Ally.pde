@@ -64,14 +64,18 @@ class Player extends Enemy{
     }*/
     
     float x1, y1, x2, y2, z1, z2;
+    x1 = x2 = y1 = y2 = z1 = z2 = 0;
     
-    x1 = readInt();
-    y1 = readInt();
-    x2 = readInt();
-    y2 = readInt();
-    z1 = readInt();
-    z2 = readInt();
+    if(client.available() >= 24){
+      x1 = readInt();
+      y1 = readInt();
+      z1 = readInt();
+      x2 = readInt();
+      y2 = readInt();
+      z2 = readInt();
+    }
     
+    println(x1+" "+y1+" "+z1+" "+x2+" "+y2+" "+z2);
     radian = atan2(y2-y1, x2-x1);
     
     x = abs(x2-x1);
