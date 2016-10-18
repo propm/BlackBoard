@@ -260,10 +260,6 @@ class Reflect extends Bullet{
     }
   }
   
-  void outdicision(){
-    if(x-r/2 > width || x+r/2 < 0)  isDie = true;
-  }
-  
   void draw(){
     fill(col[0], col[1], col[2]);
     ellipse(x, y, r, r);

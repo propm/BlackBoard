@@ -26,7 +26,7 @@ class MyObj implements Cloneable{
   
   //死判定
   void die(){
-    if(hp <= 0){
+    if(hp == 0){
       isDie = true;
       if(die != null)  die.trigger();
     }
@@ -435,7 +435,6 @@ class Enemy extends MyObj{
       PVector include = vers.get(includepointnum);
       PVector first;
       int firstnum;
-      boolean passinclude = false;
       float a[] = new float[2];
       a[0] = 0;
       
@@ -443,7 +442,6 @@ class Enemy extends MyObj{
         firstnum = 0;
       }else{
         firstnum = 1;
-        passinclude = true;
       }
       first = sub(vers.get(firstnum), include);
       a[1] = firstnum;
@@ -612,14 +610,7 @@ class Bullet extends MyObj{
   
   void update(){
     move();
-    outdicision();
     plus();
-  }
-  
-  //場外判定
-  void outdicision(){
-    if((v.x <= 0 && x+abs(length.x) < 0) ||
-        (v.x > 0 && x-abs(length.x) > width))  isDie = true;
   }
   
   void plus(){

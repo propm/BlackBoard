@@ -31,14 +31,3 @@ class ScrollManager{
     image(view, (int)viewx2, 0);
   }
 }
-
-
-
-
-
-
-
-
-
-
-

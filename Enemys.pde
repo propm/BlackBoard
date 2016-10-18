@@ -377,23 +377,3 @@ class Boss extends Enemy{
     if(hp == 0)  isDie = true;
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

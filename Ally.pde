@@ -231,6 +231,7 @@ class Home{
       
       if(b.y+b.h/2 > 0 && b.y-b.h/2 < height){
         switch(b.num){
+          case 3:
           case 0:
             if(b.x <= border){
               hp -= b.damage;
@@ -265,6 +266,22 @@ class Home{
             }else{
               be.isDie = true;
             }
+            break;
+          case 4:
+          case 5:
+            Reflect ref = (Reflect)b;
+            if(ref.x-ref.r/2 <= border){
+              
+              //補正のため
+              if(ref.hp == -1){
+                ref.hp = 0;
+                break;
+              }
+              hp -= ref.damage;
+              ref.x = border+ref.r/2;
+              ref.hp = -1;
+            }
+            
             break;
         }
       }
