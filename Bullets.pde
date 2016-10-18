@@ -85,6 +85,7 @@ class Beam extends Bullet{
     }
     
     if(notprevent)   length = x - home.border;
+    if(owner.isDie)  isDie = true;
   }
   
   void draw(){
@@ -294,24 +295,3 @@ class Strong extends Reflect{
   
   void plus(){}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
