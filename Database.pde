@@ -16,7 +16,8 @@ class DataBase{
   float[][][] vectors = {{{29.0/40, 133.0/800}, {141.0/160, 31.0/40}, {61.0/81, 17.0/20}, {13.0/40, 33.0/40}, 
                           {1/4.0, 3/4.0}, {5.0/16, 3.0/8}, {7.0/16, 27.0/160}}, 
                          {{33.0/160, 9.0/40}, {9.0/10, 49.0/160}, {9.0/10, 5.0/8}, {11.0/20, 59.0/80},
-                          {1.0/4, 29.0/40}, {27.0/160, 41.0/80}}};
+                          {1.0/4, 29.0/40}, {27.0/160, 41.0/80}},
+                         {{1.0/2, 0}, {9.0/10, 3.0/20}, {1, 1}, {0, 21.0/22}, {1.0/5, 3.0/25}}};
   
   //効果音のファイル名
   String erase;
@@ -54,8 +55,6 @@ class DataBase{
   
   //敵・プレイヤーの設定
   void setobjects(){
-    
-    float[] wh;
     
     for(int i = 1; i <= oriEnemys.size(); i++){
       
@@ -120,15 +119,9 @@ class DataBase{
           e.bulletflag = true;
           e.Bi = 60 * 3;
           
-          e.imgs.add(loadImage("cannon.png"));
-          e.w = (int)(e.imgs.get(0).width/20.0*scwhrate);
-          e.h = (int)(e.imgs.get(0).height/20.0*scwhrate);
-          e.imgs.set(0, reSize(e.imgs.get(0), e.w, e.h));
-          
-          float[][] vectors5 = {{e.w/2, 0, 0}, {e.w*9/10, e.h*3/20, 0}, {e.w, e.h, 0}, 
-                                {0, e.h*21/22, 0}, {e.w/5, e.h*3/25, 0}};
-          
-          for(int j = 0; j < vectors5.length; j++)  e.pol.Add(vectors5[j][0], vectors5[j][1], vectors5[j][2]);
+          setImage(e, "cannon.png");
+          setImage(e, "cannon_attack.png");
+          setOriPolygon(e, i);
           
           break;
         case 6:
@@ -137,6 +130,11 @@ class DataBase{
           e.v = new PVector(0, 0);
           e.bulletflag = true;
           e.Bi = 60 * 4;
+          
+          /*setImage(e, "ninja.png");
+          setImage(e, "ninja_attack.png");
+          setOriPolygon(e, i);
+          */
           
           setImage(e, "attacker(kari).png", 30.0);
           for(int j = 0; j < e.imgs.size(); j++)
@@ -197,11 +195,13 @@ class DataBase{
   
   void setOriPolygon(Enemy e, int num){
     float[] wh;
-    int vecnum = 0;
+    int vecnum = 0;    //多角形の点の情報が入った配列の添字を表す
     switch(num){
       case 1:
       case 4:  vecnum = 0;  break;
       case 2:  vecnum = 1;  break;
+      case 5:  vecnum = 2;  break;
+      case 6:  vecnum = 3;  break;
     }
     for(int j = 0; j < vectors[vecnum].length; j++)  e.pol.Add(e.w*vectors[vecnum][j][0], e.h*vectors[vecnum][j][1], 0);
     
