@@ -291,3 +291,105 @@ boolean judge(Polygon polygon1, Polygon polygon2) {
       return true;
     }
 }
+
+// 移動前の点と移動後の点の集合から凸包を求める
+Polygon createConvex(ArrayList<PVector> pol1, ArrayList<PVector> pol2) {
+  ArrayList<PVector> pSet = new ArrayList<PVector>(pol1.size() + pol2.size());
+  for (int i = 0; i < pol1.size(); i++) pSet.add(pol1.get(i));
+  for (int i = 0; i < pol2.size(); i++) pSet.add(pol2.get(i));
+  return createConvex(pSet);
+}
+
+Polygon createConvex(ArrayList<PVector> pol){
+  ArrayList<PVector> pSet = new ArrayList<PVector>(pol);
+  
+  
+  if(pSet.size() > 3){
+    
+    ArrayList<Boolean> isInclude = new ArrayList<Boolean>(pSet.size());
+    for(int i = 0; i < pSet.size(); i++)
+      isInclude.add(false);
+    
+    //総当りで三角形に含まれる点を探す
+    for(int i = 0; i < pSet.size(); i++){
+      if(isInclude.get(i))  continue;
+      for(int j = i+1; j < pSet.size(); j++){
+        if(isInclude.get(j))  continue;
+        for(int k = j+1; k < pSet.size(); k++){
+          if(isInclude.get(k))  continue;
+          for(int l = 0; l < pSet.size(); l++){
+            if(l == i || l == j || l == k)  continue;
+            if(isInclude.get(l))            continue;
+            PVector point = pSet.get(l);
+            
+            //三角形に含まれているか判定し、結果を保存
+            isInclude.set(l, isinTriangle(pSet.get(i), pSet.get(j), pSet.get(k), point));
+          }
+        }
+      }
+    }
+    
+    //三角形に含まれていた点を排除
+    for(int i = 0; i < pSet.size(); i++){
+      if(isInclude.get(i)){
+        pSet.remove(i);
+        isInclude.remove(i);
+        i--;
+      }
+    }
+    
+    //残った点を時計回りに並べる  z座標は画面の奥側が正
+    ArrayList<float[]> radians = new ArrayList<float[]>(pSet.size() - 1);
+    
+    // 凸多角形の中の点
+    PVector include = new PVector(0.0, 0.0, 0.0);
+    for (int i = 0; i < pSet.size(); i++)
+      include.add(pSet.get(i));
+    include.x /= pSet.size();
+    include.y /= pSet.size();
+    
+    PVector first = sub(pSet.get(0), include);
+    
+    for(int i = 1; i < pSet.size(); i++){
+      PVector now = sub(pSet.get(i), include);
+      
+      float radian = PVector.angleBetween(first, now);
+      if (directionCross(first, now) == -1)
+        radian = 2*PI - radian;
+        
+      float[] a = new float[2];
+      a[0] = radian;
+      a[1] = i;
+      radians.add(a);
+    }
+    
+    //時計回りにソート
+    Collections.sort(radians, new collisionCompa());
+
+    //凸包
+    Polygon convex = new Polygon();
+    
+    convex.Add(pSet.get(0));
+    //時計回りに点を入れていく
+    for(int i = 0; i < radians.size(); i++){
+      convex.Add(pSet.get((int)radians.get(i)[1]));
+    }
+    convex.Init();
+    return convex;
+    
+  }else{
+    println("バグってます2");
+    return null;
+  }
+}
+
+class collisionCompa implements Comparator<float[]>{
+  public int compare(float[] a, float[] b){
+    int result;
+    if(a[0] + EPS < b[0])  result = -1;
+    else if(a[0] - EPS > b[0])  result = 1;
+    else                  result = 0;
+    
+    return result;
+  }
+}

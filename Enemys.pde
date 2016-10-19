@@ -199,7 +199,9 @@ class Cannon extends Enemy{
     if(y < 0)  y = 0;
     if(y > height-h)  y = height-h;
     
-    setPolygon(x, y);
+    imgx = x - marginx;
+    imgy = y - marginy;
+    setPolygon(imgx, imgy);
   }
   
   void attack(){
@@ -228,9 +230,7 @@ class Ninja extends Enemy{
   boolean isStealth;        //透明化するときtrue
   
   Ninja(){
-    x = random(width/4)+width/8*3;
-    y = random(height);
-    initial();
+    this(random(width/4)+width/8*3, random(height));
   }
   
   Ninja(float x, float y){
@@ -248,7 +248,10 @@ class Ninja extends Enemy{
     alpha = ALPHA;
     alphav = 5;
     isStealth = false;
-    setPolygon(x, y);
+    
+    imgx = x - marginx;
+    imgy = y - marginy;
+    setPolygon(imgx, imgy);
   }
   
   void plus(){

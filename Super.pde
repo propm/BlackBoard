@@ -57,14 +57,12 @@ class Enemy extends MyObj{
   boolean bisOver;       //1フレーム前のisOver
   boolean onceinitial;   //initialを呼ぶのが一回目ならtrue]
   boolean isMoveobj;     //動くオブジェクトならtrue
-  int debagnum;
   
   Polygon oripol;                 //形のみを保持する多角形
   AudioSample AT;  //効果音
   
   Enemy(){
     onceinitial = true;
-    debagnum = 0;
   }
   
   //******処理系関数******//
@@ -170,7 +168,7 @@ class Enemy extends MyObj{
     if(isMoveobj){
       setPolygon(imgx, imgy);
     }
-    //collision();
+    collision();
   }
   
   //追加したい処理を記入する
@@ -195,7 +193,7 @@ class Enemy extends MyObj{
     o.setPolygon(o.imgx, o.imgy);
     
     //凸包作成
-    Polygon convex = createConvex(o);
+    Polygon convex = createConvex(pol.ver, o.pol.ver);
     if(convex == null)  return;
     convex.Draw();
     
@@ -316,175 +314,6 @@ class Enemy extends MyObj{
     getGreen(a, 0);
   }*/
   
-  //凸包作成
-  Polygon createConvex(Enemy o){
-    ArrayList<PVector> vers = new ArrayList<PVector>(pol.ver.size()*2);
-    for(int i = 0; i < pol.ver.size(); i++){
-      vers.add(pol.ver.get(i));
-    }
-    
-    for(int i = 0; i < o.pol.ver.size(); i++){
-      vers.add(o.pol.ver.get(i));
-    }
-    
-    //重なっている点を排除
-    int removetime = 0;    //排除した回数
-    for(int i = 0; i < pol.ver.size(); i++){
-      for(int j = pol.ver.size(); j < o.pol.ver.size(); j++){
-        if(pol.ver.get(i).x == o.pol.ver.get(j).x && pol.ver.get(i).y == o.pol.ver.get(j).y)
-          vers.remove(i-removetime++);
-      }
-    }
-    
-    //凸包
-    Polygon convex = new Polygon();
-    
-    if(vers.size() > 3){
-      boolean minxisnull = true;
-      PVector minx, maxx, miny, maxy;
-      minx = maxx = miny = maxy = vers.get(0);
-      if(vers.size() > 4){
-        //凸包作成
-        //それぞれの座標が最大、最小の点を取得（初期化を除いて複数の変数に同じ点がセットされることはない）
-        //もしx座標が同じで、y座標が違うなら、minxにはy座標が小さいほうが入り、maxxにはy座標が大きい方が入る
-        
-        //x座標が最大・最小の点を探す
-        for(int i = 1; i < vers.size(); i++){
-          PVector now = vers.get(i);
-          if(minx.x > now.x)  minx = now;
-          if(minx.x == now.x){
-            if(minx.y > now.y)  minx = now;
-          }
-          if(maxx.x < now.x)  maxx = now;
-          if(maxx.x == now.x){
-            if(maxx.y < now.y)  maxx = now;
-          }
-        }
-        
-        //minx, miny以外でy座標が最大・最小の点を探す
-        for(int i = 1; i < vers.size(); i++){
-          PVector now = vers.get(i);
-          if(now == minx || now == maxx)  continue;
-          if(miny.y > now.y)  miny = now;
-          if(maxy.y < now.y)  maxy = now;
-        }
-        
-        //minx, maxxを結ぶ線分と、miny or maxyで結ばれる三角形に含まれる点を探す
-        PVector pointy = new PVector(0, 0);
-        for(int i = 0; i < 2; i++){
-          if(i == 0)  pointy = miny;
-          if(i == 1)  pointy = maxy;
-          
-          for(int j = 0; j < vers.size(); j++){
-            PVector now = vers.get(j);
-            if(now == minx || now == maxx || now == miny || now == maxy)  continue;
-            
-            if(isinTriangle(minx, maxx, pointy, now)){
-              vers.remove(j);
-              j--;
-            }
-          }
-        }
-        minxisnull = false;
-      }
-      
-      ArrayList<Boolean> isInclude = new ArrayList<Boolean>(vers.size());
-      for(int i = 0; i < vers.size(); i++)
-        isInclude.add(false);
-      
-      int forcount = 0;
-      //総当りで三角形に含まれる点を探す
-      for(int i = 0; i < vers.size()-2; i++){
-        if(isInclude.get(i))  continue;
-        for(int j = i+1; j < vers.size()-1; j++){
-          if(isInclude.get(j))  continue;
-          for(int k = j+1; k < vers.size(); k++){
-            if(isInclude.get(k))  continue;
-            for(int l = 0; l < vers.size(); l++){
-              if(l == i || l == j || l == k)  continue;
-              if(isInclude.get(l))            continue;
-              PVector point = vers.get(l);
-              if(!minxisnull)  if(point == minx || point == maxx || point == miny || point == maxy)  continue;
-              
-              //三角形に含まれているか判定し、結果を保存
-              isInclude.set(l, isinTriangle(vers.get(i), vers.get(j), vers.get(k), point));
-            }
-          }
-        }
-      }
-      
-      boolean firsttrue = true;
-      int includepointnum = 0;
-      //三角形に含まれていた点を排除
-      for(int i = 0; i < vers.size(); i++){
-        if(isInclude.get(i)){
-          if(firsttrue){
-            includepointnum = i;
-            firsttrue = false;
-          }else{
-            vers.remove(i);
-            isInclude.remove(i);
-            i--;
-          }
-        }
-      }
-      
-      //残った点を時計回りに並べる  z座標は画面の奥側が正
-      ArrayList<float[]> radians = new ArrayList<float[]>(vers.size()-1);
-      
-      PVector include = vers.get(includepointnum);
-      PVector first;
-      int firstnum;
-      float a[] = new float[2];
-      a[0] = 0;
-      
-      if(includepointnum != 0){
-        firstnum = 0;
-      }else{
-        firstnum = 1;
-      }
-      first = sub(vers.get(firstnum), include);
-      a[1] = firstnum;
-      
-      radians.add(a);
-      
-      for(int i = 1; i < vers.size(); i++){
-        if(i == includepointnum || i == firstnum){
-          continue;
-        }
-        PVector now;
-        now = sub(vers.get(i), include);
-        
-        float radian = PVector.angleBetween(first, now);
-        switch(directionCross(first, now)){
-          case 0:
-            println("バグってます1");
-            break;
-          case -1:
-            radian = 2*PI - radian;
-            break;
-        }
-        float[] b = new float[2];
-        b[0] = radian;
-        b[1] = i;
-        radians.add(b);
-      }
-      
-      //時計回りにソート
-      Collections.sort(radians, new collisionCompa());
-      
-      //時計回りに点を入れていく
-      for(int i = 0; i < radians.size(); i++){
-        convex.Add(vers.get((int)radians.get(i)[1]));
-      }
-    }else{
-      println("バグってます2");
-      return null;
-    }
-    
-    return convex;
-  }
-  
   //弾で攻撃
   boolean bullet(){
     boolean wasAttack = false;
@@ -526,17 +355,6 @@ class Enemy extends MyObj{
     image(image, imgx, imgy);
     tint(255, 255);
     pol.Draw();
-  }
-}
-//**************************************************************************************************
-class collisionCompa implements Comparator<float[]>{
-  public int compare(float[] a, float[] b){
-    int result;
-    if(a[0] < b[0])  result = -1;
-    else if(a[0] > b[0])  result = 1;
-    else                  result = 0;
-    
-    return result;
   }
 }
 
