@@ -163,7 +163,6 @@ class Shuriken extends Bullet{
     num = 3;
     r = 54;
     damage = 20;
-    hp = 1;
     
     v = new PVector(-3, 0);
     isReflected = false;
@@ -234,17 +233,10 @@ class Reflect extends Shuriken{
     num = 5;
     initial();
     r = 15;
-    hp = 2;
+    maxhp = hp = 2;
     damage = 10;
     
     col[2] = 255;
-  }
-  
-  void initial(){
-    super.initial();
-    for(int i = 0; i < 8; i++)
-      pol.Add(new PVector(0, 0));
-    
   }
   
   void plus(){
@@ -256,19 +248,6 @@ class Reflect extends Shuriken{
       v.set(v.x, -v.y);
       y = r/2;
     }
-    
-    setPolygon();
-  }
-  
-  void setPolygon(){
-    pol.ver.set(0, new PVector(x-w/4.0, y-h/2.0));
-    pol.ver.set(1, new PVector(x+w/4.0, y-h/2.0));
-    pol.ver.set(2, new PVector(x+w/2.0, y-h/4.0));
-    pol.ver.set(3, new PVector(x-w/2.0, y+h/4.0));
-    pol.ver.set(4, new PVector(x+w/4.0, y+h/2.0));
-    pol.ver.set(5, new PVector(x-w/4.0, y+h/2.0));
-    pol.ver.set(6, new PVector(x-w/2.0, y+h/4.0));
-    pol.ver.set(7, new PVector(x-w/2.0, y-h/4.0));
   }
   
   void draw(){
@@ -291,7 +270,7 @@ class Strong extends Reflect{
     num = 6;
     initial();
     
-    hp = 7;
+    maxhp = hp = 7;
     damage = 15;
     r = 100;
     isReflected = false;

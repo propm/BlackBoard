@@ -48,7 +48,7 @@ void settings(){
   minim = new Minim(this);    //音楽・効果音用
   osc = new OscP5(this, 1234);
   address = new NetAddress("172.23.5.84", 1234);
-  client = new Client(this, "172.23.6.216", 50005);
+  //client = new Client(this, "172.23.6.216", 50005);
   
   rt = new ReadText();
   db = new DataBase();        //データベース
@@ -78,6 +78,7 @@ void setup(){
 }
 
 void draw(){
+  //sm.drawView();
   if(!isStop){
     process();    //処理
     drawing();    //描画
@@ -132,9 +133,6 @@ void process(){
     case 4:
       sm.update();
         
-      //プレイヤーの動きの処理
-      player.update();
-        
       //弾の処理
       for(int i = 0; i < bullets.size(); i++){
         bullets.get(i).update();
@@ -147,6 +145,9 @@ void process(){
       
       //ボスの処理
       boss.update();
+      
+      //プレイヤーの動きの処理
+      player.update();
       
       //自陣の処理
       home.update();

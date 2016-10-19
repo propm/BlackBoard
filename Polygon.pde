@@ -28,7 +28,7 @@ class Polygon implements Cloneable{
     
     try{
       pol.ver = new ArrayList<PVector>(ver);
-      pol.center = center.get();
+      pol.center = center.copy();
     }catch(Exception e){
       e.printStackTrace();
     }

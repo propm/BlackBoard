@@ -5,7 +5,7 @@ class MyObj implements Cloneable{
   float imgx, imgy;   //画像左上の座標
   float marginx, marginy;  //画像左上の座標と判定の座標の差分
   int   w, h;
-  int   hp;
+  int   hp, maxhp;    //体力、体力上限
   boolean isDie;
   PVector v;
   ArrayList<PImage> imgs;    //使う画像を保存
@@ -114,7 +114,7 @@ class Enemy extends MyObj{
     h = oe.h;
     bulletflag = oe.bulletflag;
     
-    bhp = hp = oe.hp;
+    maxhp = bhp = hp = oe.hp;
     Bi = oe.Bi;
     rank = oe.rank;
     v = oe.v.copy();
@@ -364,12 +364,13 @@ class Bullet extends MyObj{
   float energy;
   int   damage;    //与えるダメージ
   int   num;       //bulletなら0、laserなら1、beamなら2、shurikenなら3、
-                   //standardなら4、reflectなら5、strongなら6
-  int[] col;       //色
+                   //standardなら4、reflectなら5、strongなら6            
   
+  int[] col;       //色
+  boolean bisOver;
   PVector length;       //弾の長さ
   
-  Polygon bpol;
+  ArrayList<PVector> bver;
   
   Bullet(){}
   
@@ -388,13 +389,17 @@ class Bullet extends MyObj{
   void initial(){
     col = new int[3];
     col[0] = col[1] = col[2] = 0;
+    bver = new ArrayList<PVector>();
     
     energy = 25;
     die = minim.loadSample("normalbullet_hit.mp3");
     radian = atan2(v.y, v.x);
     isDie = false;
+    bisOver = false;
     
     pol = new Polygon();
+    for(int i = 0; i < 4; i++)
+      pol.Add(new PVector(0, 0));
     
     switch(num){
       case 0:
@@ -415,12 +420,11 @@ class Bullet extends MyObj{
     
     h = (int)(4*db.scwhrate);
     damage = 2;
-    hp = 1;
+    maxhp = hp = 1;
     
-    for(int i = 0; i < 4; i++)
-      pol.Add(new PVector(0, 0, 0));
-      
-    bpol = pol.clone();
+    setPolygon();
+    for(int i = 0; i < pol.ver.size(); i++)
+      bver.add(pol.ver.get(i));
   }
   
   //radianが0のとき、右上から時計回り（右上が0）
@@ -437,6 +441,7 @@ class Bullet extends MyObj{
     pol.ver.set(1, new PVector(x+length.mag(), y+h/2, 0));
     pol.ver.set(2, new PVector(x, y+h/2, 0));
     pol.ver.set(3, new PVector(x, y-h/2, 0));
+    pol.Init();
   }
   
   void move(){
@@ -446,7 +451,7 @@ class Bullet extends MyObj{
   
   void update(){
     move();
-    setBpol();
+    setBver();
     plus();
   }
   
@@ -455,13 +460,12 @@ class Bullet extends MyObj{
     else              setPolygonAngle();
   }
   
-  void setBpol(){
+  void setBver(){
     switch(num){
       case 0:
       case 4:
-      case 5:
-      case 6:
-        bpol = pol.clone();
+        for(int i = 0; i < pol.ver.size(); i++)
+          bver.set(i, pol.ver.get(i));
     }
   }
   

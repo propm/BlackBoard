@@ -11,6 +11,7 @@ class Player extends Enemy{
   
   boolean ATflag;     //マウスクリック時true
   boolean bATflag;
+  ArrayList<PVector> bver;
   
   AudioSample erase;    //消すときの音
   Polygon bpol;         //前のpol
@@ -38,6 +39,12 @@ class Player extends Enemy{
       
       oripol = new Polygon(p.pol.ver);
       pol    = new Polygon(p.pol.ver);
+      setPolygonAngle();
+      
+      bver = new ArrayList<PVector>();
+      for(int i = 0; i < pol.ver.size(); i++)
+        bver.add(pol.ver.get(i));
+      
     }catch(NullPointerException e){}
   }
   
@@ -45,7 +52,7 @@ class Player extends Enemy{
   void update(){
     move();
     
-    setBpol();
+    setBver();
     setPolygonAngle();  //多角形設定
     overlap();          //敵と重なっているかどうかの判定
     
@@ -69,8 +76,9 @@ class Player extends Enemy{
     //readXYZ();
   }
   
-  void setBpol(){
-    bpol = pol.clone();
+  void setBver(){
+    for(int i = 0; i < pol.ver.size(); i++)
+      bver.set(i, pol.ver.get(i));
   }
   
   //キネクトから座標を受け取る
@@ -115,11 +123,11 @@ class Player extends Enemy{
       
       if((!bATflag || !e.bisOver) && e.isOver && e.charanum != 6){
         e.hp--;
-        choke += e.energy;
         combo++;
         
         if(e.hp <= 0){
           score += score(e);
+          choke += e.maxhp*e.energy;
         }
       }
     }
@@ -130,12 +138,19 @@ class Player extends Enemy{
       switch(b.num){
         case 0:
         case 4:
-        //case 5:
-        //case 6:
+        case 5:
+        case 6:
           if(bdicision(b)){
-            b.hp--;
-            choke += b.energy;
-            combo++;
+            if(!b.bisOver){
+              b.hp--;
+              combo++;
+              b.bisOver = true;
+              if(hp == 0){
+                choke += b.maxhp*b.energy;
+              }
+            }
+          }else{
+            b.bisOver = false;
           }
           break;
       }
@@ -148,14 +163,16 @@ class Player extends Enemy{
   boolean bdicision(Bullet b){
     
     boolean result = false;
-    println(b.bpol);
-    if(b.bpol == null)  return result;
+    Polygon convex = createConvex(pol.ver, bver);
     
-    Polygon bconvex = createConvex(b.pol.ver, b.bpol.ver);
-    Polygon convex = createConvex(pol.ver, bpol.ver);
+    if(b.num == 0 || b.num == 4){
+      Polygon bconvex = createConvex(b.pol.ver, b.bver);
     
-    if(judge(convex, bconvex))  result = true;
-    
+      if(judge(convex, bconvex))  result = true;
+    }else{
+      Reflect ref = (Reflect)b;
+      if(judge(new PVector(ref.x, ref.y), ref.r, convex))  result = true;
+    }
     return result;
   }
   
