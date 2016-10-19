@@ -282,13 +282,17 @@ class Ninja extends Enemy{
   
   //跳ね返された手裏剣との判定
   void dicision(){
-    for(int i = 0; i < shurikens.size(); i++){
-      Shuriken s = shurikens.get(i);
-      if(s.isReflected){
-        if(judge(new PVector(s.x, s.y), s.r/2, pol)){
-          hp = 0;
-          shurikens.remove(i);
-          i--;
+    for(int i = 0; i < bullets.size(); i++){
+      Bullet b = bullets.get(i);
+      
+      if(b.num == 3){
+        Shuriken s = (Shuriken)b;
+        if(s.isReflected){
+          if(judge(new PVector(s.x, s.y), s.r/2, pol)){
+            hp = 0;
+            bullets.remove(i);
+            i--;
+          }
         }
       }
     }
@@ -353,7 +357,7 @@ class Boss extends Enemy{
   
   void attack(){
     if(++sc <= lashtime){
-      if(sc%rapidi < 1)  bullets.add(new Standard(x+w/2, y+h/2, new PVector(-standardbs, 0)));
+      if(sc%rapidi < 1)  bullets.add(new Standard(x+w/2, y+h/2, -standardbs));
     }else if(sc >= lashtime + standardi)  sc = 0;
     
     if(++rc >= reflecti){
@@ -377,23 +381,3 @@ class Boss extends Enemy{
     if(hp == 0)  isDie = true;
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

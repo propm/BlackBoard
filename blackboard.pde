@@ -26,13 +26,12 @@ Client client;
 ArrayList<Enemy>     enemys;
 ArrayList<Bullet>    bullets;
 ArrayList<Wall>      walls;
-ArrayList<Shuriken>  shurikens;
 Boss boss;
 Player player;
 Home home;
 
 final int MAXchoke = 11100;
-final int bosstime = 60*90;  //ボス戦が始まる時間
+final int bosstime = 60*45;  //ボス戦が始まる時間
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
@@ -48,7 +47,7 @@ void settings(){
   minim = new Minim(this);    //音楽・効果音用
   osc = new OscP5(this, 1234);
   address = new NetAddress("172.23.5.84", 1234);
-  client = new Client(this, "172.23.6.216", 50000);
+  client = new Client(this, "172.23.6.216", 50005);
   
   rt = new ReadText();
   db = new DataBase();        //データベース
@@ -75,95 +74,89 @@ void setup(){
 }
 
 void draw(){
-  //if(!isStop)sm.drawView();
-  process();    //処理
-  drawing();    //描画
+  if(!isStop){
+    process();    //処理
+    drawing();    //描画
+  }
 }
 
 //処理用関数
 void process(){
-  if(!isStop){
-    bscore = score;
-    benergy = choke;
-    wholecount++;
-    
-    switch(scene){
-      case 3:
-        if(wholecount >= bosstime){
-          changeScene();
-          process();
-          break;
-        }
-      
-        tm.checksec();
-        sm.update();
-        
-        //プレイヤーの動きの処理
-        player.update();
-        
-        //敵の動きの処理
-        for(int i = 0; i < enemys.size(); i++){
-          enemys.get(i).update();
-        }
-        
-        //弾の処理
-        for(int i = 0; i < bullets.size(); i++){
-          bullets.get(i).update();
-        }
-        
-        //手裏剣の処理
-        for(int i = 0; i < shurikens.size(); i++){
-          shurikens.get(i).update();
-        }
-        
-        //壁の処理
-        for(int i = 0; i < walls.size(); i++){
-          walls.get(i).update();
-        }
-        
-        //自陣の処理
-        home.update();
-        
-        //死んだオブジェクトの処理
-        cadaver(enemys);
-        cadaver(bullets);
-        cadaver(shurikens);
-        cadaver(walls);
-        
-        break;
-      
-      case 4:
-        sm.update();
-        
-        //プレイヤーの動きの処理
-        player.update();
-        
-        //弾の処理
-        for(int i = 0; i < bullets.size(); i++){
-          bullets.get(i).update();
-        }
-        
-        //壁の処理
-        for(int i = 0; i < walls.size(); i++){
-          walls.get(i).update();
-        }
-        
-        //ボスの処理
-        boss.update();
-        
-        //自陣の処理
-        home.update();
-        
-        //死体の処理
-        cadaver(bullets);
-        cadaver(walls);
-        boss.cadaver();
-        
-        break;
-    }
-  }
+  bscore = score;
+  benergy = choke;
+  wholecount++;
   
-  if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
+  switch(scene){
+    case 3:
+      if(wholecount >= bosstime){
+        changeScene();
+        process();
+        break;
+      }
+    
+      tm.checksec();
+      sm.update();
+      
+      //敵の動きの処理
+      for(int i = 0; i < enemys.size(); i++){
+        enemys.get(i).update();
+      }
+      
+      //弾の処理
+      for(int i = 0; i < bullets.size(); i++){
+        bullets.get(i).update();
+      }
+      
+      //壁の処理
+      for(int i = 0; i < walls.size(); i++){
+        walls.get(i).update();
+      }
+      
+      //プレイヤーの動きの処理
+      player.update();
+      
+      //自陣の処理
+      home.update();
+      
+      //死んだオブジェクトの処理
+      cadaver(enemys);
+      cadaver(bullets);
+      cadaver(walls);
+        
+      break;
+      
+    case 4:
+      sm.update();
+        
+      //プレイヤーの動きの処理
+      player.update();
+        
+      //弾の処理
+      for(int i = 0; i < bullets.size(); i++){
+        bullets.get(i).update();
+      }
+      
+      //壁の処理
+      for(int i = 0; i < walls.size(); i++){
+        walls.get(i).update();
+      }
+      
+      //ボスの処理
+      boss.update();
+      
+      //自陣の処理
+      home.update();
+      
+      //死体の処理
+      cadaver(bullets);
+      cadaver(walls);
+      boss.cadaver();
+      
+      break;
+    }
+  
+  println("enemys: "+enemys.size()+" walls: "+walls.size()+" bullets: "+bullets.size());
+  //if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
   send();
 }
 
@@ -188,11 +181,6 @@ void drawing(){
     for(int i = 0; i < enemys.size(); i++){
       Enemy enemy = enemys.get(i);
       enemy.draw();
-    }
-    
-    for(int i = 0; i < shurikens.size(); i++){
-      Shuriken s = shurikens.get(i);
-      s.draw();
     }
   }
   
@@ -221,7 +209,6 @@ void allInitial(){
   enemys = new ArrayList<Enemy>();
   bullets = new ArrayList<Bullet>();
   walls = new ArrayList<Wall>();
-  shurikens = new ArrayList<Shuriken>();
   
   player = new Player();
   home = new Home();

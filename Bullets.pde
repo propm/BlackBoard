@@ -85,6 +85,7 @@ class Beam extends Bullet{
     }
     
     if(notprevent)   length = x - home.border;
+    if(owner.isDie)  isDie = true;
   }
   
   void draw(){
@@ -139,13 +140,11 @@ class Beam extends Bullet{
 
 //************************************************************************************
 
-class Shuriken extends Enemy{
+class Shuriken extends Bullet{
   float r;        //当たり判定の円の直径
   float angle;    //単位は度　(0 <= angle < 360)
-  int damage;
   
   boolean isReflected;
-  PImage img;
   
   Shuriken(){}
   
@@ -159,9 +158,11 @@ class Shuriken extends Enemy{
     this.y = y;
     
     Shuriken s = db.orishuriken;
-    img = s.img;
+    image = s.image;
     w = s.w;
     h = s.h;
+    
+    num = 3;
     r = 54;
     damage = 20;
     hp = 1;
@@ -172,13 +173,9 @@ class Shuriken extends Enemy{
     angle = 0;
   }
   
-  void update(){
-    x += v.x;
-    y += v.y;
-    
+  void plus(){
     angle += 0.2;
     angle %= 360;
-    
   }
   
   void die(){
@@ -192,7 +189,7 @@ class Shuriken extends Enemy{
     pushMatrix();
     translate(x, y);
     rotate(-angle);
-    image(img, -w/2, -h/2);
+    image(image, -w/2, -h/2);
     popMatrix();
     
     noFill();
@@ -206,16 +203,16 @@ class Shuriken extends Enemy{
 //通常
 class Standard extends Bullet{
   
-  Standard(float x, float y, PVector v){
+  Standard(float x, float y, float v_x){
     this.x = x;
     this.y = y;
-    this.v = v.get();
+    this.v = new PVector(v_x, 0);
     
     initial();
     
     damage = 5;
     hp = 1;
-    num = 3;
+    num = 4;
     
     col = new int[3];
     col[0] = 129;
@@ -227,8 +224,7 @@ class Standard extends Bullet{
 //******************************************************************************
 
 //反射弾
-class Reflect extends Bullet{
-  int r;
+class Reflect extends Shuriken{
   
   Reflect(){}
   
@@ -236,10 +232,10 @@ class Reflect extends Bullet{
   Reflect(float x, float y, PVector v){
     this.x = x;
     this.y = y; 
-    this.v = v.get();
+    this.v = v;
     
     r = 15;
-    num = 4;
+    num = 5;
     hp = 2;
     damage = 10;
     
@@ -259,10 +255,6 @@ class Reflect extends Bullet{
     }
   }
   
-  void outdicision(){
-    if(x-r/2 > width || x+r/2 < 0)  isDie = true;
-  }
-  
   void draw(){
     fill(col[0], col[1], col[2]);
     ellipse(x, y, r, r);
@@ -273,7 +265,6 @@ class Reflect extends Bullet{
 
 //反射可能
 class Strong extends Reflect{
-  boolean reflected;
   
   //x, yは中心座標
   Strong(float x, float y){
@@ -283,9 +274,9 @@ class Strong extends Reflect{
     
     hp = 7;
     damage = 15;
-    num = 5;
+    num = 6;
     r = 100;
-    reflected = false;
+    isReflected = false;
     
     col = new int[3];
     col[0] = col[1] = 255;
@@ -294,24 +285,3 @@ class Strong extends Reflect{
   
   void plus(){}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
