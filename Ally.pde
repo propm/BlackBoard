@@ -13,6 +13,7 @@ class Player extends Enemy{
   boolean bATflag;
   
   AudioSample erase;    //消すときの音
+  Polygon bpol;         //前のpol
   
   Player(){
     initial();
@@ -44,9 +45,11 @@ class Player extends Enemy{
   void update(){
     move();
     
-    setPolygonAngle();
-    overlap();
+    setBpol();
+    setPolygonAngle();  //多角形設定
+    overlap();          //敵と重なっているかどうかの判定
     
+    //壁作成・攻撃
     ATorCreate();
   }
   
@@ -62,7 +65,16 @@ class Player extends Enemy{
         radian -= PI/180 * 2;
         break;
     }
-    /*
+    
+    //readXYZ();
+  }
+  
+  void setBpol(){
+    bpol = pol.clone();
+  }
+  
+  //キネクトから座標を受け取る
+  void readXYZ(){
     float x1, y1, x2, y2, z1, z2;
     x1 = x2 = y1 = y2 = z1 = z2 = 0;
     
@@ -75,13 +87,11 @@ class Player extends Enemy{
       z2 = readInt();
     }
     
-    //println(x1+" "+y1+" "+z1+" "+x2+" "+y2+" "+z2);
     radian = atan2(y2-y1, x2-x1);
     
     x = abs(x2-x1);
     y = abs(y2-y1);
     z = abs(z2-z2);
-    */
   }
   
   //攻撃するか壁を作るか判定
@@ -99,18 +109,54 @@ class Player extends Enemy{
   
   //攻撃判定
   void attack(){
+    
     for(int i = 0; i < enemys.size(); i++){
       Enemy e = enemys.get(i);
       
       if((!bATflag || !e.bisOver) && e.isOver && e.charanum != 6){
         e.hp--;
         choke += e.energy;
+        combo++;
+        
         if(e.hp <= 0){
           score += score(e);
         }
       }
     }
+    
+    for(int i = 0; i < bullets.size(); i++){
+      Bullet b = bullets.get(i);
+      
+      switch(b.num){
+        case 0:
+        case 4:
+        //case 5:
+        //case 6:
+          if(bdicision(b)){
+            b.hp--;
+            choke += b.energy;
+            combo++;
+          }
+          break;
+      }
+    }
+    
     if(erase != null)  erase.trigger();
+  }
+  
+  //弾との判定
+  boolean bdicision(Bullet b){
+    
+    boolean result = false;
+    println(b.bpol);
+    if(b.bpol == null)  return result;
+    
+    Polygon bconvex = createConvex(b.pol.ver, b.bpol.ver);
+    Polygon convex = createConvex(pol.ver, bpol.ver);
+    
+    if(judge(convex, bconvex))  result = true;
+    
+    return result;
   }
   
   //敵と自機が重なっているかどうかの判定:  戻り値→変更前のisOver
@@ -159,6 +205,8 @@ class Player extends Enemy{
     rotate(radian);
     rect(-w/2, -h/2, w, h);
     popMatrix();
+    
+    text(combo, x+width/60.0, y-height/80.0);
     
     pol.Draw();
   }

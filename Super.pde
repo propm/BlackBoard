@@ -117,7 +117,7 @@ class Enemy extends MyObj{
     bhp = hp = oe.hp;
     Bi = oe.Bi;
     rank = oe.rank;
-    v = oe.v.get();
+    v = oe.v.copy();
     damage = oe.damage;
     
     marginx = oe.marginx;
@@ -188,7 +188,6 @@ class Enemy extends MyObj{
   //壁との衝突判定
   void collision(){
     Enemy o = this.clone();
-    o.debagnum = 1;
     o.move();
     o.setPolygon(o.imgx, o.imgy);
     
@@ -199,7 +198,6 @@ class Enemy extends MyObj{
     
     //補正
     //correction(o);
-    
   }
   
   //補正
@@ -363,12 +361,15 @@ class Enemy extends MyObj{
 //敵の弾丸
 class Bullet extends MyObj{
   float radian;    //横一直線を0としたときの角度　正方向は時計回り(-π < radian <= π)
+  float energy;
   int   damage;    //与えるダメージ
   int   num;       //bulletなら0、laserなら1、beamなら2、shurikenなら3、
                    //standardなら4、reflectなら5、strongなら6
   int[] col;       //色
   
   PVector length;       //弾の長さ
+  
+  Polygon bpol;
   
   Bullet(){}
   
@@ -386,11 +387,25 @@ class Bullet extends MyObj{
   
   void initial(){
     col = new int[3];
-    if(num == 2)  return;
+    col[0] = col[1] = col[2] = 0;
     
-    num = 0;
+    energy = 25;
     die = minim.loadSample("normalbullet_hit.mp3");
+    radian = atan2(v.y, v.x);
+    isDie = false;
     
+    pol = new Polygon();
+    
+    switch(num){
+      case 0:
+      case 4:
+        sinitial();
+        break;
+    }
+  }
+  
+  //普通の弾のinitial
+  void sinitial(){
     col[0] = 255;
     col[1] = 134;
     col[2] = 0;
@@ -401,12 +416,11 @@ class Bullet extends MyObj{
     h = (int)(4*db.scwhrate);
     damage = 2;
     hp = 1;
-    radian = atan2(v.y, v.x);
-    isDie = false;
     
-    pol = new Polygon();
     for(int i = 0; i < 4; i++)
       pol.Add(new PVector(0, 0, 0));
+      
+    bpol = pol.clone();
   }
   
   //radianが0のとき、右上から時計回り（右上が0）
@@ -432,12 +446,23 @@ class Bullet extends MyObj{
   
   void update(){
     move();
+    setBpol();
     plus();
   }
   
   void plus(){
     if(radian == PI)  setPolygon();
     else              setPolygonAngle();
+  }
+  
+  void setBpol(){
+    switch(num){
+      case 0:
+      case 4:
+      case 5:
+      case 6:
+        bpol = pol.clone();
+    }
   }
   
   void draw(){

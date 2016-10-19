@@ -11,12 +11,12 @@ class Laser extends Bullet{
     this.y = y;
     this.v = v;
     this.owner = owner;
-    initial();
+    linitial();
   }
   
-  void initial(){
-    super.initial();
-    if(num == 2)  return;
+  void linitial(){
+    num = 1;
+    initial();
     
     num = 1;
     h = (int)(8*db.scwhrate);
@@ -46,14 +46,12 @@ class Beam extends Bullet{
   
   Beam(Enemy owner){
     this.owner = (Tangent)owner;
-    initial();
+    binitial();
   }
   
-  void initial(){
+  void binitial(){
     num = 2;
     super.initial();
-    
-    hit = minim.loadSample("beam_hit.mp3");
     
     h = 6;
     Hcount = 0;
@@ -214,7 +212,6 @@ class Standard extends Bullet{
     hp = 1;
     num = 4;
     
-    col = new int[3];
     col[0] = 129;
     col[1] = 41;
     col[2] = 139;
@@ -234,14 +231,20 @@ class Reflect extends Shuriken{
     this.y = y; 
     this.v = v;
     
-    r = 15;
     num = 5;
+    initial();
+    r = 15;
     hp = 2;
     damage = 10;
     
-    col = new int[3];
-    col[0] = col[1] = 0;
     col[2] = 255;
+  }
+  
+  void initial(){
+    super.initial();
+    for(int i = 0; i < 8; i++)
+      pol.Add(new PVector(0, 0));
+    
   }
   
   void plus(){
@@ -253,6 +256,19 @@ class Reflect extends Shuriken{
       v.set(v.x, -v.y);
       y = r/2;
     }
+    
+    setPolygon();
+  }
+  
+  void setPolygon(){
+    pol.ver.set(0, new PVector(x-w/4.0, y-h/2.0));
+    pol.ver.set(1, new PVector(x+w/4.0, y-h/2.0));
+    pol.ver.set(2, new PVector(x+w/2.0, y-h/4.0));
+    pol.ver.set(3, new PVector(x-w/2.0, y+h/4.0));
+    pol.ver.set(4, new PVector(x+w/4.0, y+h/2.0));
+    pol.ver.set(5, new PVector(x-w/4.0, y+h/2.0));
+    pol.ver.set(6, new PVector(x-w/2.0, y+h/4.0));
+    pol.ver.set(7, new PVector(x-w/2.0, y-h/4.0));
   }
   
   void draw(){
@@ -272,15 +288,15 @@ class Strong extends Reflect{
     this.y = y;
     v = new PVector(-6*db.scwhrate, 0);
     
+    num = 6;
+    initial();
+    
     hp = 7;
     damage = 15;
-    num = 6;
     r = 100;
     isReflected = false;
     
-    col = new int[3];
     col[0] = col[1] = 255;
-    col[2] = 0;
   }
   
   void plus(){}

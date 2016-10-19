@@ -31,7 +31,7 @@ Player player;
 Home home;
 
 final int MAXchoke = 11100;
-final int bosstime = 60*45;  //ボス戦が始まる時間
+final int bosstime = 60;  //ボス戦が始まる時間
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
@@ -42,6 +42,7 @@ int bscore, benergy;
 int wholecount;      //道中が始まってからのカウント
 int scene;            //1:タイトル　2:難易度選択　3:道中　4:ボス　5:スコア画面  6:ランキング
 int debagcounter;    //どこが重いか確認する用
+int combo;
 
 void settings(){
   minim = new Minim(this);    //音楽・効果音用
@@ -70,6 +71,9 @@ void setup(){
   firstinitial = true;
   isDebag = true;
   backspace = space = false;
+  
+  textSize(36);
+  
   allInitial();
 }
 
@@ -155,8 +159,7 @@ void process(){
       break;
     }
   
-  println("enemys: "+enemys.size()+" walls: "+walls.size()+" bullets: "+bullets.size());
-  //if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
+  if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
   send();
 }
 
@@ -217,6 +220,7 @@ void allInitial(){
   isStop = false;
   scene = 3;
   wholecount = 0;
+  combo = 0;
 }
 
 void changeScene(){
