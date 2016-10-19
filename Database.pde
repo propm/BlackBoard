@@ -10,7 +10,6 @@ class DataBase{
   
   String[] objects;              //オブジェクトの名前
   float scwhrate;                //width/1600.0
-  int bs;                        //弾速
   int screenw, screenh;
   
   //多角形の点を保持
@@ -34,7 +33,6 @@ class DataBase{
     oriEnemys = new HashMap<String, Enemy>(objects.length);
     oriplayer = new Player();
     orishuriken = new Shuriken();
-    bs = 30;
     
     for(int i = 0; i < objects.length; i++){
       oriEnemys.put(objects[i], new Enemy());
@@ -57,7 +55,6 @@ class DataBase{
   //敵・プレイヤーの設定
   void setobjects(){
     
-    bs *= scwhrate;
     float[] wh;
     
     for(int i = 1; i <= oriEnemys.size(); i++){
@@ -158,10 +155,10 @@ class DataBase{
     setPlayer();
     
     Shuriken s = orishuriken;
-    s.img = loadImage("shuriken.png");
-    s.w = (int)(s.img.width/20.0*scwhrate);
-    s.h = (int)(s.img.height/20.0*scwhrate);
-    s.img = reSize(s.img, (int)s.w, (int)s.h);
+    s.image = loadImage("shuriken.png");
+    s.w = (int)(s.image.width/20.0*scwhrate);
+    s.h = (int)(s.image.height/20.0*scwhrate);
+    s.image = reSize(s.image, (int)s.w, (int)s.h);
   }
   
   void setPlayer(){

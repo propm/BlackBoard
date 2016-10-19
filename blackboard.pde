@@ -26,7 +26,6 @@ Client client;
 ArrayList<Enemy>     enemys;
 ArrayList<Bullet>    bullets;
 ArrayList<Wall>      walls;
-ArrayList<Shuriken>  shurikens;
 Boss boss;
 Player player;
 Home home;
@@ -108,11 +107,6 @@ void process(){
         bullets.get(i).update();
       }
       
-      //手裏剣の処理
-      for(int i = 0; i < shurikens.size(); i++){
-        shurikens.get(i).update();
-      }
-      
       //壁の処理
       for(int i = 0; i < walls.size(); i++){
         walls.get(i).update();
@@ -127,7 +121,6 @@ void process(){
       //死んだオブジェクトの処理
       cadaver(enemys);
       cadaver(bullets);
-      cadaver(shurikens);
       cadaver(walls);
         
       break;
@@ -162,7 +155,8 @@ void process(){
       break;
     }
   
-  if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
+  println("enemys: "+enemys.size()+" walls: "+walls.size()+" bullets: "+bullets.size());
+  //if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
   send();
 }
 
@@ -187,11 +181,6 @@ void drawing(){
     for(int i = 0; i < enemys.size(); i++){
       Enemy enemy = enemys.get(i);
       enemy.draw();
-    }
-    
-    for(int i = 0; i < shurikens.size(); i++){
-      Shuriken s = shurikens.get(i);
-      s.draw();
     }
   }
   
@@ -220,7 +209,6 @@ void allInitial(){
   enemys = new ArrayList<Enemy>();
   bullets = new ArrayList<Bullet>();
   walls = new ArrayList<Wall>();
-  shurikens = new ArrayList<Shuriken>();
   
   player = new Player();
   home = new Home();

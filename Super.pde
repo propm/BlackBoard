@@ -494,7 +494,7 @@ class Enemy extends MyObj{
           //フライングとパラシュート形態
           case 2:
           case 4:
-            bullets.add(new Bullet(x, y+h/2, new PVector(-db.bs/10.0*db.scwhrate, random(-1, 1), 0)));
+            bullets.add(new Bullet(x, y+h/2, new PVector(-3*db.scwhrate, random(-1, 1), 0)));
             wasAttack = true;
             break;
           //タンジェント
@@ -509,7 +509,7 @@ class Enemy extends MyObj{
             break;
           //忍者
           case 6:
-            shurikens.add(new Shuriken(x, y+h/2));
+            bullets.add(new Shuriken(x, y+h/2));
             wasAttack = true;
             break;
         }
@@ -546,7 +546,8 @@ class collisionCompa implements Comparator<float[]>{
 class Bullet extends MyObj{
   float radian;    //横一直線を0としたときの角度　正方向は時計回り(-π < radian <= π)
   int   damage;    //与えるダメージ
-  int   num;       //bulletなら0、laserなら1、beamなら2、standardなら3、reflectなら4、strongなら5
+  int   num;       //bulletなら0、laserなら1、beamなら2、shurikenなら3、
+                   //standardなら4、reflectなら5、strongなら6
   int[] col;       //色
   
   PVector length;       //弾の長さ
@@ -554,11 +555,7 @@ class Bullet extends MyObj{
   Bullet(){}
   
   Bullet(float x, float y){
-    this.x = x;
-    this.y = y;
-    v = new PVector(-1, 0);
-    
-    initial();
+    this(x, y, new PVector(-1, 0));
   }
   
   Bullet(float x, float y, PVector v){
@@ -580,7 +577,7 @@ class Bullet extends MyObj{
     col[1] = 134;
     col[2] = 0;
     
-    length = v.get();
+    length = v.copy();
     length.setMag(50*db.scwhrate);
     
     h = (int)(4*db.scwhrate);
@@ -603,6 +600,13 @@ class Bullet extends MyObj{
     pol.Init();
   }
   
+  void setPolygon(){
+    pol.ver.set(0, new PVector(x+length.mag(), y-h/2, 0));
+    pol.ver.set(1, new PVector(x+length.mag(), y+h/2, 0));
+    pol.ver.set(2, new PVector(x, y+h/2, 0));
+    pol.ver.set(3, new PVector(x, y-h/2, 0));
+  }
+  
   void move(){
     x += v.x;
     y += v.y;
@@ -614,7 +618,8 @@ class Bullet extends MyObj{
   }
   
   void plus(){
-    setPolygonAngle();
+    if(radian == PI)  setPolygon();
+    else              setPolygonAngle();
   }
   
   void draw(){

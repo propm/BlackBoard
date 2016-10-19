@@ -231,13 +231,16 @@ class Home{
       
       if(b.y+b.h/2 > 0 && b.y-b.h/2 < height){
         switch(b.num){
-          case 3:
-          case 0:
+          
+          case 4:    //通常弾
+          case 0:    //弱弾
             if(b.x <= border){
               hp -= b.damage;
               b.hp = 0;
             }
             break;
+            
+          //レーザー
           case 1:
             Laser l = (Laser)b;
             if(l.x+abs(l.length.x) >= border){
@@ -254,6 +257,8 @@ class Home{
               l.hp = 0;
             }
             break;
+            
+          //ビーム
           case 2:
             Beam be = (Beam)b;
             if(be.x >= border){
@@ -267,32 +272,18 @@ class Home{
               be.isDie = true;
             }
             break;
-          case 4:
-          case 5:
-            Reflect ref = (Reflect)b;
-            if(ref.x-ref.r/2 <= border){
-              
-              //補正のため
-              if(ref.hp == -1){
-                ref.hp = 0;
-                break;
-              }
-              hp -= ref.damage;
-              ref.x = border+ref.r/2;
-              ref.hp = -1;
-            }
+          
+          case 3:    //手裏剣
+          case 5:    //反射弾
+          case 6:    //反射可能弾
+            Shuriken s = (Shuriken)b;
             
-            break;
+            if(s.x-s.r/2 <= border){
+              
+              hp -= s.damage;
+              s.hp = 0;
+            }
         }
-      }
-    }
-    
-    for(int i = 0; i < shurikens.size(); i++){
-      Shuriken s = shurikens.get(i);
-      
-      if(s.x-s.r/2 <= border){
-        hp -= s.damage;
-        s.hp = 0;
       }
     }
   }
@@ -348,31 +339,57 @@ class Wall extends Enemy{
     pol.Init();
   }
   
+  void setPolygon(){
+    
+  }
+  
+  //壁と敵・弾の判定
   void dicision(){
     for(int i = 0; i < bullets.size(); i++){
       Bullet b = bullets.get(i);
       
-      if(b.num == 0){
-        if(judge(pol, b.pol)){
-          hp -= b.damage;
-          b.hp = 0;
-        }
-      }else if(b.num == 1){
-        hp = 0;
+      switch(b.num){
+        
+        //通常弾・弱弾
+        case 4:
+        case 0:
+          if(judge(pol, b.pol)){
+            hp -= b.damage;
+            b.hp = 0;
+          }
+          break;
+          
+        //レーザー
+        case 1:
+          hp = 0;
+          break;
+          
+        //手裏剣・反射弾・反射可能弾
+        case 3:
+        case 5:
+        case 6:
+          Shuriken s = (Shuriken)b;
+          
+          if(judge(new PVector(s.x, s.y), s.r/2, pol)){
+            hp -= s.damage;
+            
+            switch(b.num){
+              case 5:
+                s.hp = 0;
+                break;
+              
+              case 3:
+              case 6:
+                s.v.set(-s.v.x, -s.v.y, -s.v.z);
+                s.x = x+h/2.0+s.r/2.0;
+                s.isReflected = true;
+                break;
+            }
+          }
       }
     }
     
-    for(int i = 0; i < shurikens.size(); i++){
-      Shuriken s = shurikens.get(i);
-      
-      if(judge(new PVector(s.x, s.y), s.r/2, pol)){
-        s.v.set(-s.v.x, -s.v.y, -s.v.z);
-        s.x = x+h/2.0+s.r/2.0;
-        s.isReflected = true;
-        hp -= s.damage;
-      }
-    }
-    
+    //敵
     for(int i = 0; i < enemys.size(); i++){
       Enemy e = enemys.get(i);
       
