@@ -392,7 +392,6 @@ class Bullet extends MyObj{
     bver = new ArrayList<PVector>();
     
     energy = 25;
-    die = minim.loadSample("normalbullet_hit.mp3");
     radian = atan2(v.y, v.x);
     isDie = false;
     bisOver = false;

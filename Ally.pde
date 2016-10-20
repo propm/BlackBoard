@@ -14,38 +14,48 @@ class Player extends Enemy{
   ArrayList<PVector> bver;
   
   AudioSample erase;    //消すときの音
+  AudioSample create;   //壁を作るときの音
   Polygon bpol;         //前のpol
   
   Player(){
-    initial();
+    if(db.otherobj.size() > 0){
+      copy();
+      initial();
+    }
+  }
+  
+  //コピー
+  void copy(){
+    Player p = (Player)db.otherobj.get(0);
+    
+    erase = p.erase;
+    create = p.create;
+    oripol = new Polygon(p.pol.ver);
+    pol    = new Polygon(p.pol.ver);
   }
   
   //初期化
   void initial(){
-    try{
-      Player p = db.oriplayer;
+    radian = 0;
+    key = 0;
+    energy = MAXchoke/3;
+    x = y = z = 0;
       
-      w = p.w;
-      h = p.h;
-      erase = p.erase;
-      radian = 0;
-      key = 0;
-      energy = MAXchoke/3;
-      x = y = z = 0;
-      
-      gap = p.gap;
-      dist = p.dist;
-      ATflag = false;
-      
-      oripol = new Polygon(p.pol.ver);
-      pol    = new Polygon(p.pol.ver);
-      setPolygonAngle();
-      
-      bver = new ArrayList<PVector>();
-      for(int i = 0; i < pol.ver.size(); i++)
-        bver.add(pol.ver.get(i));
-      
-    }catch(NullPointerException e){}
+    gap = atan(db.eraserh/db.eraserw);
+    
+    float distx = width/db.boardw*db.eraserw/2;
+    float disty = height/db.boardh*db.eraserh/2;
+    
+    dist = (float)Math.sqrt(distx*distx + disty*disty);
+    
+    w = (int)(distx*2);
+    h = (int)(disty*2);
+    
+    setPolygonAngle();
+    
+    bver = new ArrayList<PVector>();
+    for(int i = 0; i < pol.ver.size(); i++)
+      bver.add(pol.ver.get(i));
   }
   
   //動作
@@ -210,6 +220,7 @@ class Player extends Enemy{
     
     if(count/60 >= 1 && choke >= energy){
       walls.add(new Wall(x, y, height/2.0, h*2, PI/2));
+      if(create != null)  create.trigger();
       choke -= energy;
       count = 0;
     }
@@ -232,11 +243,8 @@ class Player extends Enemy{
 //******************************************************************************************************
 
 //自陣
-class Home{
-  float x, y;          //自陣の中心の座標
-  int w, h;
-  float hp;            //体力
-  float bhp;
+class Home extends MyObj{
+  int bhp;
   float border;        //自陣の境界
   
   PImage img;          //画像
@@ -244,8 +252,16 @@ class Home{
   float angle;         //画像回転角度（単位：度）
   float anglev;        //角速度  （単位：度）
   
+  AudioSample damaged;
+  
+  Home(boolean flag){}
+  
   Home(){
     border = width/11.0;
+    
+    try{
+      damaged = minim.loadSample("");
+    }catch(Exception e){}
     
     img = reverse(loadImage("cleaner.png"));
     imgm = (float)1/3;
@@ -262,6 +278,10 @@ class Home{
     angle = 0;
   }
   
+  void copy(){
+    
+  }
+  
   void update(){
     bhp = hp;
     
@@ -270,10 +290,12 @@ class Home{
     y = sin(angle/180*PI)*4 + height/2;
     
     damage();
-    //if(bhp != hp)  println("hp: "+hp);
+    if(bhp != hp)  println("hp: "+hp);
   }
   
   void damage(){
+    
+    boolean isDamaged = false;
     for(int i = 0; i < enemys.size(); i++){
       Enemy e = enemys.get(i);
       
@@ -282,11 +304,13 @@ class Home{
         if(t.x-t.r/2.0 < border){
           hp -= e.damage;
           e.hp = 0;
+          isDamaged = true;
         }
       }else if(e.charanum != 7){
         if(e.x < border && e.charanum != 3){
           hp -= e.damage;
           e.hp = 0;
+          isDamaged = true;
         }
       }
     }
@@ -295,6 +319,8 @@ class Home{
       Bullet b = bullets.get(i);
       
       if(b.y+b.h/2 > 0 && b.y-b.h/2 < height){
+        isDamaged = true;
+        
         switch(b.num){
           
           case 4:    //通常弾
@@ -351,6 +377,8 @@ class Home{
         }
       }
     }
+    
+    if(damaged != null && isDamaged)  damaged.trigger();
   }
   
   void draw(){
@@ -363,8 +391,14 @@ class Home{
 
 //**************************************************************************************
 
-class Wall extends Enemy{
+class Wall extends MyObj{
   float radian;    //単位はラジアン　正方向は時計回り
+  int count;
+  
+  AudioSample reflect;
+  AudioSample damaged;
+  
+  Wall(boolean flag){}
   
   Wall(float x, float y, float w, float h, float radian){
     this.x = x;
@@ -374,6 +408,18 @@ class Wall extends Enemy{
     this.radian = radian;
     isDie = false;
     hp = 100;
+    
+    try{
+      reflect = minim.loadSample("");
+    }catch(Exception e){}
+    
+    try{
+      die = minim.loadSample("");
+    }catch(Exception e){}
+    
+    try{
+      damaged = minim.loadSample("");
+    }catch(Exception e){}
     
     pol = new Polygon();
     for(int i = 0; i < 4; i++)
@@ -410,6 +456,7 @@ class Wall extends Enemy{
   
   //壁と敵・弾の判定
   void dicision(){
+    
     for(int i = 0; i < bullets.size(); i++){
       Bullet b = bullets.get(i);
       
@@ -421,6 +468,8 @@ class Wall extends Enemy{
           if(judge(pol, b.pol)){
             hp -= b.damage;
             b.hp = 0;
+            
+            if(damaged != null)  damaged.trigger();
           }
           break;
           
@@ -441,6 +490,7 @@ class Wall extends Enemy{
             switch(b.num){
               case 5:
                 s.hp = 0;
+                if(damaged != null)  damaged.trigger();
                 break;
               
               case 3:
@@ -448,6 +498,7 @@ class Wall extends Enemy{
                 s.v.set(-s.v.x, -s.v.y, -s.v.z);
                 s.x = x+h/2.0+s.r/2.0;
                 s.isReflected = true;
+                if(reflect != null)  reflect.trigger();
                 break;
             }
           }

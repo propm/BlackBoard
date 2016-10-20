@@ -109,7 +109,8 @@ class ReadText extends CheckText{
       else     for(String obj: objects)  db.setsound(obj, commands[comnum-1], filename);
     }
     else if(comnum == 2){
-      db.oriplayer.erase = minim.loadSample(filename);
+      Player p = (Player)db.otherobj.get(0);
+      p.erase = minim.loadSample(filename);
     }
   }
   
