@@ -38,7 +38,8 @@ class DataBase{
     
     otherobj = new ArrayList<MyObj>();
     otherobj.add(new Player());
-    otherobj.add(new Home(true));
+    otherobj.add(new Home());
+    otherobj.add(new Wall());
     otherobj.add(new Bullet());
     otherobj.add(new Shuriken());
     
@@ -121,14 +122,22 @@ class DataBase{
         setPlayer();
         break;
       case 1:    //自陣
-        Home home = (Home)otherobj.get(num);
-        home.damaged = setsound("");
+        Home oh = (Home)otherobj.get(num);
+        oh.damaged = setsound("");
+        oh.image = reverse(loadImage("cleaner.png"));
+        oh.imgm = (float)1/3;
         break;
-      case 2:    //弾
+      case 2:
+        Wall ow = (Wall)otherobj.get(num);
+        ow.die = setsound("");
+        ow.damaged = setsound("");
+        ow.reflect = setsound("");
+        break;
+      case 3:    //弾
         Bullet b = (Bullet)otherobj.get(num);
         b.die = setsound("normalbullet_hit.mp3");
         break;
-      case 3:    //手裏剣
+      case 4:    //手裏剣
         MyObj s = otherobj.get(num);
         s.image = loadImage("shuriken.png");
         s.w = (int)(s.image.width/20.0*scwhrate);

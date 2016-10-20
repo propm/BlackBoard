@@ -19,7 +19,6 @@ class Player extends Enemy{
   
   Player(){
     if(db.otherobj.size() > 0){
-      copy();
       initial();
     }
   }
@@ -36,6 +35,7 @@ class Player extends Enemy{
   
   //初期化
   void initial(){
+    copy();
     radian = 0;
     key = 0;
     energy = MAXchoke/3;
@@ -247,39 +247,41 @@ class Home extends MyObj{
   int bhp;
   float border;        //自陣の境界
   
-  PImage img;          //画像
+  PImage image;          //画像
   float imgm;          //画像の拡大倍率
   float angle;         //画像回転角度（単位：度）
   float anglev;        //角速度  （単位：度）
   
   AudioSample damaged;
   
-  Home(boolean flag){}
-  
   Home(){
+    if(db.otherobj.size() > 1){
+      initial();
+    }
+  }
+  
+  void initial(){
+    copy();
     border = width/11.0;
     
-    try{
-      damaged = minim.loadSample("");
-    }catch(Exception e){}
-    
-    img = reverse(loadImage("cleaner.png"));
-    imgm = (float)1/3;
-    
-    w = (int)(img.width * imgm * db.scwhrate);
-    h = (int)(img.height * imgm * db.scwhrate);
+    w = (int)(image.width * imgm * db.scwhrate);
+    h = (int)(image.height * imgm * db.scwhrate);
     
     x = border - w + width/20.0*1.65;
     y = (int)((float)height/2);
     
+    image.resize(w, h);
+    
     hp = 1000;
-    img.resize(w, h);
     anglev = 3;
     angle = 0;
   }
   
   void copy(){
-    
+    Home oh = (Home)db.otherobj.get(1);
+    image = oh.image;
+    damaged = oh.damaged;
+    imgm = oh.imgm;
   }
   
   void update(){
@@ -385,7 +387,7 @@ class Home extends MyObj{
     fill(255, 0, 0, 100);
     noStroke();
     rect(0, 0, border, height);
-    image(img, (int)x - w/2, (int)y - h/2);
+    image(image, (int)x - w/2, (int)y - h/2);
   }
 }
 
@@ -398,7 +400,7 @@ class Wall extends MyObj{
   AudioSample reflect;
   AudioSample damaged;
   
-  Wall(boolean flag){}
+  Wall(){}
   
   Wall(float x, float y, float w, float h, float radian){
     this.x = x;
@@ -409,21 +411,18 @@ class Wall extends MyObj{
     isDie = false;
     hp = 100;
     
-    try{
-      reflect = minim.loadSample("");
-    }catch(Exception e){}
-    
-    try{
-      die = minim.loadSample("");
-    }catch(Exception e){}
-    
-    try{
-      damaged = minim.loadSample("");
-    }catch(Exception e){}
+    copy();
     
     pol = new Polygon();
     for(int i = 0; i < 4; i++)
       pol.Add(new PVector(0, 0, 0));
+  }
+  
+  void copy(){
+    Wall ow = (Wall)db.otherobj.get(2);
+    die = ow.die;
+    damaged = ow.damaged;
+    reflect = ow.reflect;
   }
   
   void update(){
