@@ -155,6 +155,8 @@ class Shuriken extends Bullet{
     this.x = x;
     this.y = y;
     
+    initial();
+    
     Shuriken s = (Shuriken)db.otherobj.get(4);
     image = s.image;
     w = s.w;
@@ -166,7 +168,6 @@ class Shuriken extends Bullet{
     
     v = new PVector(-3, 0);
     isReflected = false;
-    isDie = false;
     angle = 0;
   }
   

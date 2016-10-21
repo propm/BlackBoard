@@ -424,8 +424,6 @@ float culct(PVector as, PVector ae, PVector v, PVector bs, PVector be) {
     }
   }
 
-  println((l + r) / 2.0);
-
   return (l + r) / 2.0;
 }
 

@@ -449,10 +449,6 @@ class Wall extends MyObj{
     pol.Init();
   }
   
-  void setPolygon(){
-    
-  }
-  
   //壁と敵・弾の判定
   void dicision(){
     
@@ -474,7 +470,7 @@ class Wall extends MyObj{
           
         //レーザー
         case 1:
-          hp = 0;
+          if(judge(pol, b.pol))  hp = 0;
           break;
           
         //手裏剣・反射弾・反射可能弾
@@ -503,7 +499,6 @@ class Wall extends MyObj{
           }
       }
     }
-    
     //敵
     for(int i = 0; i < enemys.size(); i++){
       Enemy e = enemys.get(i);

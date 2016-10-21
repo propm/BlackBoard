@@ -280,6 +280,7 @@ class Bullet extends MyObj{
     bver = new ArrayList<PVector>();
     
     energy = 25;
+    maxhp = hp = 1;
     radian = atan2(v.y, v.x);
     isDie = false;
     bisOver = false;
@@ -307,7 +308,6 @@ class Bullet extends MyObj{
     
     h = (int)(4*db.scwhrate);
     damage = 2;
-    maxhp = hp = 1;
     
     setPolygon();
     for(int i = 0; i < pol.ver.size(); i++)
