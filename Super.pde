@@ -73,8 +73,10 @@ class Enemy extends MyObj{
     charanum = num;
     copy();
     
+    if(onceinitial && charanum == 1)  y = height-h;
     imgx = x - marginx;
     imgy = y - marginy;
+    
     setPolygon(imgx, imgy);
     pol.v = v.copy();
     
@@ -96,7 +98,6 @@ class Enemy extends MyObj{
     
     //敵種ごとの処理
     switch(charanum){
-      case 1:  y = height-h;  break;        //突撃兵
       case 3:  energy = 300;  break;        //タンジェント
       case 5:                               //固定砲台
       case 6:  isMoveobj = false;  break;   //忍者

@@ -6,14 +6,12 @@ class Attacker extends Enemy{
   Attacker(){
     if(db.oriEnemys.size() >= 7){
       x = random(width)+width/3*2;
-      y = random(height-h/2)+h/2;
       initial();
     }
   }
   
   Attacker(int x, int y){
     this.x = x;
-    this.y = y;
     initial();
   }
   
@@ -40,20 +38,20 @@ class Sin extends Enemy{
   
   Sin(boolean sin){
     isSin = true;
+    
+    x = random(width)+width/3*2;
+    y = basicy = random(height/3*2) + h/2 + height/6;
     initial();
   }
   
   Sin(int x, int y){
     this.x      = x;
-    this.basicy = y;
+    this.y = basicy = y;
     
     initial();
   }
   
   void initial(){
-    x = random(width)+width/3*2;
-    basicy = random(height/3*2) + h/2 + height/6;
-    
     if(isSin)  initial(2);  //初期設定をコピー
     
     ay = basicy;
@@ -237,7 +235,7 @@ class Cannon extends Enemy{
 
 //忍者
 class Ninja extends Enemy{
-  final float ALPHA = 100;  //最大不透明度
+  final float ALPHA = 200;  //最大不透明度
   float alphav;             //不透明度の増減の速さ(1フレームにどれだけ不透明度が変化するか)
   boolean isStealth;        //透明化するときtrue
   

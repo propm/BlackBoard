@@ -218,10 +218,10 @@ class Player extends Enemy{
   void createwall(){
     count++;
     
-    if(count/60 >= 1 && choke >= energy){
+    if(count/60 >= 1 && choke >= 0/*energy*/){
       walls.add(new Wall(x, y, height/2.0, h*2, PI/2));
       if(create != null)  create.trigger();
-      choke -= energy;
+      //choke -= energy;
       count = 0;
     }
   }
