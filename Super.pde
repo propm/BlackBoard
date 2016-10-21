@@ -117,6 +117,7 @@ class Enemy extends MyObj{
     pol    = new Polygon(oe.pol.ver);
     oripol.Init();
     pol.Init();
+    pol.owner = this;
     
     w = oe.w;
     h = oe.h;

@@ -3,8 +3,10 @@ class Polygon {
   boolean isConvex; //凸多角形であるか
   PVector center; // 中心点
   float square; // 面積
+  boolean isCollide;  //前フレームに衝突したかどうか
 
   PVector v; // 方向ベクトル
+  MyObj owner;  //当たり判定の持ち主
 
   Polygon() {
     ver = new ArrayList<PVector>();
@@ -184,11 +186,13 @@ class Polygon {
         nv.x += v.x * mint;
         nv.y += v.y * mint;
       }
-      v = new PVector(0, 0, 0);
+      v.set(0, v.y, 0);
     } else {
-      for (int i = 0; i < ver.size(); i++) {
-        ver.get(i).add(v);
-      }
+      v = owner.v.copy();
+    }
+    
+    for (int i = 0; i < ver.size(); i++) {
+      ver.get(i).add(v);
     }
   }
 }
@@ -437,14 +441,11 @@ Polygon createConvex(ArrayList<PVector> pol) {
 
 
   if (pSet.size() > 3) {
-    boolean minxisnull = true;
 
     ArrayList<Boolean> isInclude = new ArrayList<Boolean>(pSet.size());
     for (int i = 0; i < pSet.size(); i++)
       isInclude.add(false);
 
-
-    int forcount = 0;
     //総当りで三角形に含まれる点を探す
     for (int i = 0; i < pSet.size(); i++) {
       if (isInclude.get(i))  continue;
@@ -512,7 +513,7 @@ Polygon createConvex(ArrayList<PVector> pol) {
     convex.Init();
     return convex;
   } else {
-    println("バグってます2");
+    println("点が2つ以下です");
     return null;
   }
 }

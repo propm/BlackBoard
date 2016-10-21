@@ -61,6 +61,7 @@ class Sin extends Enemy{
   void move(){
     theta += 2;
     sety(charanum == 2? sin(theta*PI/180) : tan(theta*PI/180));
+    
     super.move();
   }
   
@@ -68,6 +69,7 @@ class Sin extends Enemy{
     y = ay;
     ay = basicy - s_t*height/6;
     pol.v.set(pol.v.x, ay-y);
+    v.set(v.x, ay-y);
   }
 }
 
