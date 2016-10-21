@@ -26,7 +26,7 @@ class DataBase{
   //効果音のファイル名
   String erase;
   
-  HashMap<String, Enemy> oriEnemys;    //敵種別設定用のオブジェクト
+  ArrayList<Enemy> oriEnemys;    //敵種別設定用のオブジェクト
                                        //1:突撃兵  2:サイン  3:タンジェント  4:パラシュート
                                        //5:大砲　　6:忍者
   ArrayList<MyObj> otherobj;       //敵以外のオブジェクト
@@ -34,7 +34,7 @@ class DataBase{
   //中身を入れる
   void initial(){
     objects = rt.objects.clone();
-    oriEnemys = new HashMap<String, Enemy>(objects.length);
+    oriEnemys = new ArrayList<Enemy>(objects.length);
     
     otherobj = new ArrayList<MyObj>();
     otherobj.add(new Player());
@@ -43,13 +43,16 @@ class DataBase{
     otherobj.add(new Bullet());
     otherobj.add(new Shuriken());
     
-    println(otherobj.size());
-    
-    for(int i = 0; i < objects.length; i++){
-      oriEnemys.put(objects[i], new Enemy());
-    }
+    oriEnemys.add(new Attacker());
+    oriEnemys.add(new Sin());
+    oriEnemys.add(new Tangent());
+    oriEnemys.add(new Parachuter());
+    oriEnemys.add(new Cannon());
+    oriEnemys.add(new Ninja());
+    oriEnemys.add(new Boss());
   }
   
+  /*
   //敵の効果音を設定
   void setsound(String object, String command, String filename){
   
@@ -61,35 +64,46 @@ class DataBase{
         }
       }
     }
-  }
+  }*/
   
   //敵・プレイヤーの設定
   void setobjects(){
     for(int i = 1; i <= oriEnemys.size(); i++){
       
-      Enemy e = oriEnemys.get(objects[i-1]);
+      Enemy e = oriEnemys.get(i-1);
       e.pol = new Polygon();
+      e.die = setsound("enemydestroyed.mp3");    //死ぬときの音
+      e.bul = setsound("");                      //普通弾発射時の音
       
       switch(i){
         case 1:
           //引数は右からオブジェクト、num, hp, rank, bulletflag, Bi, 移動速度, damage, imgfile名
           setEnemys(e, i, 2, 1, false, -1, new PVector(-2, 0), 10, "attacker.png", "attacker_attack.png");
+          e.AT = setsound("");    //壁に攻撃するときの音
           break;
         case 2:
           setEnemys(e, i, 1, 2, true, 75, new PVector(-3, 0), 20, "flying1.png", "flying2.png");
           break;
         case 3:
           setEnemys(e, i, 1, 4, true, 0, new PVector(-6, 0), 50, "tangent1.png", "tangent2.png");
+          e.bul = setsound("");    //ビームを打っているときずっとなる音
           break;
         case 4:
           setEnemys(e, i, 5, 3, true, 50, new PVector(-2, 2), 30, "attacker.png", "attacker_attack.png");
+          e.AT = setsound("");    //突撃し始めるときの音
           break;
         case 5:
           setEnemys(e, i, 5, 3, true, 60*3, new PVector(0, 0), 0, "cannon.png", "cannon_attack.png");
+          Cannon c = (Cannon)e;
+          c.charge = setsound("");  //チャージ時の音
+          c.bul = setsound("");     //レーザーを打つときの音
+          c.appear = setsound("");  //召喚時の音
           break;
         case 6:
           setEnemys(e, i, -1, 4, true, 60*4, new PVector(0, 0), 0, "ninja.png", "ninja_attack.png");
           break;
+        case 7:
+          
       }
     }
     

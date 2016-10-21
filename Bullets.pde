@@ -155,7 +155,7 @@ class Shuriken extends Bullet{
     this.x = x;
     this.y = y;
     
-    Shuriken s = (Shuriken)db.otherobj.get(3);
+    Shuriken s = (Shuriken)db.otherobj.get(4);
     image = s.image;
     w = s.w;
     h = s.h;

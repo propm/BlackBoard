@@ -46,12 +46,9 @@ class ReadText extends CheckText{
             sizepro(code);
             break;
           case 2:
-            soundpro(code, i);
-            break;
-          case 3:
             appearpro(code, tagnum, i);
             break;
-          case 4:
+          case 3:
             bgmpro(code, tagnum, i);
             break;
         }
@@ -75,6 +72,7 @@ class ReadText extends CheckText{
   
   //*****************************************************************************************************************
   
+  /*
   //soundタグの処理
   void soundpro(String code, int i){
     String object, filename;
@@ -113,6 +111,7 @@ class ReadText extends CheckText{
       p.erase = minim.loadSample(filename);
     }
   }
+  */
   
   //*****************************************************************************************************************
   

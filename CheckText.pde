@@ -2,8 +2,7 @@
 //エラーがないか確認する
 class CheckText{
   
-  final String[] tags = {"<size>", "<sound>", "<appear>" , "<bgm>"};
-  final String[] commands = {"die", "erase", "attack"};
+  final String[] tags = {"<size>", "<appear>", "<bgm>"};
   final String[] objects = {"Attacker", "Sin", "Tangent", "Parachuter", "Cannon", "Ninja"};
   
   String[] blines;
@@ -78,15 +77,11 @@ class CheckText{
             break;
           
           case 2:
-            soundError(code, 2, i);
-            break;
-          
-          case 3:
-            appearError(code, 3, i);
+            appearError(code, tagnum, i);
             break;
             
-          case 4:
-            bgmError(code, 4, i);
+          case 3:
+            bgmError(code, tagnum, i);
             break;
         }
       }
@@ -128,7 +123,7 @@ class CheckText{
     }
       
   }
-  
+  /*
   void soundError(String code, int tagnum, int i){
     boolean isMatchJ, isMatchK;
     boolean isErase;
@@ -178,7 +173,7 @@ class CheckText{
       isError = true;
       return;
     }
-  }
+  }*/
   
   void appearError(String code, int tagnum, int i){
     boolean isMatch = false;
