@@ -25,7 +25,6 @@ class Attacker extends Enemy{
 //フライング
 class Sin extends Enemy{
   
-  float cy;        //現在のy
   float basicy;    //角度が0のときの高さ
   int theta;       //角度(ラジアンではない)
   int omega;       //角速度（ラジアンではない)
@@ -61,15 +60,15 @@ class Sin extends Enemy{
   
   void move(){
     theta += 2;
+    theta %= 360;
     setvy(charanum == 2? sin(theta*PI/180) : tan(theta*PI/180));
     
     super.move();
   }
   
   void setvy(float s_t){
-    cy = ay;
     ay = basicy - s_t*height/6;
-    pol.v.set(pol.v.x, ay-cy);
+    pol.v.set(pol.v.x, ay-y);
   }
 }
 
@@ -96,8 +95,9 @@ class Tangent extends Sin{
   void initialize(){
     if(db.oriEnemys.size() >= 7){
       initial(3);  //初期設定をコピー
-    
+      
       float imgw = imgs.get(0).width;
+      image = imgs.get(0);
       r = imgw/5.0*4;
       marginx = imgw/100.0*49;
       marginy = imgw/100.0*47;
@@ -123,7 +123,7 @@ class Tangent extends Sin{
     translate(x, y);
     rotate(angle/180.0*PI);
     tint(255, alpha);
-    image(imgs.get(0), -marginx, -marginy);
+    image(image, -marginx, -marginy);
     tint(255, 255);
     popMatrix();
     

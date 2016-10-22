@@ -31,6 +31,11 @@ class MyObj implements Cloneable{
       if(die != null)  die.trigger();
     }
   }
+  
+  
+  void soundstop(){
+    die.close();
+  }
 }
 
 //******************************************************************************************************
@@ -240,6 +245,12 @@ class Enemy extends MyObj{
     }
     
     return wasAttack;
+  }
+  
+  void soundstop(){
+    super.soundstop();
+    AT.close();
+    bul.close();
   }
   
   //描画

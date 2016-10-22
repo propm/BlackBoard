@@ -10,6 +10,8 @@ import ddf.minim.ugens.*;
 import ddf.minim.effects.*;
 import processing.net.*;
 
+import javax.swing.*;
+
 ScrollManager sm;
 ReadText rt;
 DataBase db;
@@ -336,4 +338,30 @@ void send(){
   mes.add(score);
   mes.add(choke);
   osc.send(mes, address);
+}
+
+//スケッチ終了時に呼ばれる関数
+void stop(){
+  bgm.close();
+  soundsstop();
+  minim.stop();
+  super.stop();
+}
+
+void soundsstop(){
+  for(int i = 0; i < enemys.size(); i++){
+    enemys.get(i).soundstop();
+  }
+  
+  for(int i = 0; i < walls.size(); i++){
+    walls.get(i).soundstop();
+  }
+  
+  for(int i = 0; i < bullets.size(); i++){
+    bullets.get(i).soundstop();
+  }
+  
+  if(boss != null)  boss.soundstop();
+  if(player != null)  player.soundstop();
+  if(home != null)  home.soundstop();
 }

@@ -226,6 +226,12 @@ class Player extends Enemy{
     }
   }
   
+  void soundstop(){
+    super.soundstop();
+    create.close();
+    erase.close();
+  }
+  
   void draw(){
     noStroke();
     pushMatrix();
@@ -279,7 +285,7 @@ class Home extends MyObj{
   
   void copy(){
     Home oh = (Home)db.otherobj.get(1);
-    image = oh.image;
+    image = oh.image.copy();
     damaged = oh.damaged;
     imgm = oh.imgm;
   }
@@ -381,6 +387,11 @@ class Home extends MyObj{
     }
     
     if(damaged != null && isDamaged)  damaged.trigger();
+  }
+  
+  void soundstop(){
+    super.soundstop();
+    damaged.close();
   }
   
   void draw(){
@@ -507,6 +518,12 @@ class Wall extends MyObj{
         if(e.Acount++%30 == 0)  hp -= 1;
       }
     }
+  }
+  
+  void soundstop(){
+    super.soundstop();
+    reflect.close();
+    damaged.close();
   }
   
   void draw(){

@@ -404,7 +404,7 @@ float culct(PVector as, PVector ae, PVector v, PVector bs, PVector be) {
   }
 
   float l = 0.0, r = 1.0;
-  for (int i = 0; i < 15; i++) {
+  for (int i = 0; i < 25; i++) {
     float m = (l + r) / 2.0;
     boolean isrdc; // 範囲を狭める向き(true: lを更新 false: rを更新)
     PVector ns = new PVector(as.x + v.x * m, as.y + v.y * m, 0.0);
