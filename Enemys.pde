@@ -4,14 +4,14 @@ class Attacker extends Enemy{
   boolean flag = false;
   
   Attacker(){
-    x = random(width)+width/3*2;
-    y = random(height-h/2)+h/2;
-    initial();
+    if(db.oriEnemys.size() >= 7){
+      x = random(width)+width/3*2;
+      initial();
+    }
   }
   
   Attacker(int x, int y){
     this.x = x;
-    this.y = y;
     initial();
   }
   
@@ -29,6 +29,7 @@ class Sin extends Enemy{
   int theta;       //角度(ラジアンではない)
   int omega;       //角速度（ラジアンではない)
   boolean isSin;
+  float ay;
   
   Sin(){
     isSin = false;
@@ -37,32 +38,38 @@ class Sin extends Enemy{
   
   Sin(boolean sin){
     isSin = true;
+    
+    x = random(width)+width/3*2;
+    y = basicy = random(height/3*2) + h/2 + height/6;
     initial();
   }
   
   Sin(int x, int y){
     this.x      = x;
-    this.basicy = y;
+    this.y = basicy = y;
     
     initial();
   }
   
   void initial(){
-    x = random(width)+width/3*2;
-    basicy = random(height/3*2) + h/2 + height/6;
     if(isSin)  initial(2);  //初期設定をコピー
     
+    ay = basicy;
     theta = 0;
   }
   
   void move(){
     theta += 2;
-    sety();
+    sety(charanum == 2? sin(theta*PI/180) : tan(theta*PI/180));
+    
     super.move();
   }
   
-  void sety(){
-    y = basicy - sin(theta*PI/180)*height/6;
+  void sety(float s_t){
+    y = ay;
+    ay = basicy - s_t*height/6;
+    pol.v.set(pol.v.x, ay-y);
+    v.set(v.x, ay-y);
   }
 }
 
@@ -76,7 +83,7 @@ class Tangent extends Sin{
   float r;
   
   Tangent(){
-    initialize();
+    if(db.oriEnemys.size() >= 7)  initialize();
   }
   
   Tangent(int x, int y){
@@ -94,15 +101,7 @@ class Tangent extends Sin{
     marginx = imgw/100.0*49;
     marginy = imgw/100.0*47;
     
-    pol = new Polygon();
-    pol.isCircle = true;
-    pol.owner = this;
-    
     once = true;
-  }
-  
-  void sety(){
-    y = basicy - tan(theta*PI/180)*100;
   }
   
   void plus(){
@@ -126,7 +125,7 @@ class Tangent extends Sin{
     tint(255, 255);
     popMatrix();
     
-    pol.Draw();
+    pol.Draw(new PVector(x, y), r);
   }
 }
 
@@ -138,9 +137,11 @@ class Parachuter extends Attacker{
   boolean once;
   
   Parachuter(){
-    x = random(width/2)+width/3*2;
-    y = -height/3;
-    initialize();
+    if(db.oriEnemys.size() >= 7){
+      x = random(width/2)+width/3*2;
+      y = -height/3;
+      initialize();
+    }
   }
   
   Parachuter(int x, int y){
@@ -166,7 +167,7 @@ class Parachuter extends Attacker{
       initial(1);
       y = stopy;
       image = imgs.get(1);
-      v.set(v.x*5, 0);
+      pol.v.set(pol.v.x*5, 0);
       once = false;
     }
   }
@@ -181,10 +182,15 @@ class Cannon extends Enemy{
   
   ArrayList<Enemy> chargeeffect;
   
+  AudioSample charge;    //チャージするときの音
+  AudioSample appear;    //召喚時の音
+  
   Cannon(){
-    x = random(width/4)+width/8*3;
-    y = random(height);
-    initial();
+    if(db.oriEnemys.size() >= 7){
+      x = random(width/4)+width/8*3;
+      y = random(height);
+      initial();
+    }
   }
   
   Cannon(float x, float y){
@@ -199,7 +205,15 @@ class Cannon extends Enemy{
     if(y < 0)  y = 0;
     if(y > height-h)  y = height-h;
     
-    setPolygon(x, y);
+    imgx = x - marginx;
+    imgy = y - marginy;
+    setPolygon(imgx, imgy);
+  }
+  
+  void copyplus(Enemy oe){
+    Cannon c = (Cannon)oe;
+    charge = c.charge;
+    appear = c.appear;
   }
   
   void attack(){
@@ -223,20 +237,20 @@ class Cannon extends Enemy{
 
 //忍者
 class Ninja extends Enemy{
-  final float ALPHA = 100;  //最大不透明度
+  final float ALPHA = 200;  //最大不透明度
   float alphav;             //不透明度の増減の速さ(1フレームにどれだけ不透明度が変化するか)
   boolean isStealth;        //透明化するときtrue
   
   Ninja(){
-    x = random(width/4)+width/8*3;
-    y = random(height);
-    initial();
+    this(random(width/4)+width/8*3, random(height));
   }
   
   Ninja(float x, float y){
-    this.x = x;
-    this.y = y;
-    initial();
+    if(db.oriEnemys.size() >= 7){
+      this.x = x;
+      this.y = y;
+      initial();
+    }
   }
   
   void initial(){
@@ -248,7 +262,10 @@ class Ninja extends Enemy{
     alpha = ALPHA;
     alphav = 5;
     isStealth = false;
-    setPolygon(x, y);
+    
+    imgx = x - marginx;
+    imgy = y - marginy;
+    setPolygon(imgx, imgy);
   }
   
   void plus(){
@@ -324,7 +341,6 @@ class Boss extends Enemy{
   Boss(float x, float y){
     
     pol = new Polygon();
-    pol.isBoss = true;
     
     imgs.add(loadImage("attacker.png"));
     w = (int)(imgs.get(0).width/10.0);

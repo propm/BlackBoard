@@ -11,12 +11,12 @@ class Laser extends Bullet{
     this.y = y;
     this.v = v;
     this.owner = owner;
-    initial();
+    linitial();
   }
   
-  void initial(){
-    super.initial();
-    if(num == 2)  return;
+  void linitial(){
+    num = 1;
+    initial();
     
     num = 1;
     h = (int)(8*db.scwhrate);
@@ -46,14 +46,12 @@ class Beam extends Bullet{
   
   Beam(Enemy owner){
     this.owner = (Tangent)owner;
-    initial();
+    binitial();
   }
   
-  void initial(){
+  void binitial(){
     num = 2;
     super.initial();
-    
-    hit = minim.loadSample("beam_hit.mp3");
     
     h = 6;
     Hcount = 0;
@@ -157,7 +155,9 @@ class Shuriken extends Bullet{
     this.x = x;
     this.y = y;
     
-    Shuriken s = db.orishuriken;
+    initial();
+    
+    Shuriken s = (Shuriken)db.otherobj.get(4);
     image = s.image;
     w = s.w;
     h = s.h;
@@ -165,11 +165,9 @@ class Shuriken extends Bullet{
     num = 3;
     r = 54;
     damage = 20;
-    hp = 1;
     
     v = new PVector(-3, 0);
     isReflected = false;
-    isDie = false;
     angle = 0;
   }
   
@@ -214,7 +212,6 @@ class Standard extends Bullet{
     hp = 1;
     num = 4;
     
-    col = new int[3];
     col[0] = 129;
     col[1] = 41;
     col[2] = 139;
@@ -234,13 +231,12 @@ class Reflect extends Shuriken{
     this.y = y; 
     this.v = v;
     
-    r = 15;
     num = 5;
-    hp = 2;
+    initial();
+    r = 15;
+    maxhp = hp = 2;
     damage = 10;
     
-    col = new int[3];
-    col[0] = col[1] = 0;
     col[2] = 255;
   }
   
@@ -272,15 +268,15 @@ class Strong extends Reflect{
     this.y = y;
     v = new PVector(-6*db.scwhrate, 0);
     
-    hp = 7;
-    damage = 15;
     num = 6;
+    initial();
+    
+    maxhp = hp = 7;
+    damage = 15;
     r = 100;
     isReflected = false;
     
-    col = new int[3];
     col[0] = col[1] = 255;
-    col[2] = 0;
   }
   
   void plus(){}

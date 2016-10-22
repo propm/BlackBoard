@@ -31,7 +31,7 @@ Player player;
 Home home;
 
 final int MAXchoke = 11100;
-final int bosstime = 60*45;  //ボス戦が始まる時間
+final int bosstime = 60*90;  //ボス戦が始まる時間
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
@@ -42,12 +42,13 @@ int bscore, benergy;
 int wholecount;      //道中が始まってからのカウント
 int scene;            //1:タイトル　2:難易度選択　3:道中　4:ボス　5:スコア画面  6:ランキング
 int debagcounter;    //どこが重いか確認する用
+int combo;
 
 void settings(){
   minim = new Minim(this);    //音楽・効果音用
   osc = new OscP5(this, 1234);
   address = new NetAddress("172.23.5.84", 1234);
-  client = new Client(this, "172.23.6.216", 50005);
+  //client = new Client(this, "172.23.6.216", 50005);
   
   rt = new ReadText();
   db = new DataBase();        //データベース
@@ -70,6 +71,9 @@ void setup(){
   firstinitial = true;
   isDebag = true;
   backspace = space = false;
+  
+  textSize(36);
+  
   allInitial();
 }
 
@@ -102,10 +106,16 @@ void process(){
         enemys.get(i).update();
       }
       
+      int a = 0;
       //弾の処理
       for(int i = 0; i < bullets.size(); i++){
         bullets.get(i).update();
+        if(bullets.get(i).num == 3){
+          a++;
+          println(bullets.get(i).hp);
+        }
       }
+      if(a > 0)  println(a);
       
       //壁の処理
       for(int i = 0; i < walls.size(); i++){
@@ -128,9 +138,6 @@ void process(){
     case 4:
       sm.update();
         
-      //プレイヤーの動きの処理
-      player.update();
-        
       //弾の処理
       for(int i = 0; i < bullets.size(); i++){
         bullets.get(i).update();
@@ -144,6 +151,9 @@ void process(){
       //ボスの処理
       boss.update();
       
+      //プレイヤーの動きの処理
+      player.update();
+      
       //自陣の処理
       home.update();
       
@@ -155,8 +165,7 @@ void process(){
       break;
     }
   
-  println("enemys: "+enemys.size()+" walls: "+walls.size()+" bullets: "+bullets.size());
-  //if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
+  if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
   send();
 }
 
@@ -217,6 +226,7 @@ void allInitial(){
   isStop = false;
   scene = 3;
   wholecount = 0;
+  combo = 0;
 }
 
 void changeScene(){

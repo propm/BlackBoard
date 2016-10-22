@@ -46,12 +46,9 @@ class ReadText extends CheckText{
             sizepro(code);
             break;
           case 2:
-            soundpro(code, i);
-            break;
-          case 3:
             appearpro(code, tagnum, i);
             break;
-          case 4:
+          case 3:
             bgmpro(code, tagnum, i);
             break;
         }
@@ -75,6 +72,7 @@ class ReadText extends CheckText{
   
   //*****************************************************************************************************************
   
+  /*
   //soundタグの処理
   void soundpro(String code, int i){
     String object, filename;
@@ -109,9 +107,11 @@ class ReadText extends CheckText{
       else     for(String obj: objects)  db.setsound(obj, commands[comnum-1], filename);
     }
     else if(comnum == 2){
-      db.oriplayer.erase = minim.loadSample(filename);
+      Player p = (Player)db.otherobj.get(0);
+      p.erase = minim.loadSample(filename);
     }
   }
+  */
   
   //*****************************************************************************************************************
   

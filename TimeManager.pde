@@ -18,10 +18,10 @@ class TimeManager{
       while(counter/60.0 >= events.peek().sec){
         Datasaver ds = events.poll();
           switch(ds.tag){
-            case 3:
+            case 2:
               checksecparts(ds);
               break;
-            case 4:
+            case 3:
               if(bgm != null)  bgm.close();
               bgm = minim.loadFile(ds.stringdata[0]);
               bgm.loop();
