@@ -25,6 +25,7 @@ class Attacker extends Enemy{
 //フライング
 class Sin extends Enemy{
   
+  float cy;        //現在のy
   float basicy;    //角度が0のときの高さ
   int theta;       //角度(ラジアンではない)
   int omega;       //角速度（ラジアンではない)
@@ -60,16 +61,15 @@ class Sin extends Enemy{
   
   void move(){
     theta += 2;
-    sety(charanum == 2? sin(theta*PI/180) : tan(theta*PI/180));
+    setvy(charanum == 2? sin(theta*PI/180) : tan(theta*PI/180));
     
     super.move();
   }
   
-  void sety(float s_t){
-    y = ay;
+  void setvy(float s_t){
+    cy = ay;
     ay = basicy - s_t*height/6;
-    pol.v.set(pol.v.x, ay-y);
-    v.set(v.x, ay-y);
+    pol.v.set(pol.v.x, ay-cy);
   }
 }
 
@@ -83,10 +83,10 @@ class Tangent extends Sin{
   float r;
   
   Tangent(){
-    if(db.oriEnemys.size() >= 7)  initialize();
+    this(random(width/4.0)+width, random(height/4.0)+height/8.0*3);
   }
   
-  Tangent(int x, int y){
+  Tangent(float x, float y){
     this.x = x;
     this.basicy = y;
     initialize();
@@ -94,14 +94,16 @@ class Tangent extends Sin{
   
   //初期化
   void initialize(){
-    initial(3);  //初期設定をコピー
+    if(db.oriEnemys.size() >= 7){
+      initial(3);  //初期設定をコピー
     
-    float imgw = imgs.get(0).width;
-    r = imgw/5.0*4;
-    marginx = imgw/100.0*49;
-    marginy = imgw/100.0*47;
-    
-    once = true;
+      float imgw = imgs.get(0).width;
+      r = imgw/5.0*4;
+      marginx = imgw/100.0*49;
+      marginy = imgw/100.0*47;
+      
+      once = true;
+    }
   }
   
   void plus(){
@@ -167,7 +169,8 @@ class Parachuter extends Attacker{
       initial(1);
       y = stopy;
       image = imgs.get(1);
-      pol.v.set(pol.v.x*5, 0);
+      v.set(v.x*5, 0);
+      pol.v = v.copy();
       once = false;
     }
   }

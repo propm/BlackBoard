@@ -5,7 +5,8 @@ class Polygon {
   float square; // 面積
   boolean isCollide;  //前フレームに衝突したかどうか
 
-  PVector v; // 方向ベクトル
+  PVector v; // 方向ベクトル(衝突しても変化しない）
+  int wallside;  //壁のどの辺に衝突しているか  右の辺なら1    範囲：1～4
   MyObj owner;  //当たり判定の持ち主
 
   Polygon() {
@@ -46,6 +47,8 @@ class Polygon {
     this.center = Center();
     this.square = Square();
     this.v = new PVector(0, 0, 0);
+    this.isCollide = false;
+    this.wallside = 0;
   }
 
   void Reverse(int w) {
@@ -138,13 +141,14 @@ class Polygon {
     Polygon jpol = createConvex(ver, next);
 
     float mint = 1000;
-
+    
     //すべての壁について調べる
     for (int i = 0; i < walls.size(); i++) {
       Polygon polygon1 = walls.get(i).pol;
 
       // ここで衝突する壁があれば調べる
       if (judge(jpol, polygon1)) {
+        if(isCollide)  break;    //前フレームで衝突していたならこのあとの処理はなし
 
         for (int j = 0; j < ver.size(); j++) {
           // 移動前の辺と移動後の辺でできる多角形
@@ -172,27 +176,45 @@ class Polygon {
             }
 
             if (isCross) {
+              float bmint = mint;
               mint = min(mint, culct(as, ae, v, bs, be));
+              
+              if(mint != bmint){
+                wallside = (k+2)%4;
+                if(wallside == 0)  wallside = 4;
+              }
             }
           }
         }
       }
+      
+      if(i == walls.size()-1)  isCollide = false;
     }
 
+    if(wallside == 1 || wallside == 3)      owner.v.set(0, v.y, 0);
+    else if(wallside == 2 || wallside == 4) owner.v.set(v.x, 0, 0);
+
     // もし衝突する壁があったら
-    if (abs(mint - 1000) >= EPS) {
+    if (abs(mint - 1000) >= EPS && !isCollide) {
       for (int i = 0; i < ver.size(); i++) {
         PVector nv = ver.get(i);
         nv.x += v.x * mint;
         nv.y += v.y * mint;
       }
-      v.set(0, v.y, 0);
+      
+      isCollide = true;
     } else {
-      v = owner.v.copy();
-    }
-    
-    for (int i = 0; i < ver.size(); i++) {
-      ver.get(i).add(v);
+      
+      //このフレームでどの辺も衝突してないなら
+      if(!isCollide){
+        owner.v = v.copy();
+        wallside = 0;
+      }
+      
+      //多角形の移動
+      for (int i = 0; i < ver.size(); i++) {
+        ver.get(i).add(owner.v);
+      }
     }
   }
 }
@@ -258,7 +280,6 @@ boolean isinTriangle(PVector v1, PVector v2, PVector v3, PVector point) {
     PVector vertextopoint = sub(point, vertex[i]);
     PVector side          = sub(vertex[(i+1)%vertex.length], vertex[i]);
     z[i] = directionCross(side, vertextopoint);
-    //println(z[i]);
   }
   boolean result = ((z[0] >= 0 && z[1] >= 0 && z[2] >= 0) || (z[0] <= 0 && z[1] <= 0 && z[2] <= 0));
   return result;

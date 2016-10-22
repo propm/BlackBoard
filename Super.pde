@@ -39,6 +39,7 @@ class MyObj implements Cloneable{
 class Enemy extends MyObj{
   /* x, y:  画像左上(playerの場合は中心)の座標
      w, h:  画像の大きさ
+     v:     衝突すると変化する、移動速度
   */
   int energy;            //粉エネルギー
   int rank;              //この敵のランク
@@ -167,12 +168,18 @@ class Enemy extends MyObj{
   
   //動く
   void move(){
+    boolean bisCollide = pol.isCollide;    //このフレームで壁にぶつかったなら
+    PVector bxy = pol.ver.get(0).copy();
     pol.Update();
     
-    if(isMoveobj){
-      x += pol.v.x;
-      y += pol.v.y;
+    if(isMoveobj && bisCollide == pol.isCollide){
+      x += v.x;
+      y += v.y;
+    }else{
+      x += pol.ver.get(0).x - bxy.x;
+      y += pol.ver.get(0).y - bxy.y;
     }
+    
     imgx = x - marginx;
     imgy = y - marginy;
     

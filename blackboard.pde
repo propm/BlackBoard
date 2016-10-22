@@ -106,16 +106,10 @@ void process(){
         enemys.get(i).update();
       }
       
-      int a = 0;
       //弾の処理
       for(int i = 0; i < bullets.size(); i++){
         bullets.get(i).update();
-        if(bullets.get(i).num == 3){
-          a++;
-          println(bullets.get(i).hp);
-        }
       }
-      if(a > 0)  println(a);
       
       //壁の処理
       for(int i = 0; i < walls.size(); i++){

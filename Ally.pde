@@ -457,7 +457,7 @@ class Wall extends MyObj{
       
       switch(b.num){
         
-        //通常弾・弱弾
+        //通常弾・普通弾
         case 4:
         case 0:
           if(judge(pol, b.pol)){
