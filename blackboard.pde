@@ -31,7 +31,7 @@ Player player;
 Home home;
 
 final int MAXchoke = 11100;
-final int[] times = {0, 0, 60*90, 60*10, 60*60*60, 60*10, 60*10};
+final int[] times = {0, 0, 60*5, 60*10, 60*60*60, 60*10, 60*10};
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
@@ -126,52 +126,48 @@ void draw(){
 
 //処理用関数
 void process(){
-  bscore = score;
-  benergy = choke;
-  _damaged = _reflect = false;
-  
   //時間によってシーン変更
   if(wholecount++ >= time){
     changeScene();
     return;
   }
   
+  switch(scene){
+    case 3:
+    case 4:
+    case 5:
+      battle();
+      break;
+  }
+}
+
+//戦闘　    該当シーン：道中、ボス出現、ボス
+void battle(){
+  bscore = score;
+  benergy = choke;
+  _damaged = _reflect = false;
+  
+  if(scene == 3)  tm.checksec();
+  sm.update();
+      
+  //敵の動きの処理
+  for(int i = 0; i < enemys.size(); i++){
+    enemys.get(i).update();
+  }
+  
+  //弾の処理
+  for(int i = 0; i < bullets.size(); i++){
+    bullets.get(i).update();
+  }
+  
+  //壁の処理
+  for(int i = 0; i < walls.size(); i++){
+    walls.get(i).update();
+  }
+  
   //シーンごとの処理
   switch(scene){
     
-    //道中
-    case 3:
-      tm.checksec();
-      sm.update();
-      
-      //敵の動きの処理
-      for(int i = 0; i < enemys.size(); i++){
-        enemys.get(i).update();
-      }
-      
-      //弾の処理
-      for(int i = 0; i < bullets.size(); i++){
-        bullets.get(i).update();
-      }
-      
-      //壁の処理
-      for(int i = 0; i < walls.size(); i++){
-        walls.get(i).update();
-      }
-      
-      //プレイヤーの動きの処理
-      player.update();
-      
-      //自陣の処理
-      home.update();
-      
-      //死んだオブジェクトの処理
-      cadaver(enemys);
-      cadaver(bullets);
-      cadaver(walls);
-      
-      break;
-      
     //ボスの出現シーン
     case 4:
       if(wholecount == 60*3)  _bossappear = false;
@@ -179,34 +175,22 @@ void process(){
       
     //ボス面
     case 5:
-      sm.update();
-      
-      //弾の処理
-      for(int i = 0; i < bullets.size(); i++){
-        bullets.get(i).update();
-      }
-      
-      //壁の処理
-      for(int i = 0; i < walls.size(); i++){
-        walls.get(i).update();
-      }
-      
       //ボスの処理
       boss.update();
-      
-      //プレイヤーの動きの処理
-      player.update();
-      
-      //自陣の処理
-      home.update();
-      
-      //死体の処理
-      cadaver(bullets);
-      cadaver(walls);
-      boss.cadaver();
-      
       break;
-    }
+  }
+  
+  //プレイヤーの動きの処理
+  player.update();
+  
+  //自陣の処理
+  home.update();
+  
+  //死んだオブジェクトの処理
+  cadaver(enemys);
+  cadaver(bullets);
+  cadaver(walls);
+  if(boss != null)  boss.cadaver();
   
   //if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
   send();
@@ -228,12 +212,12 @@ void drawing(){
   
   if(scene == 5){
     boss.draw();
-  }else if(scene == 3){
-    //敵
-    for(int i = 0; i < enemys.size(); i++){
-      Enemy enemy = enemys.get(i);
-      enemy.draw();
-    }
+  }
+  
+  //敵
+  for(int i = 0; i < enemys.size(); i++){
+    Enemy enemy = enemys.get(i);
+    enemy.draw();
   }
   
   for(int i = 0; i < bullets.size(); i++){

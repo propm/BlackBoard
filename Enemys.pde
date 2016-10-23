@@ -254,6 +254,14 @@ class Cannon extends Enemy{
     appear = c.appear;
   }
   
+  //ボスが登場したら上に飛んでって死ぬ
+  void plus(){
+    if(scene >= 4){
+      v.add(new PVector(0, -2));
+      if(y < -h)  isDie = true;
+    }
+  }
+  
   void attack(){
     super.attack();
     
@@ -306,12 +314,22 @@ class Ninja extends Enemy{
   }
   
   void plus(){
-    stealth();
-    dicision();
+    if(scene >= 4){
+      fadeout();
+    }else{
+      stealth();
+      dicision();
+    }
   }
   
   void die(){
     if(hp == 0)  super.die();
+  }
+  
+  //ボスが登場したらフェードアウト
+  void fadeout(){
+    alpha -= alphav;
+    if(alpha < 0)  isDie = true;
   }
   
   void stealth(){
@@ -397,6 +415,8 @@ class Boss extends Enemy{
     isStrong = true;
     isMoveobj = false;
   }
+  
+  void setPolygon(){}
   
   void move(){
     super.move();
