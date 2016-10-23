@@ -161,7 +161,7 @@ void process(){
       break;
     }
   
-  if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
+  //if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
   send();
 }
 

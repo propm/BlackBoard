@@ -298,7 +298,7 @@ class Home extends MyObj{
     y = sin(angle/180*PI)*4 + height/2;
     
     damage();
-    if(bhp != hp)  println("hp: "+hp);
+    //if(bhp != hp)  println("hp: "+hp);
   }
   
   void damage(){
@@ -437,9 +437,11 @@ class Wall extends MyObj{
   }
   
   void update(){
+    float bhp = hp;
     setPolygonAngle();
     dicision();
     timer();
+    if(bhp != hp)  println(hp);
   }
   
   void timer(){
@@ -518,6 +520,11 @@ class Wall extends MyObj{
         if(e.Acount++%30 == 0)  hp -= 1;
       }
     }
+  }
+  
+  void die(){
+    if(hp <= 0)  isDie = true;
+    if(die != null)  die.trigger();
   }
   
   void soundstop(){
