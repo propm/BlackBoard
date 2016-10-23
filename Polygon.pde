@@ -17,7 +17,12 @@ class Polygon {
   }
 
   Polygon(ArrayList<PVector> po) {
-    ver = new ArrayList<PVector>(po);
+    ver = new ArrayList<PVector>(po.size());
+    
+    for(int i = 0; i < po.size(); i++){
+      ver.add(po.get(i).copy());
+    }
+    
     isConvex = CheckConvex();
     Init();
   }
@@ -210,9 +215,6 @@ class Polygon {
 
     if(wallside == 1 || wallside == 3)      owner.v.set(0, v.y, 0);
     else if(wallside == 2 || wallside == 4) owner.v.set(v.x, 0, 0);
-    
-    Enemy e = (Enemy)owner;
-    //if(e.charanum == 1)  println(wallside);
 
     // もし衝突する壁があったら
     if (abs(mint - 1000) >= EPS && !isCollide) {
@@ -222,6 +224,7 @@ class Polygon {
         nv.y += v.y * mint;
       }
       
+      owner.v.set(v.x*mint, v.y*mint);
       isCollide = true;
     } else {
       

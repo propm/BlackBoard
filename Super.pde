@@ -64,7 +64,6 @@ class Enemy extends MyObj{
   boolean onceinitial;   //initialを呼ぶのが一回目ならtrue
   boolean isMoveobj;     //動くオブジェクトならtrue
   
-  Polygon oripol;                 //形のみを保持する多角形
   AudioSample AT;   //物理攻撃するときの音
   AudioSample bul;  //弾で攻撃するときの音
   
@@ -83,8 +82,8 @@ class Enemy extends MyObj{
     imgx = x - marginx;
     imgy = y - marginy;
     
-    setPolygon(imgx, imgy);
-    pol.v = v.copy();
+    movePolygon(imgx, imgy);
+    v = pol.v.copy();
     
     count = Bcount = 0;
     Acount = -1;
@@ -118,11 +117,13 @@ class Enemy extends MyObj{
     die = oe.die;
     AT =  oe.AT;
     
-    imgs = new ArrayList<PImage>(oe.imgs);
+    imgs = new ArrayList<PImage>(oe.imgs.size());
+    for(int i = 0; i < oe.imgs.size(); i++){
+      imgs.add(oe.imgs.get(i).copy());
+    }
+    
     image = imgs.get(0);
-    oripol = new Polygon(oe.pol.ver);
-    pol    = new Polygon(oe.pol.ver);
-    oripol.Init();
+    pol   = new Polygon(oe.pol.ver);
     pol.Init();
     pol.owner = this;
     
@@ -134,7 +135,7 @@ class Enemy extends MyObj{
     Bi = oe.Bi;
     rank = oe.rank;
     
-    v = oe.v.copy();
+    pol.v = oe.v.copy();
     damage = oe.damage;
     
     marginx = oe.marginx;
@@ -155,7 +156,6 @@ class Enemy extends MyObj{
       o = (Enemy)super.clone();
       o.imgs = new ArrayList<PImage>(imgs);
       o.pol = pol.clone();
-      o.oripol = oripol.clone();
     }catch(Exception e){
       e.printStackTrace();
     }
@@ -163,28 +163,24 @@ class Enemy extends MyObj{
     return o;
   }
   
-  //多角形更新     x, y: 左上の座標
-  void setPolygon(float x, float y){
+  //多角形更新     vx, vy: 多角形をどれだけ移動させるか
+  void movePolygon(float vx, float vy){
     for(int i = 0; i < pol.ver.size(); i++){
-      PVector pv = oripol.ver.get(i);
-      pol.ver.set(i, new PVector(x+pv.x, y+pv.y, 0));
+      pol.ver.get(i).add(new PVector(vx, vy));
     }
-    pol.Init();
+  }
+  
+  void setPolygon(){
+    pol.Update();
   }
   
   //動く
   void move(){
-    boolean bisCollide = pol.isCollide;    //このフレームで壁にぶつかったなら
-    PVector bxy = pol.ver.get(0).copy();
+    setPolygon();
     
-    pol.Update();
-    
-    if(isMoveobj && bisCollide == pol.isCollide){
+    if(isMoveobj){
       x += v.x;
       y += v.y;
-    }else{
-      x += pol.ver.get(0).x - bxy.x;
-      y += pol.ver.get(0).y - bxy.y;
     }
     
     imgx = x - marginx;

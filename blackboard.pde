@@ -10,8 +10,6 @@ import ddf.minim.ugens.*;
 import ddf.minim.effects.*;
 import processing.net.*;
 
-import javax.swing.*;
-
 ScrollManager sm;
 ReadText rt;
 DataBase db;
@@ -33,18 +31,26 @@ Player player;
 Home home;
 
 final int MAXchoke = 11100;
-final int bosstime = 60*90;  //ボス戦が始まる時間
+final int[] times = {0, 0, 60*90, 60*10, 60*60*60, 60*10, 60*10};
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
 boolean isStop;
 boolean isDebag;             //デバッグモードならtrue
+
+int time;            //次のシーンに入るまでの時間を入れる
 int score, choke;
 int bscore, benergy;
 int wholecount;      //道中が始まってからのカウント
-int scene;            //1:タイトル　2:難易度選択　3:道中　4:ボス　5:スコア画面  6:ランキング
+int scene;            //1:タイトル　2:難易度選択　3:道中　4:ボス登場　5:ボス　6:スコア画面  7:ランキング
 int debagcounter;    //どこが重いか確認する用
 int combo;
+
+boolean _reflect;
+boolean _damaged;
+boolean _bossappear;
+
+//*************************↓初期設定など↓***************************
 
 void settings(){
   minim = new Minim(this);    //音楽・効果音用
@@ -59,7 +65,7 @@ void settings(){
   db.screenw = 1600;          //スクリーンwidth
   db.initial();
   
-  if(rt.check())  System.exit(0);
+  if(rt.check())  System.exit(0);  //settings.txtのエラーチェック
   rt.readCommands();
   db.screenh = (int)(db.screenw*db.boardrate);
   
@@ -79,6 +85,38 @@ void setup(){
   allInitial();
 }
 
+//やり直し
+void allInitial(){
+  
+  //一回目以外
+  if(!firstinitial){
+    tm = new TimeManager();
+    rt.readCommands();
+  }else{
+    firstinitial = false;
+  }
+  
+  sm = new ScrollManager();
+  
+  enemys = new ArrayList<Enemy>();
+  bullets = new ArrayList<Bullet>();
+  walls = new ArrayList<Wall>();
+  
+  player = new Player();
+  home = new Home();
+  
+  score = choke = 0;
+  isStop = false;
+  scene = 3;
+  time = times[scene-1];
+  wholecount = 0;
+  combo = 0;
+  
+  _reflect = _damaged = _bossappear = false;
+}
+
+//*************************↓ループ関数↓***************************
+
 void draw(){
   if(!isStop){
     process();    //処理
@@ -90,16 +128,19 @@ void draw(){
 void process(){
   bscore = score;
   benergy = choke;
-  wholecount++;
+  _damaged = _reflect = false;
   
+  //時間によってシーン変更
+  if(wholecount++ >= time){
+    changeScene();
+    return;
+  }
+  
+  //シーンごとの処理
   switch(scene){
+    
+    //道中
     case 3:
-      if(wholecount >= bosstime){
-        changeScene();
-        process();
-        break;
-      }
-      
       tm.checksec();
       sm.update();
       
@@ -128,12 +169,18 @@ void process(){
       cadaver(enemys);
       cadaver(bullets);
       cadaver(walls);
-        
+      
       break;
       
+    //ボスの出現シーン
     case 4:
+      if(wholecount == 60*3)  _bossappear = false;
+      break;
+      
+    //ボス面
+    case 5:
       sm.update();
-        
+      
       //弾の処理
       for(int i = 0; i < bullets.size(); i++){
         bullets.get(i).update();
@@ -179,7 +226,7 @@ void drawing(){
     wall.draw();
   }
   
-  if(scene == 4){
+  if(scene == 5){
     boss.draw();
   }else if(scene == 3){
     //敵
@@ -200,38 +247,22 @@ void drawing(){
 
 }
 
-//やり直し
-void allInitial(){
-  if(!firstinitial){
-    tm = new TimeManager();
-    rt.readCommands();
-  }else{
-    firstinitial = false;
-  }
-  
-  sm = new ScrollManager();
-  
-  enemys = new ArrayList<Enemy>();
-  bullets = new ArrayList<Bullet>();
-  walls = new ArrayList<Wall>();
-  
-  player = new Player();
-  home = new Home();
-  
-  score = choke = 0;
-  isStop = false;
-  scene = 3;
-  wholecount = 0;
-  combo = 0;
-}
+//*************************↓その他汎用関数↓***************************
 
 void changeScene(){
   scene++;
+  wholecount = 0;
+  time = times[scene-1];
+  
   switch(scene){
+    //ボス出現
     case 4:
+      _bossappear = true;
+      break;
+    
+    //ボス面
+    case 5:
       boss = new Boss(width/8.0*7, height/2.0);
-      for(int i = 0; i < enemys.size(); i++)
-        enemys.remove(0);
       break;
   }
 }
@@ -283,6 +314,8 @@ void cadaver(ArrayList<?> obj){
     }
   }
 }
+
+//*************************↓イベント処理・送信・受信↓***************************
 
 void mousePressed(){
   player.ATflag = true;
@@ -337,8 +370,14 @@ void send(){
   OscMessage mes = new OscMessage("/text");
   mes.add(score);
   mes.add(choke);
+  mes.add(home.hp);
+  mes.add(_reflect);
+  mes.add(_damaged);
+  mes.add(_bossappear);
   osc.send(mes, address);
 }
+
+//*************************↓終了時↓***************************
 
 //スケッチ終了時に呼ばれる関数
 void stop(){

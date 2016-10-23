@@ -29,7 +29,6 @@ class Player extends Enemy{
     
     erase = p.erase;
     create = p.create;
-    oripol = new Polygon(p.pol.ver);
     pol    = new Polygon(p.pol.ver);
   }
   
@@ -380,7 +379,6 @@ class Home extends MyObj{
             Shuriken s = (Shuriken)b;
             
             if(s.x-s.r/2 <= border){
-              
               hp -= s.damage;
               s.hp = 0;
             }
@@ -389,6 +387,7 @@ class Home extends MyObj{
     }
     
     if(damaged != null && isDamaged)  damaged.trigger();
+    _damaged = isDamaged;
   }
   
   void soundstop(){
@@ -506,7 +505,9 @@ class Wall extends MyObj{
                 s.v.set(-s.v.x, -s.v.y, -s.v.z);
                 s.x = x+h/2.0+s.r/2.0;
                 s.isReflected = true;
+                
                 if(reflect != null)  reflect.trigger();
+                _reflect = true;
                 break;
             }
           }

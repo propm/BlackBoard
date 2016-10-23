@@ -130,6 +130,11 @@ class Tangent extends Sin{
     }
   }
   
+  void setPolygon(){
+    v = pol.v.copy();
+    movePolygon(v.x, v.y);
+  }
+  
   void plus(){
     angle += 8;
     angle %= 360;
@@ -183,6 +188,11 @@ class Parachuter extends Attacker{
     stopy = random(height/3.0*2-h)+height/3.0;
   }
   
+  void setPolygon(){
+    if(change)  movePolygon(v.x, v.y);
+    else        super.setPolygon();
+  }
+  
   void plus(){
     formChange();
   }
@@ -233,10 +243,9 @@ class Cannon extends Enemy{
     
     if(y < 0)  y = 0;
     if(y > height-h)  y = height-h;
-    
-    imgx = x - marginx;
+    float bimgy = imgy;
     imgy = y - marginy;
-    setPolygon(imgx, imgy);
+    movePolygon(0, imgy-bimgy);
   }
   
   void copyplus(Enemy oe){
@@ -287,14 +296,13 @@ class Ninja extends Enemy{
     
     if(y < 0)         y = 0;
     if(y > height-h)  y = height-h;
+    float bimgy = imgy;
+    imgy = y - marginy;
+    movePolygon(0, imgy-bimgy);
     
     alpha = ALPHA;
     alphav = 5;
     isStealth = false;
-    
-    imgx = x - marginx;
-    imgy = y - marginy;
-    setPolygon(imgx, imgy);
   }
   
   void plus(){
