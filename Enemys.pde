@@ -391,8 +391,8 @@ class Boss extends Enemy{
     pol = new Polygon();
     
     imgs.add(loadImage("attacker.png"));
-    w = (int)(imgs.get(0).width/10.0);
-    h = (int)(imgs.get(0).height/10.0);
+    w = (int)(imgs.get(0).width/4.0);
+    h = (int)(imgs.get(0).height/4.0);
     imgs.get(0).resize(w, h);
     image = imgs.get(0);
     
@@ -416,7 +416,7 @@ class Boss extends Enemy{
     
     theta += plustheta;
     theta %= 360;
-    y = height/2.0*sin(PI/180*theta) + basicy;
+    y = (height/2.0-h/2)*sin(PI/180*theta) + basicy;
   }
   
   void alpha(){}

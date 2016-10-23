@@ -31,7 +31,7 @@ Player player;
 Home home;
 
 final int MAXchoke = 11100;
-final int[] times = {0, 0, 60*15, 60*10, 60*60*60, 60*10, 60*10};
+final int[] times = {0, 0, 60*1, 60*1, 60*60*60, 60*10, 60*10};
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
@@ -69,7 +69,8 @@ void settings(){
   rt.readCommands();
   db.screenh = (int)(db.screenw*db.boardrate);
   
-  size(db.screenw, db.screenh);
+  size(db.screenw, db.screenh, P2D);
+  noSmooth();
 }
 
 void setup(){
