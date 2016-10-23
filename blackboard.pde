@@ -78,17 +78,8 @@ void setup(){
   
   allInitial();
 }
-Enemy en;
 
 void draw(){
-  for(int i = 0; i < enemys.size(); i++){
-    Enemy e = enemys.get(i);
-    if(e.charanum == 2 && en == null){
-      en = e;
-    }
-  }
-  
-  sm.drawView();
   if(!isStop){
     process();    //処理
     drawing();    //描画
@@ -115,12 +106,6 @@ void process(){
       //敵の動きの処理
       for(int i = 0; i < enemys.size(); i++){
         enemys.get(i).update();
-        if(enemys.get(i) == en){
-          noFill();
-          strokeWeight(10);
-          stroke(255, 20, 143);
-          ellipse(en.x+en.w/2, en.y+en.h/2, en.w, en.h);
-        }
       }
       
       //弾の処理
@@ -182,7 +167,7 @@ void process(){
 
 //描画用関数
 void drawing(){
-  //sm.drawView();
+  sm.drawView();
   
   //自陣
   home.draw();

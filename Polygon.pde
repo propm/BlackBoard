@@ -133,6 +133,13 @@ class Polygon {
   
   void Update() {
     
+    //ぶつかる可能性がある辺を取得
+    int a = 0, b = 0;
+    if(v.x > 0)  a = 3;
+    if(v.x < 0)  a = 1;
+    if(v.y > 0)  b = 4;
+    if(v.y < 0)  b = 2;
+    
     // 移動先の状態
     ArrayList<PVector> next = new ArrayList<PVector>(ver.size());
     
@@ -143,10 +150,12 @@ class Polygon {
     Polygon jpol = createConvex(ver, next);
 
     float mint = 1000;
+    int sidecount;    //多角形の1つの辺で1つの壁のいくつの辺と交わっているか
     
     //すべての壁について調べる
     for (int i = 0; i < walls.size(); i++) {
       Polygon polygon1 = walls.get(i).pol;
+      sidecount = 0;
 
       // ここで衝突する壁があれば調べる
       if (judge(jpol, polygon1)) {
@@ -156,6 +165,7 @@ class Polygon {
           // 移動前の辺と移動後の辺でできる多角形
           ArrayList<PVector> spol = new ArrayList<PVector>();
 
+          //移動前の辺
           PVector as = ver.get(j);
           PVector ae = ver.get((j + 1) % ver.size());
 
@@ -165,7 +175,11 @@ class Polygon {
           spol.add(next.get((j + 1) % next.size()));
           spol = createConvex(spol).ver;
 
+          //壁の各辺について調べる
           for (int k = 0; k < polygon1.ver.size(); k++) {
+            int sidenum = (k+1)%4+1;
+            if(sidenum != a && sidenum != b)  continue;    //ぶつかる可能性がない辺ならとばす
+            
             PVector bs = polygon1.ver.get(k);
             PVector be = polygon1.ver.get((k + 1) % polygon1.ver.size());
             boolean isCross = false;
@@ -182,9 +196,7 @@ class Polygon {
               mint = min(mint, culct(as, ae, v, bs, be));
               
               if(mint != bmint){
-                collidenum = j;
-                wallside = (k+2)%4;
-                if(wallside == 0)  wallside = 4;
+                wallside = sidenum;
                 wallxy = new PVector(walls.get(i).x, walls.get(i).y);
               }
             }
@@ -198,6 +210,9 @@ class Polygon {
 
     if(wallside == 1 || wallside == 3)      owner.v.set(0, v.y, 0);
     else if(wallside == 2 || wallside == 4) owner.v.set(v.x, 0, 0);
+    
+    Enemy e = (Enemy)owner;
+    //if(e.charanum == 1)  println(wallside);
 
     // もし衝突する壁があったら
     if (abs(mint - 1000) >= EPS && !isCollide) {
