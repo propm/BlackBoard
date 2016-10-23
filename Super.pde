@@ -63,6 +63,7 @@ class Enemy extends MyObj{
   boolean bisOver;       //1フレーム前のisOver
   boolean onceinitial;   //initialを呼ぶのが一回目ならtrue
   boolean isMoveobj;     //動くオブジェクトならtrue
+  boolean isCrasher;     //壁に補正されないならtrue
   
   AudioSample AT;   //物理攻撃するときの音
   AudioSample bul;  //弾で攻撃するときの音
@@ -171,7 +172,8 @@ class Enemy extends MyObj{
   }
   
   void setPolygon(){
-    pol.Update();
+    if(isCrasher)  movePolygon(v.x, v.y);
+    else           pol.Update();
   }
   
   //動く

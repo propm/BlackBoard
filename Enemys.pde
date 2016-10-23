@@ -93,6 +93,7 @@ class Sin extends Enemy{
   void setvy(float s_t){
     ay = basicy - s_t*height/6;
     pol.v.set(pol.v.x, ay-y);
+    v = pol.v.copy();
   }
 }
 
@@ -125,14 +126,10 @@ class Tangent extends Sin{
       r = imgw/5.0*4;
       marginx = imgw/100.0*49;
       marginy = imgw/100.0*47;
+      isCrasher = true;
       
       once = true;
     }
-  }
-  
-  void setPolygon(){
-    v = pol.v.copy();
-    movePolygon(v.x, v.y);
   }
   
   void plus(){
@@ -188,11 +185,6 @@ class Parachuter extends Attacker{
     stopy = random(height/3.0*2-h)+height/3.0;
   }
   
-  void setPolygon(){
-    if(change)  movePolygon(v.x, v.y);
-    else        super.setPolygon();
-  }
-  
   void plus(){
     formChange();
   }
@@ -201,6 +193,7 @@ class Parachuter extends Attacker{
   void formChange(){
     if(y >= stopy && !change){
       change = true;
+      isCrasher = true;
       
       initial(1);
       charanum = 4;
@@ -257,7 +250,9 @@ class Cannon extends Enemy{
   //ボスが登場したら上に飛んでって死ぬ
   void plus(){
     if(scene >= 4){
-      v.add(new PVector(0, -2));
+      isMoveobj = true;
+      isCrasher = true;
+      v.add(new PVector(0, -1));
       if(y < -h)  isDie = true;
     }
   }
@@ -274,8 +269,6 @@ class Cannon extends Enemy{
       chargeframe = Bi - Bcount;
       once = false;
     }
-    
-    
   }
 }
 
