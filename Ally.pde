@@ -523,8 +523,10 @@ class Wall extends MyObj{
   }
   
   void die(){
-    if(hp <= 0)  isDie = true;
-    if(die != null)  die.trigger();
+    if(hp <= 0){
+      isDie = true;
+      if(die != null)  die.trigger();
+    }
   }
   
   void soundstop(){

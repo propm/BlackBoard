@@ -190,6 +190,7 @@ class Polygon {
       
       if(i == walls.size()-1)  isCollide = false;
     }
+    if(walls.size() == 0)  isCollide = false;
 
     if(wallside == 1 || wallside == 3)      owner.v.set(0, v.y, 0);
     else if(wallside == 2 || wallside == 4) owner.v.set(v.x, 0, 0);
