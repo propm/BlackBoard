@@ -129,6 +129,8 @@ void process(){
   //時間によってシーン変更
   if(wholecount++ >= time){
     changeScene();
+    process();
+    wholecount--;
     return;
   }
   

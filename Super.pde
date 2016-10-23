@@ -79,7 +79,7 @@ class Enemy extends MyObj{
     charanum = num;
     copy();
     
-    if(onceinitial && charanum == 1)  y = height-h;
+    if(charanum == 1)  y = height-h;
     imgx = x - marginx;
     imgy = y - marginy;
     
@@ -184,7 +184,6 @@ class Enemy extends MyObj{
       x += v.x;
       y += v.y;
     }
-    
     imgx = x - marginx;
     imgy = y - marginy;
     

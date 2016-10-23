@@ -387,51 +387,52 @@ class Boss extends Enemy{
   
   //受け取るのは中心座標
   Boss(float x, float y){
+    charanum = 7;
+    copy();
     
-    pol = new Polygon();
-    
-    imgs.add(loadImage("boss.png"));
-    w = (int)(imgs.get(0).width/6.0);
-    h = (int)(imgs.get(0).height/6.0);
-    imgs.get(0).resize(w, h);
     image = imgs.get(0);
     
-    this.x = x-w/2;
-    this.basicy = y-h/2;
+    marginx = w/2;
+    marginy = h/2;
+    
+    this.y = basicy = y;
+    this.x = x;
+    
     plustheta = 360.0/width*7.0*standardbs;
     
-    charanum = 7;
-    hp = 100;
     sc = rc = 0;
     theta = 0;
     alpha = 255;
-    isStrong = true;
-    isMoveobj = false;
+    isStrong = false;
+    isMoveobj = true;
   }
   
   void setPolygon(){}
   
   void move(){
-    super.move();
-    
     theta += plustheta;
     theta %= 360;
-    y = (height/2.0-h/2)*sin(PI/180*theta) + basicy;
+    float ay = (height-h)/2.0*sin(PI/180*theta) + basicy;
+    v.set(v.x, ay-y);
+    
+    super.move();
   }
   
   void alpha(){}
   
   void attack(){
     if(++sc <= lashtime){
-      if(sc%rapidi < 1)  bullets.add(new Standard(x+w/2, random(height), -standardbs));
+      if(sc%rapidi < 1)  bullets.add(new Standard(x-w/4.0, random(height), -standardbs));
     }else if(sc >= lashtime + standardi)  sc = 0;
     
     if(++rc >= reflecti){
       if(isStrong){
-        bullets.add(new Reflect(x, y+h/3.0, new PVector(-rbs*cos(45*PI/180.0), rbs*sin(45*PI/180.0))));
-        bullets.add(new Reflect(x, y+h/3.0, new PVector(-rbs*cos(-45*PI/180.0), rbs*sin(-45*PI/180.0))));
+        bullets.add(new Reflect(x, y, new PVector(-rbs*cos(45*PI/180.0), rbs*sin(45*PI/180.0))));
+        bullets.add(new Reflect(x, y, new PVector(-rbs*cos(-45*PI/180.0), rbs*sin(-45*PI/180.0))));
       }
-      else          bullets.add(new Strong(x, y+h/2));
+      else{
+        bullets.add(new Strong(x, y));
+      }
       isStrong = !isStrong;
       rc = 0;
     }
@@ -445,5 +446,11 @@ class Boss extends Enemy{
   //死処理
   void cadaver(){
     if(hp == 0)  isDie = true;
+  }
+  
+  void draw(){
+    super.draw();
+    fill(255, 20, 147);
+    ellipse(x, y, 20, 20);
   }
 }
