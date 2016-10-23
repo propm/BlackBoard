@@ -10,6 +10,8 @@ import ddf.minim.ugens.*;
 import ddf.minim.effects.*;
 import processing.net.*;
 
+import javax.swing.*;
+
 ScrollManager sm;
 ReadText rt;
 DataBase db;
@@ -76,8 +78,17 @@ void setup(){
   
   allInitial();
 }
+Enemy en;
 
 void draw(){
+  for(int i = 0; i < enemys.size(); i++){
+    Enemy e = enemys.get(i);
+    if(e.charanum == 2 && en == null){
+      en = e;
+    }
+  }
+  
+  sm.drawView();
   if(!isStop){
     process();    //処理
     drawing();    //描画
@@ -97,25 +108,25 @@ void process(){
         process();
         break;
       }
-    
+      
       tm.checksec();
       sm.update();
       
       //敵の動きの処理
       for(int i = 0; i < enemys.size(); i++){
         enemys.get(i).update();
+        if(enemys.get(i) == en){
+          noFill();
+          strokeWeight(10);
+          stroke(255, 20, 143);
+          ellipse(en.x+en.w/2, en.y+en.h/2, en.w, en.h);
+        }
       }
       
-      int a = 0;
       //弾の処理
       for(int i = 0; i < bullets.size(); i++){
         bullets.get(i).update();
-        if(bullets.get(i).num == 3){
-          a++;
-          println(bullets.get(i).hp);
-        }
       }
-      if(a > 0)  println(a);
       
       //壁の処理
       for(int i = 0; i < walls.size(); i++){
@@ -165,13 +176,13 @@ void process(){
       break;
     }
   
-  if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
+  //if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
   send();
 }
 
 //描画用関数
 void drawing(){
-  sm.drawView();
+  //sm.drawView();
   
   //自陣
   home.draw();
@@ -342,4 +353,30 @@ void send(){
   mes.add(score);
   mes.add(choke);
   osc.send(mes, address);
+}
+
+//スケッチ終了時に呼ばれる関数
+void stop(){
+  bgm.close();
+  soundsstop();
+  minim.stop();
+  super.stop();
+}
+
+void soundsstop(){
+  for(int i = 0; i < enemys.size(); i++){
+    enemys.get(i).soundstop();
+  }
+  
+  for(int i = 0; i < walls.size(); i++){
+    walls.get(i).soundstop();
+  }
+  
+  for(int i = 0; i < bullets.size(); i++){
+    bullets.get(i).soundstop();
+  }
+  
+  if(boss != null)  boss.soundstop();
+  if(player != null)  player.soundstop();
+  if(home != null)  home.soundstop();
 }

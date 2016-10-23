@@ -15,6 +15,28 @@ class Attacker extends Enemy{
     initial();
   }
   
+  void attack(){
+    if(charanum == 4){
+      super.attack();
+      return;
+    }
+    
+    if(Acount == 10)  image = imgs.get(0);
+    if(Acount == 30)  Acount = -1;
+    if(Acount == 0){
+      image = imgs.get(1);
+      if(AT != null)  AT.trigger();
+    }
+  }
+  
+  void update(){
+    if(charanum == 1 && image == imgs.get(1) && !pol.isCollide){
+      image = imgs.get(0);
+      Acount = -1;
+    }
+    super.update();
+  }
+  
   void initial(){
     initial(1);        //初期設定をコピー
   }
@@ -59,17 +81,18 @@ class Sin extends Enemy{
   }
   
   void move(){
-    theta += 2;
-    sety(charanum == 2? sin(theta*PI/180) : tan(theta*PI/180));
+    if(!pol.isCollide || !(pol.wallside == 2 || pol.wallside == 4)){
+      theta += 2;
+      theta %= 360;
+      setvy(charanum == 2? sin(theta*PI/180) : tan(theta*PI/180));
+    }
     
     super.move();
   }
   
-  void sety(float s_t){
-    y = ay;
+  void setvy(float s_t){
     ay = basicy - s_t*height/6;
     pol.v.set(pol.v.x, ay-y);
-    v.set(v.x, ay-y);
   }
 }
 
@@ -83,10 +106,10 @@ class Tangent extends Sin{
   float r;
   
   Tangent(){
-    if(db.oriEnemys.size() >= 7)  initialize();
+    this(random(width/4.0)+width, random(height/4.0)+height/8.0*3);
   }
   
-  Tangent(int x, int y){
+  Tangent(float x, float y){
     this.x = x;
     this.basicy = y;
     initialize();
@@ -94,14 +117,17 @@ class Tangent extends Sin{
   
   //初期化
   void initialize(){
-    initial(3);  //初期設定をコピー
-    
-    float imgw = imgs.get(0).width;
-    r = imgw/5.0*4;
-    marginx = imgw/100.0*49;
-    marginy = imgw/100.0*47;
-    
-    once = true;
+    if(db.oriEnemys.size() >= 7){
+      initial(3);  //初期設定をコピー
+      
+      float imgw = imgs.get(0).width;
+      image = imgs.get(0);
+      r = imgw/5.0*4;
+      marginx = imgw/100.0*49;
+      marginy = imgw/100.0*47;
+      
+      once = true;
+    }
   }
   
   void plus(){
@@ -121,7 +147,7 @@ class Tangent extends Sin{
     translate(x, y);
     rotate(angle/180.0*PI);
     tint(255, alpha);
-    image(imgs.get(0), -marginx, -marginy);
+    image(image, -marginx, -marginy);
     tint(255, 255);
     popMatrix();
     
@@ -134,7 +160,7 @@ class Tangent extends Sin{
 //パラシュート
 class Parachuter extends Attacker{
   float stopy;           //ジェットパックを使い始めるy座標
-  boolean once;
+  boolean change;
   
   Parachuter(){
     if(db.oriEnemys.size() >= 7){
@@ -153,7 +179,7 @@ class Parachuter extends Attacker{
   void initialize(){
     initial(4);      //初期設定をコピー
     
-    once = true;
+    change = false;
     stopy = random(height/3.0*2-h)+height/3.0;
   }
   
@@ -163,12 +189,15 @@ class Parachuter extends Attacker{
   
   //形態変化
   void formChange(){
-    if(y >= stopy && once){
+    if(y >= stopy && !change){
+      change = true;
+      
       initial(1);
+      charanum = 4;
       y = stopy;
       image = imgs.get(1);
-      pol.v.set(pol.v.x*5, 0);
-      once = false;
+      v.set(v.x*5, 0);
+      pol.v = v.copy();
     }
   }
 }

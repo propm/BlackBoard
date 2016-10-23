@@ -193,9 +193,11 @@ class Player extends Enemy{
       
       e.bisOver = e.isOver;
       
-      if(e.charanum != 3 && e.charanum != 7){
-        if(judge(pol, e.pol))  e.isOver = true;
-        else                   e.isOver = false;
+      if(e.charanum != 3){
+        if(e.charanum != 7){
+          if(judge(pol, e.pol))  e.isOver = true;
+          else                   e.isOver = false;
+        }
       }else{
         Tangent t = (Tangent)e;
         if(judge(new PVector(t.x, t.y), t.r, pol))  e.isOver = true;
@@ -224,6 +226,12 @@ class Player extends Enemy{
       //choke -= energy;
       count = 0;
     }
+  }
+  
+  void soundstop(){
+    super.soundstop();
+    create.close();
+    erase.close();
   }
   
   void draw(){
@@ -279,7 +287,7 @@ class Home extends MyObj{
   
   void copy(){
     Home oh = (Home)db.otherobj.get(1);
-    image = oh.image;
+    image = oh.image.copy();
     damaged = oh.damaged;
     imgm = oh.imgm;
   }
@@ -292,7 +300,7 @@ class Home extends MyObj{
     y = sin(angle/180*PI)*4 + height/2;
     
     damage();
-    if(bhp != hp)  println("hp: "+hp);
+    //if(bhp != hp)  println("hp: "+hp);
   }
   
   void damage(){
@@ -383,6 +391,11 @@ class Home extends MyObj{
     if(damaged != null && isDamaged)  damaged.trigger();
   }
   
+  void soundstop(){
+    super.soundstop();
+    damaged.close();
+  }
+  
   void draw(){
     fill(255, 0, 0, 100);
     noStroke();
@@ -457,7 +470,7 @@ class Wall extends MyObj{
       
       switch(b.num){
         
-        //通常弾・弱弾
+        //通常弾・普通弾
         case 4:
         case 0:
           if(judge(pol, b.pol)){
@@ -503,10 +516,40 @@ class Wall extends MyObj{
     for(int i = 0; i < enemys.size(); i++){
       Enemy e = enemys.get(i);
       
-      if(judge(pol, e.pol)){
-        if(e.Acount++%30 == 0)  hp -= 1;
+      switch(e.charanum){
+        case 2:
+        case 1:
+          if(e.pol.isCollide && e.pol.wallxy.x == x && e.pol.wallxy.y == y){
+            e.Acount++;
+            if(e.Acount == 0){
+              hp -= 1;
+            }
+          }
+          break;
+          
+        case 4:
+          Parachuter p = (Parachuter)e;
+          if(!p.change)  break;
+        case 3:
+          if(judge(pol, e.pol)){
+            hp = 0;
+          }
+          break;
       }
     }
+  }
+  
+  void die(){
+    if(hp <= 0){
+      isDie = true;
+      if(die != null)  die.trigger();
+    }
+  }
+  
+  void soundstop(){
+    super.soundstop();
+    reflect.close();
+    damaged.close();
   }
   
   void draw(){

@@ -86,6 +86,11 @@ class Beam extends Bullet{
     if(owner.isDie)  isDie = true;
   }
   
+  void soundstop(){
+    super.soundstop();
+    hit.close();
+  }
+  
   void draw(){
     fill(255, 20, 147);
     noStroke();
