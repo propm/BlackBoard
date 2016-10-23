@@ -437,11 +437,9 @@ class Wall extends MyObj{
   }
   
   void update(){
-    float bhp = hp;
     setPolygonAngle();
     dicision();
     timer();
-    if(bhp != hp)  println(hp);
   }
   
   void timer(){

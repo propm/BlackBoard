@@ -59,9 +59,11 @@ class Sin extends Enemy{
   }
   
   void move(){
-    theta += 2;
-    theta %= 360;
-    setvy(charanum == 2? sin(theta*PI/180) : tan(theta*PI/180));
+    if(!pol.isCollide || !(pol.wallside == 2 || pol.wallside == 4)){
+      theta += 2;
+      theta %= 360;
+      setvy(charanum == 2? sin(theta*PI/180) : tan(theta*PI/180));
+    }
     
     super.move();
   }

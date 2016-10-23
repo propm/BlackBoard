@@ -175,6 +175,7 @@ class Enemy extends MyObj{
   void move(){
     boolean bisCollide = pol.isCollide;    //このフレームで壁にぶつかったなら
     PVector bxy = pol.ver.get(0).copy();
+    
     pol.Update();
     
     if(isMoveobj && bisCollide == pol.isCollide){
