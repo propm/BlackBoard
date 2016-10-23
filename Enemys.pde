@@ -15,6 +15,28 @@ class Attacker extends Enemy{
     initial();
   }
   
+  void attack(){
+    if(charanum == 4){
+      super.attack();
+      return;
+    }
+    
+    if(Acount == 10)  image = imgs.get(0);
+    if(Acount == 30)  Acount = -1;
+    if(Acount == 0){
+      image = imgs.get(1);
+      if(AT != null)  AT.trigger();
+    }
+  }
+  
+  void update(){
+    if(charanum == 1 && image == imgs.get(1) && !pol.isCollide){
+      image = imgs.get(0);
+      Acount = -1;
+    }
+    super.update();
+  }
+  
   void initial(){
     initial(1);        //初期設定をコピー
   }
@@ -138,7 +160,7 @@ class Tangent extends Sin{
 //パラシュート
 class Parachuter extends Attacker{
   float stopy;           //ジェットパックを使い始めるy座標
-  boolean once;
+  boolean change;
   
   Parachuter(){
     if(db.oriEnemys.size() >= 7){
@@ -157,7 +179,7 @@ class Parachuter extends Attacker{
   void initialize(){
     initial(4);      //初期設定をコピー
     
-    once = true;
+    change = false;
     stopy = random(height/3.0*2-h)+height/3.0;
   }
   
@@ -167,13 +189,15 @@ class Parachuter extends Attacker{
   
   //形態変化
   void formChange(){
-    if(y >= stopy && once){
+    if(y >= stopy && !change){
+      change = true;
+      
       initial(1);
+      charanum = 4;
       y = stopy;
       image = imgs.get(1);
       v.set(v.x*5, 0);
       pol.v = v.copy();
-      once = false;
     }
   }
 }

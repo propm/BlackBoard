@@ -8,6 +8,7 @@ class Polygon {
   PVector v;       // 方向ベクトル(衝突しても変化しない）
   int wallside;    //壁のどの辺に衝突しているか  右の辺なら1    範囲：1～4
   int collidenum;  //衝突した多角形の辺の番号
+  PVector wallxy;  //衝突した壁の座標
   MyObj owner;     //当たり判定の持ち主
 
   Polygon() {
@@ -184,6 +185,7 @@ class Polygon {
                 collidenum = j;
                 wallside = (k+2)%4;
                 if(wallside == 0)  wallside = 4;
+                wallxy = new PVector(walls.get(i).x, walls.get(i).y);
               }
             }
           }
@@ -211,6 +213,7 @@ class Polygon {
       //このフレームでどの辺も衝突してないなら
       if(!isCollide){
         owner.v = v.copy();
+        wallxy = new PVector(-1, -1);
       }
       
       //多角形の移動
@@ -406,7 +409,7 @@ float culct(PVector as, PVector ae, PVector v, PVector bs, PVector be) {
   }
 
   float l = 0.0, r = 1.0;
-  for (int i = 0; i < 25; i++) {
+  for (int i = 0; i < 15; i++) {
     float m = (l + r) / 2.0;
     boolean isrdc; // 範囲を狭める向き(true: lを更新 false: rを更新)
     PVector ns = new PVector(as.x + v.x * m, as.y + v.y * m, 0.0);

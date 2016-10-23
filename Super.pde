@@ -86,7 +86,8 @@ class Enemy extends MyObj{
     setPolygon(imgx, imgy);
     pol.v = v.copy();
     
-    count = Bcount = Acount = 0;
+    count = Bcount = 0;
+    Acount = -1;
     
     //initialを呼ぶのが1回目なら
     if(onceinitial){
@@ -204,7 +205,7 @@ class Enemy extends MyObj{
   
   //攻撃
   void attack(){
-    if(bullet() && AT != null)  AT.trigger();
+    if(bullet() && bul != null)  bul.trigger();
   }
   
   //hpに応じて不透明度変更
@@ -218,27 +219,26 @@ class Enemy extends MyObj{
     boolean wasAttack = false;
     if(++Bcount > Bi){
       if(bulletflag) {
+        wasAttack = true;
         switch(charanum){
           //フライングとパラシュート形態
-          case 2:
           case 4:
+            Parachuter p = (Parachuter)this;
+            if(p.change)  break;
+          case 2:
             bullets.add(new Bullet(x, y+h/2, new PVector(-3*db.scwhrate, random(-1, 1), 0)));
-            wasAttack = true;
             break;
           //タンジェント
           case 3:
             bullets.add(new Beam(this));
-            wasAttack = true;
             break;
           //固定砲台
           case 5:
             bullets.add(new Laser(x, y+h/2, new PVector(-6*db.scwhrate, 0, 0), this));
-            wasAttack = true;
             break;
           //忍者
           case 6:
             bullets.add(new Shuriken(x, y+h/2));
-            wasAttack = true;
             break;
         }
       }

@@ -193,9 +193,11 @@ class Player extends Enemy{
       
       e.bisOver = e.isOver;
       
-      if(e.charanum != 3 && e.charanum != 7){
-        if(judge(pol, e.pol))  e.isOver = true;
-        else                   e.isOver = false;
+      if(e.charanum != 3){
+        if(e.charanum != 7){
+          if(judge(pol, e.pol))  e.isOver = true;
+          else                   e.isOver = false;
+        }
       }else{
         Tangent t = (Tangent)e;
         if(judge(new PVector(t.x, t.y), t.r, pol))  e.isOver = true;
@@ -514,8 +516,25 @@ class Wall extends MyObj{
     for(int i = 0; i < enemys.size(); i++){
       Enemy e = enemys.get(i);
       
-      if(judge(pol, e.pol)){
-        if(e.Acount++%30 == 0)  hp -= 1;
+      switch(e.charanum){
+        case 2:
+        case 1:
+          if(e.pol.isCollide && e.pol.wallxy.x == x && e.pol.wallxy.y == y){
+            e.Acount++;
+            if(e.Acount == 0){
+              hp -= 1;
+            }
+          }
+          break;
+          
+        case 4:
+          Parachuter p = (Parachuter)e;
+          if(!p.change)  break;
+        case 3:
+          if(judge(pol, e.pol)){
+            hp = 0;
+          }
+          break;
       }
     }
   }
