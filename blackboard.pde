@@ -82,7 +82,6 @@ void setup(){
   backspace = space = false;
   
   textSize(36);
-  
   allInitial();
 }
 
@@ -150,7 +149,7 @@ void battle(){
   
   if(scene == 3)  tm.checksec();
   sm.update();
-      
+  
   //敵の動きの処理
   for(int i = 0; i < enemys.size(); i++){
     enemys.get(i).update();

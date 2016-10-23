@@ -390,9 +390,9 @@ class Boss extends Enemy{
     
     pol = new Polygon();
     
-    imgs.add(loadImage("attacker.png"));
-    w = (int)(imgs.get(0).width/4.0);
-    h = (int)(imgs.get(0).height/4.0);
+    imgs.add(loadImage("boss.png"));
+    w = (int)(imgs.get(0).width/6.0);
+    h = (int)(imgs.get(0).height/6.0);
     imgs.get(0).resize(w, h);
     image = imgs.get(0);
     
@@ -423,7 +423,7 @@ class Boss extends Enemy{
   
   void attack(){
     if(++sc <= lashtime){
-      if(sc%rapidi < 1)  bullets.add(new Standard(x+w/2, y+h/2, -standardbs));
+      if(sc%rapidi < 1)  bullets.add(new Standard(x+w/2, random(height), -standardbs));
     }else if(sc >= lashtime + standardi)  sc = 0;
     
     if(++rc >= reflecti){
