@@ -31,7 +31,8 @@ Player player;
 Home home;
 
 final int MAXchoke = 11100;
-final int[] times = {0, 0, 60*1, 60*1, 60*60*60, 60*10, 60*10};
+final int[] times = {0, 0, 60*10, 60*5, 60*60*60, 60*10, 60*10};
+final int sendframes = 1;
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
@@ -46,9 +47,10 @@ int scene;            //1:タイトル　2:難易度選択　3:道中　4:ボス
 int debagcounter;    //どこが重いか確認する用
 int combo;
 
-boolean _reflect;
-boolean _damaged;
-boolean _bossappear;
+int _reflect;
+int _damaged;
+int _kill;
+int _bossappear;
 
 //*************************↓初期設定など↓***************************
 
@@ -112,7 +114,7 @@ void allInitial(){
   wholecount = 0;
   combo = 0;
   
-  _reflect = _damaged = _bossappear = false;
+  _reflect = _damaged = _bossappear = 0;
 }
 
 //*************************↓ループ関数↓***************************
@@ -147,7 +149,14 @@ void process(){
 void battle(){
   bscore = score;
   benergy = choke;
-  _damaged = _reflect = false;
+  _damaged--;
+  _reflect--;
+  _kill--;
+  if(_reflect < 0)  _reflect = 0;
+  if(_damaged < 0)  _damaged = 0;
+  if(_kill < 0)  _kill = 0;
+  
+  println(_bossappear);
   
   if(scene == 3)  tm.checksec();
   sm.update();
@@ -172,7 +181,7 @@ void battle(){
     
     //ボスの出現シーン
     case 4:
-      if(wholecount == 60*3)  _bossappear = false;
+      if(wholecount == 60*3)  _bossappear = 0;
       break;
       
     //ボス面
@@ -243,7 +252,7 @@ void changeScene(){
   switch(scene){
     //ボス出現
     case 4:
-      _bossappear = true;
+      _bossappear = 1;
       break;
     
     //ボス面
@@ -359,6 +368,7 @@ void send(){
   mes.add(home.hp);
   mes.add(_reflect);
   mes.add(_damaged);
+  mes.add(_kill);
   mes.add(_bossappear);
   osc.send(mes, address);
 }
