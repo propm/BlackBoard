@@ -355,8 +355,7 @@ class Ninja extends Enemy{
         if(s.isReflected){
           if(judge(new PVector(s.x, s.y), s.r/2, pol)){
             hp = 0;
-            bullets.remove(i);
-            i--;
+            s.hp = 0;
           }
         }
       }
@@ -375,6 +374,7 @@ class Boss extends Enemy{
   final float standardbs = 1.5*db.scwhrate;
   final int rbs = 20;
   final float reffreq = 2.5;
+  final int stantime  = 60*5;
   
   float basicy;
   int sc;     //通常弾count
@@ -382,6 +382,7 @@ class Boss extends Enemy{
   float theta;            //単位:度
   float plustheta;
   boolean isStrong;     //次に発射するのが反射可能弾ならtrue
+  boolean isStan;       //気絶中ならtrue
   
   Boss(){}
   
@@ -398,16 +399,20 @@ class Boss extends Enemy{
     this.y = basicy = y;
     this.x = x;
     
+    imgx = x - marginx;
+    imgy = y - marginy;
+    movePolygon(imgx, imgy);
+    
     plustheta = 360.0/width*7.0*standardbs;
     
     sc = rc = 0;
     theta = 0;
     alpha = 255;
     isStrong = false;
+    isStan = false;
     isMoveobj = true;
+    isCrasher = true;
   }
-  
-  void setPolygon(){}
   
   void move(){
     theta += plustheta;
@@ -419,6 +424,23 @@ class Boss extends Enemy{
   }
   
   void alpha(){}
+  
+  //跳ね返された手裏剣との判定
+  void dicision(){
+    for(int i = 0; i < bullets.size(); i++){
+      Bullet b = bullets.get(i);
+      
+      if(b.num == 6){
+        Strong s = (Strong)b;
+        if(s.isReflected){
+          if(judge(new PVector(s.x, s.y), s.r/2, pol)){
+            isStan = true;
+            s.hp = 0;
+          }
+        }
+      }
+    }
+  }
   
   void attack(){
     if(++sc <= lashtime){

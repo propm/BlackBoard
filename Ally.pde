@@ -1,5 +1,7 @@
 //プレイヤー
 class Player extends Enemy{
+  final float abledifference = 5.0;    //誤差
+  
   float z;
   float gap;       //angleに対して黒板消しの四隅の点がどれだけの角度ずれているか
   float dist;      //黒板消しの中心から四隅の点までの長さ
@@ -11,6 +13,7 @@ class Player extends Enemy{
   
   boolean ATflag;     //マウスクリック時true
   boolean bATflag;
+  boolean createflag;     //壁を作っている間true
   ArrayList<PVector> bver;
   PVector createxy;       //壁を作り始めたときの座標
   
@@ -52,6 +55,7 @@ class Player extends Enemy{
     h = (int)(disty*2);
     
     setPolygonAngle();
+    createxy = new PVector(x, y);
     
     bver = new ArrayList<PVector>();
     for(int i = 0; i < pol.ver.size(); i++)
@@ -97,31 +101,35 @@ class Player extends Enemy{
     x1 = x2 = y1 = y2 = z1 = z2 = 0;
     
     if(client.available() >= 24){
-      x1 = readInt();
-      y1 = readInt();
       z1 = readInt();
-      x2 = readInt();
-      y2 = readInt();
+      y1 = readInt();
+      x1 = readInt();
       z2 = readInt();
+      y2 = readInt();
+      x2 = readInt();
     }
     
     radian = atan2(y2-y1, x2-x1);
     
-    x = abs(x2-x1);
-    y = abs(y2-y1);
-    z = abs(z2-z2);
+    x = abs(x2-x1)*width/2;
+    y = abs(y2-y1)*height;
+    
+    z = abs(z2-z1);
   }
   
   //攻撃するか壁を作るか判定
   void ATorCreate(){
-    if(x == pmouseX && y == pmouseY){
+    
+    if(abs(x - createxy.x) <= abledifference && abs(y - createxy.y) <= abledifference){
       if(ATflag)  createwall();
       else        count = 0;
     }else{
+      createflag = false;
       count = 0;
       if(ATflag)  attack();
     }
     
+    if(!createflag)  createxy = new PVector(x, y);
     bATflag = ATflag;
   }
   
@@ -221,11 +229,14 @@ class Player extends Enemy{
   void createwall(){
     count++;
     
-    if(count/60 >= 1 && choke >= 0/*energy*/){
-      walls.add(new Wall(x, y, height/2.0, h*2, PI/2));
-      if(create != null)  create.trigger();
-      //choke -= energy;
-      count = 0;
+    if(choke >= 0/*energy*/){
+      createflag = true;
+      if(count/60 >= 1){
+        walls.add(new Wall(x, y, height/2.0, h*2, PI/2));
+        if(create != null)  create.trigger();
+        //choke -= energy;
+        count = 0;
+      }
     }
   }
   

@@ -31,7 +31,7 @@ Player player;
 Home home;
 
 final int MAXchoke = 11100;
-final int[] times = {0, 0, 60*10, 60*5, 60*60*60, 60*10, 60*10};
+final int[] times = {0, 0, 60*1, 60*1, 60*60*60, 60*10, 60*10};
 final int sendframes = 2;
 
 boolean firstinitial;
@@ -143,8 +143,6 @@ void process(){
       battle();
       break;
   }
-  
-  println(score);
 }
 
 //戦闘　    該当シーン：道中、ボス出現、ボス

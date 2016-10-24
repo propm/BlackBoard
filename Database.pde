@@ -20,7 +20,9 @@ class DataBase{
                          {{0.59925, 0.109}, {0.74725, 0.1378}, {0.84925, 0.2834}, {0.72725, 0.4388},
                           {0.80225, 0.6672}, {0.60825, 0.9946}, {0.41925, 0.665}, {0.47325, 0.4262}, 
                           {0.33525, 0.331}, {0.45725, 0.1466}},
-                         {{0.37325, 1.0/4}, {1.0, 1.0/4}, {1.0, 1.0/4*3}, {0.37325, 1.0/4*3}}
+                         {{0.37325, 1.0/4}, {1.0, 1.0/4}, {1.0, 1.0/4*3}, {0.37325, 1.0/4*3}},
+                         {{4/25.0, 57/100.0}, {17/50.0, 9/25.0}, {27/50.0, 8/25.0}, {87/100.0, 31/50.0},
+                          {18/25.0, 21/25.0}, {41/100.0, 21/25.0}, {1/5.0, 83/100.0}}
                          };
   
   //効果音のファイル名
@@ -104,7 +106,10 @@ class DataBase{
           break;
         case 7:
           e.hp = 50;
-          setImage(e, "boss.png", 6.0);
+          float bosssize = 6.0;
+          setImage(e, "boss1.png", bosssize);
+          setImage(e, "boss2.png", bosssize);
+          setOriPolygon(e, i);
           
           break;
       }
@@ -216,11 +221,13 @@ class DataBase{
     }
     for(int j = 0; j < vectors[vecnum].length; j++)  e.pol.Add(e.w*vectors[vecnum][j][0], e.h*vectors[vecnum][j][1], 0);
     
-    wh = e.pol.getWH();
-    e.w = (int)wh[0];
-    e.h = (int)wh[1];
-    e.marginx = wh[2];
-    e.marginy = wh[3];
+    if(num != 7){
+      wh = e.pol.getWH();
+      e.w = (int)wh[0];
+      e.h = (int)wh[1];
+      e.marginx = wh[2];
+      e.marginy = wh[3];
+    }
   }
   
    //反転
