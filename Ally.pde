@@ -1,6 +1,8 @@
 //プレイヤー
 class Player extends Enemy{
-  final float abledifference = 5.0;    //誤差
+  final float abledifference = 5.0;    //壁を作るときに許容される誤差
+  
+  float bx, by;            //1フレーム前の座標
   
   float z;
   float gap;       //angleに対して黒板消しの四隅の点がどれだけの角度ずれているか
@@ -13,9 +15,10 @@ class Player extends Enemy{
   
   boolean ATflag;     //マウスクリック時true
   boolean bATflag;
-  boolean createflag;     //壁を作っている間true
-  ArrayList<PVector> bver;
-  PVector createxy;       //壁を作り始めたときの座標
+  boolean createflag;       //壁を作っている間true
+  
+  ArrayList<PVector> bver;  //前フレームのpol.ver
+  PVector createxy;         //壁を作り始めたときの座標
   
   AudioSample erase;    //消すときの音
   AudioSample create;   //壁を作るときの音
@@ -43,6 +46,7 @@ class Player extends Enemy{
     key = 0;
     energy = MAXchoke/3;
     x = y = z = 0;
+    bframecount = 0;
     
     gap = atan(db.eraserh/db.eraserw);
     
@@ -56,6 +60,7 @@ class Player extends Enemy{
     
     setPolygonAngle();
     createxy = new PVector(x, y);
+    bframedirs = new ArrayList<Float>(ATbframe);
     
     bver = new ArrayList<PVector>();
     for(int i = 0; i < pol.ver.size(); i++)
@@ -75,6 +80,8 @@ class Player extends Enemy{
   }
   
   void move(){
+    bx = x;
+    by = y;
     x = mouseX;
     y = mouseY;
     
@@ -133,21 +140,43 @@ class Player extends Enemy{
     bATflag = ATflag;
   }
   
+  final int ATbframe       = 5;        //攻撃するときに現在と角度を比べるベクトルが何フレーム前のものか
+  final float eraseablelen = 100;
+  float dirx, diry;        //角度が変わったとき、もしくは当たり判定に入ったときの座標
+  float bframedir;         //ATbframeフレーム前の角度
+  int bframecount;  //値がatbframeになるまで++
+  ArrayList<Float> bframedirs;
+  
   //攻撃判定
   void attack(){
+    float cframedir = atan2(y-by, x-bx);  //現在動いた方向（角度）を求める
+    bframedirs.add(cframedir);
+    
+    if(bframecount == 0)          bframedir = cframedir;
+    if(bframecount++ > ATbframe){
+      bframedir = bframedirs.get(0);
+      bframedirs.remove(0);
+    }
     
     for(int i = 0; i < enemys.size(); i++){
       Enemy e = enemys.get(i);
       
-      if((!bATflag || !e.bisOver) && e.isOver && e.charanum != 6){
-        e.hp--;
-        combo++;
-        
-        if(e.hp <= 0){
-          score += score(e);
-          choke += e.maxhp*e.energy;
-          _kill = sendframes;
-        }
+      boolean in = false;
+      if(((!bATflag || !e.bisOver) && e.isOver && e.charanum != 6)){
+        in = true;
+        dirx = x;    //当たり判定に入ったときの座標を記録
+        diry = y;
+      }
+      float length = sqrt((x-dirx)*(x-dirx)+(y-diry)*(y-diry));
+      if(in || (e.isOver && abs(cframedir - bframedir) >= PI/2 && length >= eraseablelen)){
+          e.hp--;
+          combo++;
+          
+          if(e.hp <= 0){
+            score += score(e);
+            choke += e.maxhp*e.energy;
+            _kill = sendframes;
+          }
       }
     }
     
