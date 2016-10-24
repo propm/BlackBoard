@@ -32,7 +32,7 @@ Home home;
 
 final int MAXchoke = 11100;
 final int[] times = {0, 0, 60*10, 60*5, 60*60*60, 60*10, 60*10};
-final int sendframes = 1;
+final int sendframes = 2;
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
@@ -143,6 +143,8 @@ void process(){
       battle();
       break;
   }
+  
+  println(score);
 }
 
 //戦闘　    該当シーン：道中、ボス出現、ボス
@@ -155,8 +157,6 @@ void battle(){
   if(_reflect < 0)  _reflect = 0;
   if(_damaged < 0)  _damaged = 0;
   if(_kill < 0)  _kill = 0;
-  
-  println(_bossappear);
   
   if(scene == 3)  tm.checksec();
   sm.update();
