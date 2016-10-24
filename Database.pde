@@ -103,7 +103,10 @@ class DataBase{
           setEnemys(e, i, -1, 4, true, 60*4, new PVector(0, 0), 0, "ninja.png", "ninja_attack.png");
           break;
         case 7:
+          e.hp = 50;
+          setImage(e, "boss.png", 6.0);
           
+          break;
       }
     }
     
@@ -209,6 +212,7 @@ class DataBase{
       case 2:  vecnum = 1;  break;
       case 5:  vecnum = 2;  break;
       case 6:  vecnum = 3;  break;
+      case 7:  vecnum = 4;  break;
     }
     for(int j = 0; j < vectors[vecnum].length; j++)  e.pol.Add(e.w*vectors[vecnum][j][0], e.h*vectors[vecnum][j][1], 0);
     

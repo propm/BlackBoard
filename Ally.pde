@@ -12,6 +12,7 @@ class Player extends Enemy{
   boolean ATflag;     //マウスクリック時true
   boolean bATflag;
   ArrayList<PVector> bver;
+  PVector createxy;       //壁を作り始めたときの座標
   
   AudioSample erase;    //消すときの音
   AudioSample create;   //壁を作るときの音
@@ -29,7 +30,6 @@ class Player extends Enemy{
     
     erase = p.erase;
     create = p.create;
-    oripol = new Polygon(p.pol.ver);
     pol    = new Polygon(p.pol.ver);
   }
   
@@ -40,7 +40,7 @@ class Player extends Enemy{
     key = 0;
     energy = MAXchoke/3;
     x = y = z = 0;
-      
+    
     gap = atan(db.eraserh/db.eraserw);
     
     float distx = width/db.boardw*db.eraserw/2;
@@ -138,6 +138,7 @@ class Player extends Enemy{
         if(e.hp <= 0){
           score += score(e);
           choke += e.maxhp*e.energy;
+          _kill = sendframes;
         }
       }
     }
@@ -300,12 +301,15 @@ class Home extends MyObj{
     y = sin(angle/180*PI)*4 + height/2;
     
     damage();
-    //if(bhp != hp)  println("hp: "+hp);
+    if(bhp != hp){
+      println("hp: "+hp);
+      _damaged = sendframes;
+      if(damaged != null)  damaged.trigger();
+    }
   }
   
   void damage(){
     
-    boolean isDamaged = false;
     for(int i = 0; i < enemys.size(); i++){
       Enemy e = enemys.get(i);
       
@@ -314,13 +318,11 @@ class Home extends MyObj{
         if(t.x-t.r/2.0 < border){
           hp -= e.damage;
           e.hp = 0;
-          isDamaged = true;
         }
       }else if(e.charanum != 7){
         if(e.x < border && e.charanum != 3){
           hp -= e.damage;
           e.hp = 0;
-          isDamaged = true;
         }
       }
     }
@@ -329,7 +331,6 @@ class Home extends MyObj{
       Bullet b = bullets.get(i);
       
       if(b.y+b.h/2 > 0 && b.y-b.h/2 < height){
-        isDamaged = true;
         
         switch(b.num){
           
@@ -345,6 +346,7 @@ class Home extends MyObj{
           case 1:
             Laser l = (Laser)b;
             if(l.x+abs(l.length.x) >= border){
+              
               if(l.x <= border){
                 l.x = border;
                 l.length.setMag(l.length.mag()+l.v.x);
@@ -363,6 +365,7 @@ class Home extends MyObj{
           case 2:
             Beam be = (Beam)b;
             if(be.x >= border){
+              
               if(be.x-be.length <= border){
                 if(++be.Hcount%6 == 0){
                   hp -= be.damage;
@@ -380,15 +383,12 @@ class Home extends MyObj{
             Shuriken s = (Shuriken)b;
             
             if(s.x-s.r/2 <= border){
-              
               hp -= s.damage;
               s.hp = 0;
             }
         }
       }
     }
-    
-    if(damaged != null && isDamaged)  damaged.trigger();
   }
   
   void soundstop(){
@@ -506,7 +506,9 @@ class Wall extends MyObj{
                 s.v.set(-s.v.x, -s.v.y, -s.v.z);
                 s.x = x+h/2.0+s.r/2.0;
                 s.isReflected = true;
+                
                 if(reflect != null)  reflect.trigger();
+                _reflect = sendframes;
                 break;
             }
           }

@@ -93,6 +93,7 @@ class Sin extends Enemy{
   void setvy(float s_t){
     ay = basicy - s_t*height/6;
     pol.v.set(pol.v.x, ay-y);
+    v = pol.v.copy();
   }
 }
 
@@ -125,6 +126,7 @@ class Tangent extends Sin{
       r = imgw/5.0*4;
       marginx = imgw/100.0*49;
       marginy = imgw/100.0*47;
+      isCrasher = true;
       
       once = true;
     }
@@ -191,6 +193,7 @@ class Parachuter extends Attacker{
   void formChange(){
     if(y >= stopy && !change){
       change = true;
+      isCrasher = true;
       
       initial(1);
       charanum = 4;
@@ -233,16 +236,25 @@ class Cannon extends Enemy{
     
     if(y < 0)  y = 0;
     if(y > height-h)  y = height-h;
-    
-    imgx = x - marginx;
+    float bimgy = imgy;
     imgy = y - marginy;
-    setPolygon(imgx, imgy);
+    movePolygon(0, imgy-bimgy);
   }
   
   void copyplus(Enemy oe){
     Cannon c = (Cannon)oe;
     charge = c.charge;
     appear = c.appear;
+  }
+  
+  //ボスが登場したら上に飛んでって死ぬ
+  void plus(){
+    if(scene >= 4){
+      isMoveobj = true;
+      isCrasher = true;
+      v.add(new PVector(0, -1));
+      if(y < -h)  isDie = true;
+    }
   }
   
   void attack(){
@@ -257,8 +269,6 @@ class Cannon extends Enemy{
       chargeframe = Bi - Bcount;
       once = false;
     }
-    
-    
   }
 }
 
@@ -287,23 +297,32 @@ class Ninja extends Enemy{
     
     if(y < 0)         y = 0;
     if(y > height-h)  y = height-h;
+    float bimgy = imgy;
+    imgy = y - marginy;
+    movePolygon(0, imgy-bimgy);
     
     alpha = ALPHA;
     alphav = 5;
     isStealth = false;
-    
-    imgx = x - marginx;
-    imgy = y - marginy;
-    setPolygon(imgx, imgy);
   }
   
   void plus(){
-    stealth();
-    dicision();
+    if(scene >= 4){
+      fadeout();
+    }else{
+      stealth();
+      dicision();
+    }
   }
   
   void die(){
     if(hp == 0)  super.die();
+  }
+  
+  //ボスが登場したらフェードアウト
+  void fadeout(){
+    alpha -= alphav;
+    if(alpha < 0)  isDie = true;
   }
   
   void stealth(){
@@ -368,49 +387,52 @@ class Boss extends Enemy{
   
   //受け取るのは中心座標
   Boss(float x, float y){
+    charanum = 7;
+    copy();
     
-    pol = new Polygon();
-    
-    imgs.add(loadImage("attacker.png"));
-    w = (int)(imgs.get(0).width/10.0);
-    h = (int)(imgs.get(0).height/10.0);
-    imgs.get(0).resize(w, h);
     image = imgs.get(0);
     
-    this.x = x-w/2;
-    this.basicy = y-h/2;
+    marginx = w/2;
+    marginy = h/2;
+    
+    this.y = basicy = y;
+    this.x = x;
+    
     plustheta = 360.0/width*7.0*standardbs;
     
-    charanum = 7;
-    hp = 100;
     sc = rc = 0;
     theta = 0;
     alpha = 255;
-    isStrong = true;
-    isMoveobj = false;
+    isStrong = false;
+    isMoveobj = true;
   }
   
+  void setPolygon(){}
+  
   void move(){
-    super.move();
-    
     theta += plustheta;
     theta %= 360;
-    y = height/2.0*sin(PI/180*theta) + basicy;
+    float ay = (height-h)/2.0*sin(PI/180*theta) + basicy;
+    v.set(v.x, ay-y);
+    
+    super.move();
   }
   
   void alpha(){}
   
   void attack(){
     if(++sc <= lashtime){
-      if(sc%rapidi < 1)  bullets.add(new Standard(x+w/2, y+h/2, -standardbs));
+      if(sc%rapidi < 1)  bullets.add(new Standard(x-w/4.0, random(height), -standardbs));
     }else if(sc >= lashtime + standardi)  sc = 0;
     
     if(++rc >= reflecti){
       if(isStrong){
-        bullets.add(new Reflect(x, y+h/3.0, new PVector(-rbs*cos(45*PI/180.0), rbs*sin(45*PI/180.0))));
-        bullets.add(new Reflect(x, y+h/3.0, new PVector(-rbs*cos(-45*PI/180.0), rbs*sin(-45*PI/180.0))));
+        bullets.add(new Reflect(x, y, new PVector(-rbs*cos(45*PI/180.0), rbs*sin(45*PI/180.0))));
+        bullets.add(new Reflect(x, y, new PVector(-rbs*cos(-45*PI/180.0), rbs*sin(-45*PI/180.0))));
       }
-      else          bullets.add(new Strong(x, y+h/2));
+      else{
+        bullets.add(new Strong(x, y));
+      }
       isStrong = !isStrong;
       rc = 0;
     }
@@ -424,5 +446,11 @@ class Boss extends Enemy{
   //死処理
   void cadaver(){
     if(hp == 0)  isDie = true;
+  }
+  
+  void draw(){
+    super.draw();
+    fill(255, 20, 147);
+    ellipse(x, y, 20, 20);
   }
 }

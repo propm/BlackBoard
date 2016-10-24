@@ -10,8 +10,6 @@ import ddf.minim.ugens.*;
 import ddf.minim.effects.*;
 import processing.net.*;
 
-import javax.swing.*;
-
 ScrollManager sm;
 ReadText rt;
 DataBase db;
@@ -33,18 +31,28 @@ Player player;
 Home home;
 
 final int MAXchoke = 11100;
-final int bosstime = 60*90;  //ボス戦が始まる時間
+final int[] times = {0, 0, 60*10, 60*5, 60*60*60, 60*10, 60*10};
+final int sendframes = 2;
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
 boolean isStop;
 boolean isDebag;             //デバッグモードならtrue
+
+int time;            //次のシーンに入るまでの時間を入れる
 int score, choke;
 int bscore, benergy;
 int wholecount;      //道中が始まってからのカウント
-int scene;            //1:タイトル　2:難易度選択　3:道中　4:ボス　5:スコア画面  6:ランキング
+int scene;            //1:タイトル　2:難易度選択　3:道中　4:ボス登場　5:ボス　6:スコア画面  7:ランキング
 int debagcounter;    //どこが重いか確認する用
 int combo;
+
+int _reflect;
+int _damaged;
+int _kill;
+int _bossappear;
+
+//*************************↓初期設定など↓***************************
 
 void settings(){
   minim = new Minim(this);    //音楽・効果音用
@@ -59,11 +67,12 @@ void settings(){
   db.screenw = 1600;          //スクリーンwidth
   db.initial();
   
-  if(rt.check())  System.exit(0);
+  if(rt.check())  System.exit(0);  //settings.txtのエラーチェック
   rt.readCommands();
   db.screenh = (int)(db.screenw*db.boardrate);
   
-  size(db.screenw, db.screenh);
+  size(db.screenw, db.screenh, P2D);
+  noSmooth();
 }
 
 void setup(){
@@ -75,148 +84,13 @@ void setup(){
   backspace = space = false;
   
   textSize(36);
-  
   allInitial();
-}
-Enemy en;
-
-void draw(){
-  for(int i = 0; i < enemys.size(); i++){
-    Enemy e = enemys.get(i);
-    if(e.charanum == 2 && en == null){
-      en = e;
-    }
-  }
-  
-  sm.drawView();
-  if(!isStop){
-    process();    //処理
-    drawing();    //描画
-  }
-}
-
-//処理用関数
-void process(){
-  bscore = score;
-  benergy = choke;
-  wholecount++;
-  
-  switch(scene){
-    case 3:
-      if(wholecount >= bosstime){
-        changeScene();
-        process();
-        break;
-      }
-      
-      tm.checksec();
-      sm.update();
-      
-      //敵の動きの処理
-      for(int i = 0; i < enemys.size(); i++){
-        enemys.get(i).update();
-        if(enemys.get(i) == en){
-          noFill();
-          strokeWeight(10);
-          stroke(255, 20, 143);
-          ellipse(en.x+en.w/2, en.y+en.h/2, en.w, en.h);
-        }
-      }
-      
-      //弾の処理
-      for(int i = 0; i < bullets.size(); i++){
-        bullets.get(i).update();
-      }
-      
-      //壁の処理
-      for(int i = 0; i < walls.size(); i++){
-        walls.get(i).update();
-      }
-      
-      //プレイヤーの動きの処理
-      player.update();
-      
-      //自陣の処理
-      home.update();
-      
-      //死んだオブジェクトの処理
-      cadaver(enemys);
-      cadaver(bullets);
-      cadaver(walls);
-        
-      break;
-      
-    case 4:
-      sm.update();
-        
-      //弾の処理
-      for(int i = 0; i < bullets.size(); i++){
-        bullets.get(i).update();
-      }
-      
-      //壁の処理
-      for(int i = 0; i < walls.size(); i++){
-        walls.get(i).update();
-      }
-      
-      //ボスの処理
-      boss.update();
-      
-      //プレイヤーの動きの処理
-      player.update();
-      
-      //自陣の処理
-      home.update();
-      
-      //死体の処理
-      cadaver(bullets);
-      cadaver(walls);
-      boss.cadaver();
-      
-      break;
-    }
-  
-  //if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
-  send();
-}
-
-//描画用関数
-void drawing(){
-  //sm.drawView();
-  
-  //自陣
-  home.draw();
-  
-  //壁
-  fill(255, 100, 100);
-  for(int i = 0; i < walls.size(); i++){
-    Wall wall = walls.get(i);
-    wall.draw();
-  }
-  
-  if(scene == 4){
-    boss.draw();
-  }else if(scene == 3){
-    //敵
-    for(int i = 0; i < enemys.size(); i++){
-      Enemy enemy = enemys.get(i);
-      enemy.draw();
-    }
-  }
-  
-  for(int i = 0; i < bullets.size(); i++){
-    Bullet bullet = bullets.get(i);
-    bullet.draw();
-  }
-  
-  //プレイヤー
-  fill(255, 134, 0);
-  player.draw();
-
 }
 
 //やり直し
 void allInitial(){
+  
+  //一回目以外
   if(!firstinitial){
     tm = new TimeManager();
     rt.readCommands();
@@ -236,17 +110,154 @@ void allInitial(){
   score = choke = 0;
   isStop = false;
   scene = 3;
+  time = times[scene-1];
   wholecount = 0;
   combo = 0;
+  
+  _reflect = _damaged = _bossappear = 0;
 }
+
+//*************************↓ループ関数↓***************************
+
+void draw(){
+  if(!isStop){
+    process();    //処理
+    drawing();    //描画
+  }
+}
+
+//処理用関数
+void process(){
+  //時間によってシーン変更
+  if(wholecount++ >= time){
+    changeScene();
+    process();
+    wholecount--;
+    return;
+  }
+  
+  switch(scene){
+    case 3:
+    case 4:
+    case 5:
+      battle();
+      break;
+  }
+  
+  println(score);
+}
+
+//戦闘　    該当シーン：道中、ボス出現、ボス
+void battle(){
+  bscore = score;
+  benergy = choke;
+  _damaged--;
+  _reflect--;
+  _kill--;
+  if(_reflect < 0)  _reflect = 0;
+  if(_damaged < 0)  _damaged = 0;
+  if(_kill < 0)  _kill = 0;
+  
+  if(scene == 3)  tm.checksec();
+  sm.update();
+  
+  //敵の動きの処理
+  for(int i = 0; i < enemys.size(); i++){
+    enemys.get(i).update();
+  }
+  
+  //弾の処理
+  for(int i = 0; i < bullets.size(); i++){
+    bullets.get(i).update();
+  }
+  
+  //壁の処理
+  for(int i = 0; i < walls.size(); i++){
+    walls.get(i).update();
+  }
+  
+  //シーンごとの処理
+  switch(scene){
+    
+    //ボスの出現シーン
+    case 4:
+      if(wholecount == 60*3)  _bossappear = 0;
+      break;
+      
+    //ボス面
+    case 5:
+      //ボスの処理
+      boss.update();
+      break;
+  }
+  
+  //プレイヤーの動きの処理
+  player.update();
+  
+  //自陣の処理
+  home.update();
+  
+  //死んだオブジェクトの処理
+  cadaver(enemys);
+  cadaver(bullets);
+  cadaver(walls);
+  if(boss != null)  boss.cadaver();
+  
+  //if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
+  send();
+}
+
+//描画用関数
+void drawing(){
+  sm.drawView();
+  
+  //自陣
+  home.draw();
+  
+  //壁
+  fill(255, 100, 100);
+  for(int i = 0; i < walls.size(); i++){
+    Wall wall = walls.get(i);
+    wall.draw();
+  }
+  
+  if(scene == 5){
+    boss.draw();
+  }
+  
+  //敵
+  for(int i = 0; i < enemys.size(); i++){
+    Enemy enemy = enemys.get(i);
+    enemy.draw();
+  }
+  
+  for(int i = 0; i < bullets.size(); i++){
+    Bullet bullet = bullets.get(i);
+    bullet.draw();
+  }
+  
+  //プレイヤー
+  fill(255, 134, 0);
+  player.draw();
+
+}
+
+//*************************↓その他汎用関数↓***************************
 
 void changeScene(){
   scene++;
+  wholecount = 0;
+  time = times[scene-1];
+  
   switch(scene){
+    //ボス出現
     case 4:
+      _bossappear = 1;
+      break;
+    
+    //ボス面
+    case 5:
       boss = new Boss(width/8.0*7, height/2.0);
-      for(int i = 0; i < enemys.size(); i++)
-        enemys.remove(0);
       break;
   }
 }
@@ -298,6 +309,8 @@ void cadaver(ArrayList<?> obj){
     }
   }
 }
+
+//*************************↓イベント処理・送信・受信↓***************************
 
 void mousePressed(){
   player.ATflag = true;
@@ -352,8 +365,15 @@ void send(){
   OscMessage mes = new OscMessage("/text");
   mes.add(score);
   mes.add(choke);
+  mes.add(home.hp);
+  mes.add(_reflect);
+  mes.add(_damaged);
+  mes.add(_kill);
+  mes.add(_bossappear);
   osc.send(mes, address);
 }
+
+//*************************↓終了時↓***************************
 
 //スケッチ終了時に呼ばれる関数
 void stop(){
