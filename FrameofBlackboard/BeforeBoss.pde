@@ -23,7 +23,7 @@ void bossDisplay(){
   stroke(abs(int(sin(a)*255)), abs(int(sin(a)*255)), 0);
   a+=0.06;
   if(keyPressed){
-    if(key == 'f' || key == 'F'){
+    if(beforeboss != 0){
       dataDisplay = false;
       for (int i = 0; i < lines.size(); i++) {
         Line now = lines.get(i);
@@ -40,4 +40,3 @@ void bossDisplay(){
 }
 
   
-

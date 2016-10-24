@@ -7,14 +7,8 @@ int hp;
 int HpMax = 1000;
 boolean dataDisplay = true;
 
-public void getData(int _score, int _choke){
-  score = _score;
-  choke = _choke;
-}
-
 void UpdateNum(){
   //ゲージの点滅エフェクト
-  hp += 1;
   if(gageColorBlue <= 0){
     gageup = true;
   }else if(gageColorBlue >= 255){

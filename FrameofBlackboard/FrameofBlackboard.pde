@@ -15,8 +15,15 @@ ArrayList<Line> lines;
 
 PFont myFont;
 
+int reflected,damaged,killed,beforeboss;
+
+void settings(){
+  size(1200,600, P3D);
+  PJOGL.profile = 1;
+}
+
 void setup(){
-  size(1200,600, OPENGL);
+  
   background(0);
   
   myFont = loadFont("Bradley.vlw"); //文字のフォントを設定
@@ -25,9 +32,13 @@ void setup(){
   textFont(myFont);
   
   osc = new OscP5(this, 1234);
+  
   osc.plug(this,"getData","/text");
+  
   lines = new ArrayList<Line> ();
+  
   CircleList = new ArrayList<Circle>();
+  
   server = new SyphonServer(this, "BlackBoardFrame");
   
   for (int i = 0; i < 80; i++)
@@ -44,6 +55,7 @@ void draw(){
 }
 
 void update(){
+  CheckData();
   UpdateBackground();
   UpdateNum();
 }
@@ -53,16 +65,31 @@ void display(){
   UpdateCircle();
   DisplayNum();
   bossDisplay();
+  
+  println(damaged);
 }
 
-void keyPressed(){
-  if(key == 'A' || key == 'a'){
+public void getData(int _score, int _choke, int _hp,int _reflected, int _damaged,int _killed, int _beforeboss){
+  score = _score;
+  choke = _choke;
+  hp = _hp;
+  reflected = _reflected;
+  damaged = _damaged;
+  killed = _killed;
+  beforeboss = _beforeboss;
+  
+}
+
+void CheckData(){
+  if(killed != 0){
     CircleList.add(new Circle(width/2, height/2, 50));
-  }else if(key == 's' || key == 'S'){
+  }else if(damaged != 0){
     red = 200;
-  }else if(key == 'd' || key == 'D'){
+  }else if(reflected != 0){
     red = 250;
     grn = 250;
   }
 }
+
+
   
