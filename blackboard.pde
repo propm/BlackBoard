@@ -43,7 +43,7 @@ int time;            //次のシーンに入るまでの時間を入れる
 int score, choke;
 int bscore, benergy;
 int wholecount;      //道中が始まってからのカウント
-int scene;            //1:タイトル　2:難易度選択　3:道中　4:ボス登場　5:ボス　6:スコア画面  7:ランキング
+int scene;           //1:タイトル　2:難易度選択　3:道中　4:ボス登場　5:ボス　6:ボス破滅　7:スコア画面  8:ランキング
 int debagcounter;    //どこが重いか確認する用
 int combo;
 
@@ -137,11 +137,19 @@ void process(){
   }
   
   switch(scene){
+    case 1:
+      title();
+      break;
+    case 2:
+      changeScene();
+      break;
     case 3:
     case 4:
     case 5:
       battle();
       break;
+    case 6:
+      if(boss != null)  boss = null;
   }
 }
 
@@ -201,7 +209,6 @@ void battle(){
   cadaver(walls);
   if(boss != null)  boss.cadaver();
   
-  //if(bscore != score || benergy != choke)  println("score: "+score+"  choke: "+choke);    
   send();
 }
 

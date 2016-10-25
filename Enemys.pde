@@ -461,7 +461,6 @@ class Boss extends Enemy{
   }
   
   void update(){
-    println(hp+" "+isStan);
     move();
     attack();
     dicision();
@@ -469,7 +468,10 @@ class Boss extends Enemy{
   
   //死処理
   void cadaver(){
-    if(hp == 0)  isDie = true;
+    if(hp <= 0){
+      changeScene();
+      isDie = true;
+    }
   }
   
   void draw(){
