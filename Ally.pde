@@ -75,7 +75,16 @@ class Player extends Enemy{
     setPolygonAngle();  //多角形設定
     
     //壁作成・攻撃
-    ATorCreate();
+    switch(scene){
+      case 1:
+        titleAttack();
+        break;
+      case 3:
+      case 4:
+      case 5:
+        ATorCreate();
+        break;
+    }
   }
   
   void move(){
@@ -121,6 +130,14 @@ class Player extends Enemy{
     y = abs(y2-y1)*height;
     
     z = abs(z2-z1);
+  }
+  
+  void titleAttack(){
+    if(ATflag){
+      if(judge(pol, title.pol)){
+        changeScene();
+      }
+    }
   }
   
   //攻撃するか壁を作るか判定
@@ -310,8 +327,8 @@ class Player extends Enemy{
   
   void soundstop(){
     super.soundstop();
-    create.close();
-    erase.close();
+    if(create != null)  create.close();
+    if(erase != null)   erase.close();
   }
   
   void draw(){
@@ -472,7 +489,7 @@ class Home extends MyObj{
   
   void soundstop(){
     super.soundstop();
-    damaged.close();
+    if(damaged != null)  damaged.close();
   }
   
   void draw(){
@@ -629,8 +646,8 @@ class Wall extends MyObj{
   
   void soundstop(){
     super.soundstop();
-    reflect.close();
-    damaged.close();
+    if(reflect != null)  reflect.close();
+    if(damaged != null)  damaged.close();
   }
   
   void draw(){

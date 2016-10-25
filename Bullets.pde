@@ -88,7 +88,7 @@ class Beam extends Bullet{
   
   void soundstop(){
     super.soundstop();
-    hit.close();
+    if(hit != null)  hit.close();
   }
   
   void draw(){

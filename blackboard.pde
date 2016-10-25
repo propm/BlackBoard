@@ -29,9 +29,10 @@ ArrayList<Wall>      walls;
 Boss boss;
 Player player;
 Home home;
+MyObj title;
 
 final int MAXchoke = 11100;
-final int[] times = {0, 0, 60*2, 60*1, 60*60*60, 60*10, 60*10};
+final int[] times = {-1, -1, 60*2, 60*1, -1, 60*10, 60*10};    //sceneと対応　　　-1は時間制限なし
 final int sendframes = 2;
 
 boolean firstinitial;
@@ -64,18 +65,20 @@ void settings(){
   db = new DataBase();        //データベース
   tm = new TimeManager();
   
-  db.screenw = 1600;          //スクリーンwidth
-  db.initial();
-  
+  db.screenw = 1600;               //スクリーンwidth(仮)
   if(rt.check())  System.exit(0);  //settings.txtのエラーチェック
   rt.readCommands();
   db.screenh = (int)(db.screenw*db.boardrate);
+  
+  //databaseセット
+  db.initial();
   
   size(db.screenw, db.screenh, P2D);
   noSmooth();
 }
 
 void setup(){
+  db.settitle();        //settingではdataが読み込まれていないからか、素材が読み込めない
   db.scwhrate = width/1600.0;
   
   db.setobjects();
@@ -89,6 +92,7 @@ void setup(){
 
 //やり直し
 void allInitial(){
+  stop(true);
   
   //一回目以外
   if(!firstinitial){
@@ -107,9 +111,14 @@ void allInitial(){
   player = new Player();
   home = new Home();
   
+  try{
+    bgm = minim.loadFile("bbtitle.mp3");
+    bgm.loop();
+  }catch(Exception e){}
+  
   score = choke = 0;
   isStop = false;
-  scene = 3;
+  scene = 1;
   time = times[scene-1];
   wholecount = 0;
   combo = 0;
@@ -121,24 +130,26 @@ void allInitial(){
 
 void draw(){
   if(!isStop){
-    process();    //処理
-    drawing();    //描画
+    process();
+    if(scene != 2)  drawing();
   }
 }
 
 //処理用関数
 void process(){
   //時間によってシーン変更
-  if(wholecount++ >= time){
-    changeScene();
-    process();
-    wholecount--;
-    return;
+  if(time > 0){
+    if(wholecount++ >= time){
+      changeScene();
+      process();
+      wholecount--;
+      return;
+    }
   }
   
   switch(scene){
     case 1:
-      title();
+      player.update();
       break;
     case 2:
       changeScene();
@@ -147,11 +158,67 @@ void process(){
     case 4:
     case 5:
       battle();
+      drawing();
       break;
     case 6:
       if(boss != null)  boss = null;
+      break;
   }
 }
+
+//描画用関数
+void drawing(){
+  
+  switch(scene){
+    case 1:
+      background(0);
+      //background(34, 139, 34);
+      if(title != null && title.image != null){
+        image(title.image, title.x, title.y);
+        title.pol.Draw();
+      }
+      break;
+    
+    case 2:
+      changeScene();
+      break;
+      
+    case 5:
+      boss.draw();
+    case 3:
+    case 4:
+      sm.drawView();
+  
+      //自陣
+      home.draw();
+  
+      //壁
+      fill(255, 100, 100);
+      for(int i = 0; i < walls.size(); i++){
+        Wall wall = walls.get(i);
+        wall.draw();
+      }
+  
+      //敵
+      for(int i = 0; i < enemys.size(); i++){
+        Enemy enemy = enemys.get(i);
+        enemy.draw();
+      }
+  
+      for(int i = 0; i < bullets.size(); i++){
+        Bullet bullet = bullets.get(i);
+        bullet.draw();
+      }
+      break;
+  }
+  
+  //プレイヤー
+  fill(255, 134, 0);
+  player.draw();
+
+}
+
+//********************************↓シーンごとの処理↓*********************************
 
 //戦闘　    該当シーン：道中、ボス出現、ボス
 void battle(){
@@ -210,41 +277,6 @@ void battle(){
   if(boss != null)  boss.cadaver();
   
   send();
-}
-
-//描画用関数
-void drawing(){
-  sm.drawView();
-  
-  //自陣
-  home.draw();
-  
-  //壁
-  fill(255, 100, 100);
-  for(int i = 0; i < walls.size(); i++){
-    Wall wall = walls.get(i);
-    wall.draw();
-  }
-  
-  if(scene == 5){
-    boss.draw();
-  }
-  
-  //敵
-  for(int i = 0; i < enemys.size(); i++){
-    Enemy enemy = enemys.get(i);
-    enemy.draw();
-  }
-  
-  for(int i = 0; i < bullets.size(); i++){
-    Bullet bullet = bullets.get(i);
-    bullet.draw();
-  }
-  
-  //プレイヤー
-  fill(255, 134, 0);
-  player.draw();
-
 }
 
 //*************************↓その他汎用関数↓***************************
@@ -382,24 +414,31 @@ void send(){
 
 //スケッチ終了時に呼ばれる関数
 void stop(){
-  bgm.close();
-  soundsstop();
+  stop(true);
   minim.stop();
   super.stop();
 }
 
+void stop(boolean a){
+  if(bgm != null)  bgm.close();
+  soundsstop();
+}
+
 void soundsstop(){
-  for(int i = 0; i < enemys.size(); i++){
-    enemys.get(i).soundstop();
-  }
+  if(enemys != null)
+    for(int i = 0; i < enemys.size(); i++){
+      enemys.get(i).soundstop();
+    }
   
-  for(int i = 0; i < walls.size(); i++){
-    walls.get(i).soundstop();
-  }
+  if(walls != null)
+    for(int i = 0; i < walls.size(); i++){
+      walls.get(i).soundstop();
+    }
   
-  for(int i = 0; i < bullets.size(); i++){
-    bullets.get(i).soundstop();
-  }
+  if(bullets != null)
+    for(int i = 0; i < bullets.size(); i++){
+      bullets.get(i).soundstop();
+    }
   
   if(boss != null)  boss.soundstop();
   if(player != null)  player.soundstop();

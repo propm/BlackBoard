@@ -54,6 +54,30 @@ class DataBase{
     oriEnemys.add(new Boss());
   }
   
+  void settitle(){
+    title = new MyObj();
+    MyObj t = title;
+    
+    float m = 3.7;
+    try{
+      t.image = loadImage("title.png");
+      t.w = (int)(t.image.width/m);
+      t.h = (int)(t.image.height/m);
+      t.image = reSize(t.image, t.w, t.h);
+    }catch(Exception e){
+      e.printStackTrace();
+    }
+    
+    t.x = width/2.0 - t.w/2.0;
+    t.y = height/2.0 - t.h/2.0;
+    
+    t.pol = new Polygon();
+    t.pol.Add(width/2.0+t.w/2.0, height/2.0-t.h/2.0, 0);
+    t.pol.Add(width/2.0+t.w/2.0, height/2.0+t.h/2.0, 0);
+    t.pol.Add(width/2.0-t.w/2.0, height/2.0+t.h/2.0, 0);
+    t.pol.Add(width/2.0-t.w/2.0, height/2.0-t.h/2.0, 0);
+  }
+  
   /*
   //敵の効果音を設定
   void setsound(String object, String command, String filename){

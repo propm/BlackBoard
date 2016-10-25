@@ -264,6 +264,12 @@ class Cannon extends Enemy{
     else              once = true;
   }
   
+  void soundstop(){
+    super.soundstop();
+    if(charge != null)  charge.stop();
+    if(appear != null)  appear.stop();
+  }
+  
   void charge(){
     if(once){
       chargeframe = Bi - Bcount;
