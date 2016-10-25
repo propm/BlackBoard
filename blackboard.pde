@@ -31,7 +31,7 @@ Player player;
 Home home;
 
 final int MAXchoke = 11100;
-final int[] times = {0, 0, 60*20, 60*1, 60*60*60, 60*10, 60*10};
+final int[] times = {0, 0, 60*2, 60*1, 60*60*60, 60*10, 60*10};
 final int sendframes = 2;
 
 boolean firstinitial;

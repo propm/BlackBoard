@@ -461,8 +461,10 @@ class Boss extends Enemy{
   }
   
   void update(){
+    println(hp+" "+isStan);
     move();
     attack();
+    dicision();
   }
   
   //死処理

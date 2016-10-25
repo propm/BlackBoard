@@ -73,7 +73,6 @@ class Player extends Enemy{
     
     setBver();
     setPolygonAngle();  //多角形設定
-    overlap();          //敵と重なっているかどうかの判定
     
     //壁作成・攻撃
     ATorCreate();
@@ -126,6 +125,7 @@ class Player extends Enemy{
   
   //攻撃するか壁を作るか判定
   void ATorCreate(){
+    if(!ATflag)  bframecount = 0;
     
     if(abs(x - createxy.x) <= abledifference && abs(y - createxy.y) <= abledifference){
       if(ATflag)  createwall();
@@ -141,43 +141,31 @@ class Player extends Enemy{
   }
   
   final int ATbframe       = 5;        //攻撃するときに現在と角度を比べるベクトルが何フレーム前のものか
-  final float eraseablelen = 100;
+  final float eraseablelen = 10;      //角度を変えたときにもう一度消したと認識される長さ
   float dirx, diry;        //角度が変わったとき、もしくは当たり判定に入ったときの座標
-  float bframedir;         //ATbframeフレーム前の角度
-  int bframecount;  //値がatbframeになるまで++
+  int bframecount;         //値がatbframeになるまで++
+  boolean alleover;        //どの敵とも重なっていなかったらfalse
   ArrayList<Float> bframedirs;
   
   //攻撃判定
   void attack(){
-    float cframedir = atan2(y-by, x-bx);  //現在動いた方向（角度）を求める
-    bframedirs.add(cframedir);
-    
-    if(bframecount == 0)          bframedir = cframedir;
-    if(bframecount++ > ATbframe){
-      bframedir = bframedirs.get(0);
-      bframedirs.remove(0);
-    }
+    alleover = false;
     
     for(int i = 0; i < enemys.size(); i++){
       Enemy e = enemys.get(i);
-      
-      boolean in = false;
-      if(((!bATflag || !e.bisOver) && e.isOver && e.charanum != 6)){
-        in = true;
-        dirx = x;    //当たり判定に入ったときの座標を記録
-        diry = y;
+      if(e.charanum != 6)  dicisionEnemy(e);    //忍者以外なら判定
+    }
+    
+    if(boss != null){
+      if(boss.isStan){
+        dicisionEnemy(boss);
       }
-      float length = sqrt((x-dirx)*(x-dirx)+(y-diry)*(y-diry));
-      if(in || (e.isOver && abs(cframedir - bframedir) >= PI/2 && length >= eraseablelen)){
-          e.hp--;
-          combo++;
-          
-          if(e.hp <= 0){
-            score += score(e);
-            choke += e.maxhp*e.energy;
-            _kill = sendframes;
-          }
-      }
+    }
+    
+    if(!alleover){
+      dirx = diry = -1;
+      bframedirs = new ArrayList<Float>(ATbframe);
+      bframecount = 0;
     }
     
     for(int i = 0; i < bullets.size(); i++){
@@ -207,6 +195,77 @@ class Player extends Enemy{
     if(erase != null)  erase.trigger();
   }
   
+  //敵と自機が重なっているかどうかの判定:  戻り値→変更前のisOver
+  void overlap(Enemy e){
+    e.bisOver = e.isOver;
+      
+    if(e.charanum != 3){
+      if(judge(pol, e.pol))  e.isOver = true;
+      else                   e.isOver = false;
+    }else{
+      Tangent t = (Tangent)e;
+      if(judge(new PVector(t.x, t.y), t.r, pol))  e.isOver = true;
+      else                                        e.isOver = false;
+    }
+  }
+  
+  //敵との判定
+  void dicisionEnemy(Enemy e){
+    
+    //重なっているかどうかの判定
+    overlap(e);
+    
+    //重なっていなければ何もしない
+    if(e.isOver){
+      alleover = true;
+      
+      float cframedir = atan2(y-by, x-bx);  //現在動いた方向（角度）を求める
+      float bframedir;                      //一定フレーム前の角度
+      
+      //角度設定
+      bframedirs.add(cframedir);
+      bframedir = bframedirs.get(0);
+      
+      if(bframecount++ > ATbframe)
+        bframedirs.remove(0);
+      
+      //消すときtrue
+      boolean eraseable = false;
+      
+      //前フレームでクリックしていなかったか、重なっていない場合
+      if(!bATflag || !e.bisOver){
+        eraseable = true;
+      }
+      
+      //前回ダメージを与えた点から一定距離以上離れていて、かつ角度が変わっているかどうか判定
+      float length = sqrt((x-dirx)*(x-dirx)+(y-diry)*(y-diry));
+      if(length >= eraseablelen){
+        if(abs(cframedir - bframedir) >= PI/2){
+          eraseable = true;
+        }
+      }
+      
+      //消す
+      if(eraseable){
+        dirx = x;
+        diry = y;
+        erase(e);
+      }
+    }
+  }
+  
+  //ダメージを与える
+  void erase(Enemy e){
+    e.hp--;
+    combo++;
+    
+    if(e.hp <= 0){
+      score += score(e);
+      choke += e.maxhp*e.energy;
+      _kill = sendframes;
+    }
+  }
+  
   //弾との判定
   boolean bdicision(Bullet b){
     
@@ -222,26 +281,6 @@ class Player extends Enemy{
       if(judge(new PVector(ref.x, ref.y), ref.r, convex))  result = true;
     }
     return result;
-  }
-  
-  //敵と自機が重なっているかどうかの判定:  戻り値→変更前のisOver
-  void overlap(){
-    for(int i = 0; i < enemys.size(); i++){
-      Enemy e = enemys.get(i);
-      
-      e.bisOver = e.isOver;
-      
-      if(e.charanum != 3){
-        if(e.charanum != 7){
-          if(judge(pol, e.pol))  e.isOver = true;
-          else                   e.isOver = false;
-        }
-      }else{
-        Tangent t = (Tangent)e;
-        if(judge(new PVector(t.x, t.y), t.r, pol))  e.isOver = true;
-        else                                        e.isOver = false;
-      }
-    }
   }
   
   //radianが0のとき、右上が0
@@ -342,7 +381,7 @@ class Home extends MyObj{
     
     damage();
     if(bhp != hp){
-      println("hp: "+hp);
+      //println("hp: "+hp);
       _damaged = sendframes;
       if(damaged != null)  damaged.trigger();
     }
