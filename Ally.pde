@@ -1,5 +1,9 @@
 //プレイヤー
 class Player extends Enemy{
+  final float abledifference = 5.0;    //壁を作るときに許容される誤差
+  
+  float bx, by;            //1フレーム前の座標
+  
   float z;
   float gap;       //angleに対して黒板消しの四隅の点がどれだけの角度ずれているか
   float dist;      //黒板消しの中心から四隅の点までの長さ
@@ -11,25 +15,31 @@ class Player extends Enemy{
   
   boolean ATflag;     //マウスクリック時true
   boolean bATflag;
-  ArrayList<PVector> bver;
-  PVector createxy;       //壁を作り始めたときの座標
+  boolean createflag;       //壁を作っている間true
+  
+  ArrayList<PVector> bver;  //前フレームのpol.ver
+  PVector createxy;         //壁を作り始めたときの座標
   
   AudioSample erase;    //消すときの音
   AudioSample create;   //壁を作るときの音
   Polygon bpol;         //前のpol
   
-  Player(){
+  String erasename, createname;
+  
+  Player(float _x, float _y){
     if(db.otherobj.size() > 0){
       initial();
     }
+    x = _x;
+    y = _y;
   }
   
   //コピー
   void copy(){
     Player p = (Player)db.otherobj.get(0);
     
-    erase = p.erase;
-    create = p.create;
+    erase = db.setsound(p.erasename);
+    create = db.setsound(p.createname);
     pol    = new Polygon(p.pol.ver);
   }
   
@@ -40,6 +50,7 @@ class Player extends Enemy{
     key = 0;
     energy = MAXchoke/3;
     x = y = z = 0;
+    bframecount = 0;
     
     gap = atan(db.eraserh/db.eraserw);
     
@@ -52,6 +63,8 @@ class Player extends Enemy{
     h = (int)(disty*2);
     
     setPolygonAngle();
+    createxy = new PVector(x, y);
+    bframedirs = new ArrayList<Float>(ATbframe);
     
     bver = new ArrayList<PVector>();
     for(int i = 0; i < pol.ver.size(); i++)
@@ -64,15 +77,23 @@ class Player extends Enemy{
     
     setBver();
     setPolygonAngle();  //多角形設定
-    overlap();          //敵と重なっているかどうかの判定
     
     //壁作成・攻撃
-    ATorCreate();
+    switch(scene){
+      case 1:
+        titleAttack();
+        break;
+      case 3:
+      case 4:
+      case 5:
+        ATorCreate();
+        break;
+    }
   }
   
   void move(){
-    x = mouseX;
-    y = mouseY;
+    bx = x;
+    by = y;
     
     switch(key){
       case 1:
@@ -97,50 +118,73 @@ class Player extends Enemy{
     x1 = x2 = y1 = y2 = z1 = z2 = 0;
     
     if(client.available() >= 24){
-      x1 = readInt();
-      y1 = readInt();
       z1 = readInt();
-      x2 = readInt();
-      y2 = readInt();
+      y1 = readInt();
+      x1 = readInt();
       z2 = readInt();
+      y2 = readInt();
+      x2 = readInt();
     }
     
     radian = atan2(y2-y1, x2-x1);
     
-    x = abs(x2-x1);
-    y = abs(y2-y1);
-    z = abs(z2-z2);
+    x = abs(x2-x1)*width/2;
+    y = abs(y2-y1)*height;
+    
+    z = abs(z2-z1);
+  }
+  
+  void titleAttack(){
+    if(ATflag){
+      if(judge(pol, title.pol)){
+        changeScene();
+      }
+    }
   }
   
   //攻撃するか壁を作るか判定
   void ATorCreate(){
-    if(x == pmouseX && y == pmouseY){
+    if(!ATflag)  bframecount = 0;
+    
+    if(abs(x - createxy.x) <= abledifference && abs(y - createxy.y) <= abledifference){
       if(ATflag)  createwall();
       else        count = 0;
     }else{
+      createflag = false;
       count = 0;
       if(ATflag)  attack();
     }
     
+    if(!createflag)  createxy = new PVector(x, y);
     bATflag = ATflag;
   }
   
+  final int ATbframe       = 5;        //攻撃するときに現在と角度を比べるベクトルが何フレーム前のものか
+  final float eraseablelen = 10;      //角度を変えたときにもう一度消したと認識される長さ
+  float dirx, diry;        //角度が変わったとき、もしくは当たり判定に入ったときの座標
+  int bframecount;         //値がatbframeになるまで++
+  boolean alleover;        //どの敵とも重なっていなかったらfalse
+  ArrayList<Float> bframedirs;
+  
   //攻撃判定
   void attack(){
+    alleover = false;
     
     for(int i = 0; i < enemys.size(); i++){
       Enemy e = enemys.get(i);
-      
-      if((!bATflag || !e.bisOver) && e.isOver && e.charanum != 6){
-        e.hp--;
-        combo++;
-        
-        if(e.hp <= 0){
-          score += score(e);
-          choke += e.maxhp*e.energy;
-          _kill = sendframes;
-        }
+      if(e.charanum != 6)  dicisionEnemy(e);    //忍者以外なら判定
+    }
+    
+    if(boss != null){
+      if(boss.isStan){
+        dicisionEnemy(boss);
       }
+    }
+    
+    if(!alleover){
+      dirx = diry = -1;
+      bframedirs = new ArrayList<Float>(ATbframe);
+      bframecount = 0;
     }
     
     for(int i = 0; i < bullets.size(); i++){
@@ -170,6 +214,77 @@ class Player extends Enemy{
     if(erase != null)  erase.trigger();
   }
   
+  //敵と自機が重なっているかどうかの判定:  戻り値→変更前のisOver
+  void overlap(Enemy e){
+    e.bisOver = e.isOver;
+      
+    if(e.charanum != 3){
+      if(judge(pol, e.pol))  e.isOver = true;
+      else                   e.isOver = false;
+    }else{
+      Tangent t = (Tangent)e;
+      if(judge(new PVector(t.x, t.y), t.r, pol))  e.isOver = true;
+      else                                        e.isOver = false;
+    }
+  }
+  
+  //敵との判定
+  void dicisionEnemy(Enemy e){
+    
+    //重なっているかどうかの判定
+    overlap(e);
+    
+    //重なっていなければ何もしない
+    if(e.isOver){
+      alleover = true;
+      
+      float cframedir = atan2(y-by, x-bx);  //現在動いた方向（角度）を求める
+      float bframedir;                      //一定フレーム前の角度
+      
+      //角度設定
+      bframedirs.add(cframedir);
+      bframedir = bframedirs.get(0);
+      
+      if(bframecount++ > ATbframe)
+        bframedirs.remove(0);
+      
+      //消すときtrue
+      boolean eraseable = false;
+      
+      //前フレームでクリックしていなかったか、重なっていない場合
+      if(!bATflag || !e.bisOver){
+        eraseable = true;
+      }
+      
+      //前回ダメージを与えた点から一定距離以上離れていて、かつ角度が変わっているかどうか判定
+      float length = sqrt((x-dirx)*(x-dirx)+(y-diry)*(y-diry));
+      if(length >= eraseablelen){
+        if(abs(cframedir - bframedir) >= PI/2){
+          eraseable = true;
+        }
+      }
+      
+      //消す
+      if(eraseable){
+        dirx = x;
+        diry = y;
+        erase(e);
+      }
+    }
+  }
+  
+  //ダメージを与える
+  void erase(Enemy e){
+    e.hp--;
+    combo++;
+    
+    if(e.hp <= 0){
+      score += score(e);
+      choke += e.maxhp*e.energy;
+      _kill = sendframes;
+    }
+  }
+  
   //弾との判定
   boolean bdicision(Bullet b){
     
@@ -187,26 +302,6 @@ class Player extends Enemy{
     return result;
   }
   
-  //敵と自機が重なっているかどうかの判定:  戻り値→変更前のisOver
-  void overlap(){
-    for(int i = 0; i < enemys.size(); i++){
-      Enemy e = enemys.get(i);
-      
-      e.bisOver = e.isOver;
-      
-      if(e.charanum != 3){
-        if(e.charanum != 7){
-          if(judge(pol, e.pol))  e.isOver = true;
-          else                   e.isOver = false;
-        }
-      }else{
-        Tangent t = (Tangent)e;
-        if(judge(new PVector(t.x, t.y), t.r, pol))  e.isOver = true;
-        else                                        e.isOver = false;
-      }
-    }
-  }
-  
   //radianが0のとき、右上が0
   void setPolygonAngle(){
     
@@ -221,18 +316,21 @@ class Player extends Enemy{
   void createwall(){
     count++;
     
-    if(count/60 >= 1 && choke >= 0/*energy*/){
-      walls.add(new Wall(x, y, height/2.0, h*2, PI/2));
-      if(create != null)  create.trigger();
-      //choke -= energy;
-      count = 0;
+    if(choke >= 0/*energy*/){
+      createflag = true;
+      if(count/60 >= 1){
+        walls.add(new Wall(x, y, height/2.0, h*2, PI/2));
+        if(create != null)  create.trigger();
+        //choke -= energy;
+        count = 0;
+      }
     }
   }
   
   void soundstop(){
     super.soundstop();
-    create.close();
-    erase.close();
+    if(create != null)  create.close();
+    if(erase != null)   erase.close();
   }
   
   void draw(){
@@ -262,6 +360,7 @@ class Home extends MyObj{
   float anglev;        //角速度  （単位：度）
   
   AudioSample damaged;
+  String damagedname;
   
   Home(){
     if(db.otherobj.size() > 1){
@@ -289,7 +388,7 @@ class Home extends MyObj{
   void copy(){
     Home oh = (Home)db.otherobj.get(1);
     image = oh.image.copy();
-    damaged = oh.damaged;
+    damaged = db.setsound(oh.damagedname);
     imgm = oh.imgm;
   }
   
@@ -302,7 +401,7 @@ class Home extends MyObj{
     
     damage();
     if(bhp != hp){
-      println("hp: "+hp);
+      //println("hp: "+hp);
       _damaged = sendframes;
       if(damaged != null)  damaged.trigger();
     }
@@ -393,7 +492,7 @@ class Home extends MyObj{
   
   void soundstop(){
     super.soundstop();
-    damaged.close();
+    if(damaged != null)  damaged.close();
   }
   
   void draw(){
@@ -411,7 +510,7 @@ class Wall extends MyObj{
   int count;
   
   AudioSample reflect;
-  AudioSample damaged;
+  String reflectname;
   
   Wall(){}
   
@@ -433,9 +532,8 @@ class Wall extends MyObj{
   
   void copy(){
     Wall ow = (Wall)db.otherobj.get(2);
-    die = ow.die;
-    damaged = ow.damaged;
-    reflect = ow.reflect;
+    die = db.setsound(ow.diename);
+    reflect = db.setsound(ow.reflectname);
   }
   
   void update(){
@@ -476,8 +574,8 @@ class Wall extends MyObj{
           if(judge(pol, b.pol)){
             hp -= b.damage;
             b.hp = 0;
+            if(b.AT != null)  b.AT.trigger();
             
-            if(damaged != null)  damaged.trigger();
           }
           break;
           
@@ -498,7 +596,6 @@ class Wall extends MyObj{
             switch(b.num){
               case 5:
                 s.hp = 0;
-                if(damaged != null)  damaged.trigger();
                 break;
               
               case 3:
@@ -550,8 +647,7 @@ class Wall extends MyObj{
   
   void soundstop(){
     super.soundstop();
-    reflect.close();
-    damaged.close();
+    if(reflect != null)  reflect.close();
   }
   
   void draw(){

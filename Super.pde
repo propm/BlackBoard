@@ -14,6 +14,8 @@ class MyObj implements Cloneable{
   Polygon pol;
   AudioSample die;
   
+  String diename;
+  
   MyObj(){
     x = y = 0;
     imgx = imgy = 0;
@@ -34,7 +36,7 @@ class MyObj implements Cloneable{
   
   
   void soundstop(){
-    die.close();
+    if(die != null)  die.close();
   }
 }
 
@@ -67,6 +69,9 @@ class Enemy extends MyObj{
   
   AudioSample AT;   //物理攻撃するときの音
   AudioSample bul;  //弾で攻撃するときの音
+  
+  String ATname;
+  String bulname;
   
   Enemy(){
     onceinitial = true;
@@ -115,8 +120,9 @@ class Enemy extends MyObj{
   void copy(){
     Enemy oe = db.oriEnemys.get(charanum-1);
     
-    die = oe.die;
-    AT =  oe.AT;
+    die = db.setsound(oe.diename);
+    AT  = db.setsound(oe.ATname);
+    bul = db.setsound(oe.bulname);
     
     imgs = new ArrayList<PImage>(oe.imgs.size());
     for(int i = 0; i < oe.imgs.size(); i++){
@@ -141,9 +147,6 @@ class Enemy extends MyObj{
     
     marginx = oe.marginx;
     marginy = oe.marginy;
-    
-    die = oe.die;
-    bul = oe.bul;
     
     copyplus(oe);
   }
@@ -247,8 +250,8 @@ class Enemy extends MyObj{
   
   void soundstop(){
     super.soundstop();
-    AT.close();
-    bul.close();
+    if(AT != null)  AT.close();
+    if(bul != null)  bul.close();
   }
   
   //描画
@@ -269,6 +272,9 @@ class Bullet extends MyObj{
   int   damage;    //与えるダメージ
   int   num;       //bulletなら0、laserなら1、beamなら2、shurikenなら3、
                    //standardなら4、reflectなら5、strongなら6            
+  AudioSample AT;  //壁に当たったときになる音
+  
+  String ATname;
   
   int[] col;       //色
   boolean bisOver;
@@ -295,6 +301,8 @@ class Bullet extends MyObj{
     col[0] = col[1] = col[2] = 0;
     bver = new ArrayList<PVector>();
     
+    copy();
+    
     energy = 25;
     maxhp = hp = 1;
     radian = atan2(v.y, v.x);
@@ -314,6 +322,11 @@ class Bullet extends MyObj{
         sinitial();
         break;
     }
+  }
+  
+  void copy(){
+    Bullet b = (Bullet)db.otherobj.get(3);
+    AT = db.setsound(b.ATname);
   }
   
   //普通の弾のinitial
@@ -370,6 +383,10 @@ class Bullet extends MyObj{
         for(int i = 0; i < pol.ver.size(); i++)
           bver.set(i, pol.ver.get(i));
     }
+  }
+  
+  void soundstop(){
+    if(AT != null)  AT.stop();
   }
   
   void draw(){

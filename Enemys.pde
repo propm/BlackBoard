@@ -15,17 +15,18 @@ class Attacker extends Enemy{
     initial();
   }
   
+  //攻撃（パラシュートなら弾発射、突撃兵ならimage変更と音を出す
   void attack(){
     if(charanum == 4){
       super.attack();
       return;
-    }
-    
-    if(Acount == 10)  image = imgs.get(0);
-    if(Acount == 30)  Acount = -1;
-    if(Acount == 0){
-      image = imgs.get(1);
-      if(AT != null)  AT.trigger();
+    }else{
+      if(Acount == 10)  image = imgs.get(0);
+      if(Acount == 30)  Acount = -1;
+      if(Acount == 0){
+        image = imgs.get(1);
+        if(AT != null)  AT.trigger();
+      }
     }
   }
   
@@ -102,7 +103,7 @@ class Sin extends Enemy{
 //タンジェント
 class Tangent extends Sin{
   //  x, yは中心座標
-  boolean once;
+  boolean once, out;
   int angle;
   float r;
   
@@ -129,12 +130,26 @@ class Tangent extends Sin{
       isCrasher = true;
       
       once = true;
+      out = false;
+      dicision();
     }
   }
   
   void plus(){
     angle += 8;
     angle %= 360;
+    
+    dicision();
+  }
+  
+  //画面内にいるかどうかの判定
+  void dicision(){
+    if(y > height-r/2)  out = true;
+    if(y < height-r/2 && out){
+      if(bul != null)  bul.trigger();
+      out = false;
+    }
+    if(y < r/2)  bul.stop();
   }
   
   void attack(){
@@ -194,6 +209,7 @@ class Parachuter extends Attacker{
     if(y >= stopy && !change){
       change = true;
       isCrasher = true;
+      if(AT != null)  AT.trigger();
       
       initial(1);
       charanum = 4;
@@ -209,13 +225,15 @@ class Parachuter extends Attacker{
 
 //大砲
 class Cannon extends Enemy{
-  int     chargeframe;  //何フレームチャージするか
+  final int chargeframe = 60*3;  //何フレームチャージするか
   boolean once;
   
   ArrayList<Enemy> chargeeffect;
   
   AudioSample charge;    //チャージするときの音
   AudioSample appear;    //召喚時の音
+  
+  String chargename, appearname;
   
   Cannon(){
     if(db.oriEnemys.size() >= 7){
@@ -239,6 +257,16 @@ class Cannon extends Enemy{
     float bimgy = imgy;
     imgy = y - marginy;
     movePolygon(0, imgy-bimgy);
+    
+    if(appear != null)  appear.trigger();
+  }
+  
+  void copy(){
+    super.copy();
+    
+    Cannon c = (Cannon)db.oriEnemys.get(charanum - 1);
+    charge = db.setsound(c.chargename);
+    appear = db.setsound(c.appearname);
   }
   
   void copyplus(Enemy oe){
@@ -260,13 +288,22 @@ class Cannon extends Enemy{
   void attack(){
     super.attack();
     
-    if(Bcount >= 60)  charge();
-    else              once = true;
+    if(Bcount >= Bi - chargeframe){
+      if(Bcount == Bi - chargeframe)  once = true;
+      charge();
+    }
+    else   charge.stop();
+  }
+  
+  void soundstop(){
+    super.soundstop();
+    if(charge != null)  charge.close();
+    if(appear != null)  appear.close();
   }
   
   void charge(){
     if(once){
-      chargeframe = Bi - Bcount;
+      if(charge != null)  charge.trigger();
       once = false;
     }
   }
@@ -355,8 +392,7 @@ class Ninja extends Enemy{
         if(s.isReflected){
           if(judge(new PVector(s.x, s.y), s.r/2, pol)){
             hp = 0;
-            bullets.remove(i);
-            i--;
+            s.hp = 0;
           }
         }
       }
@@ -375,6 +411,7 @@ class Boss extends Enemy{
   final float standardbs = 1.5*db.scwhrate;
   final int rbs = 20;
   final float reffreq = 2.5;
+  final int stantime  = 60*5;
   
   float basicy;
   int sc;     //通常弾count
@@ -382,6 +419,12 @@ class Boss extends Enemy{
   float theta;            //単位:度
   float plustheta;
   boolean isStrong;     //次に発射するのが反射可能弾ならtrue
+  boolean isStan;       //気絶中ならtrue
+  
+  AudioSample strongfire;
+  AudioSample reflectfire;
+  
+  String strongfirename, reflectfirename;
   
   Boss(){}
   
@@ -398,16 +441,28 @@ class Boss extends Enemy{
     this.y = basicy = y;
     this.x = x;
     
+    imgx = x - marginx;
+    imgy = y - marginy;
+    movePolygon(imgx, imgy);
+    
     plustheta = 360.0/width*7.0*standardbs;
     
     sc = rc = 0;
     theta = 0;
     alpha = 255;
     isStrong = false;
+    isStan = false;
     isMoveobj = true;
+    isCrasher = true;
   }
   
-  void setPolygon(){}
+  void copy(){
+    super.copy();
+    
+    Boss bo = (Boss)db.oriEnemys.get(6);
+    strongfire = db.setsound(bo.strongfirename);
+    reflectfire = db.setsound(bo.reflectfirename);
+  }
   
   void move(){
     theta += plustheta;
@@ -420,6 +475,23 @@ class Boss extends Enemy{
   
   void alpha(){}
   
+  //跳ね返された手裏剣との判定
+  void dicision(){
+    for(int i = 0; i < bullets.size(); i++){
+      Bullet b = bullets.get(i);
+      
+      if(b.num == 6){
+        Strong s = (Strong)b;
+        if(s.isReflected){
+          if(judge(new PVector(s.x, s.y), s.r/2, pol)){
+            isStan = true;
+            s.hp = 0;
+          }
+        }
+      }
+    }
+  }
+  
   void attack(){
     if(++sc <= lashtime){
       if(sc%rapidi < 1)  bullets.add(new Standard(x-w/4.0, random(height), -standardbs));
@@ -429,9 +501,11 @@ class Boss extends Enemy{
       if(isStrong){
         bullets.add(new Reflect(x, y, new PVector(-rbs*cos(45*PI/180.0), rbs*sin(45*PI/180.0))));
         bullets.add(new Reflect(x, y, new PVector(-rbs*cos(-45*PI/180.0), rbs*sin(-45*PI/180.0))));
+        if(reflectfire != null)  reflectfire.trigger();
       }
       else{
         bullets.add(new Strong(x, y));
+        if(strongfire != null)  strongfire.trigger();
       }
       isStrong = !isStrong;
       rc = 0;
@@ -441,11 +515,15 @@ class Boss extends Enemy{
   void update(){
     move();
     attack();
+    dicision();
   }
   
   //死処理
   void cadaver(){
-    if(hp == 0)  isDie = true;
+    if(hp <= 0){
+      changeScene();
+      isDie = true;
+    }
   }
   
   void draw(){

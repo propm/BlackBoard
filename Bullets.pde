@@ -42,7 +42,6 @@ class Beam extends Bullet{
   int r;
   float length;
   Tangent owner;
-  AudioSample hit;
   
   Beam(Enemy owner){
     this.owner = (Tangent)owner;
@@ -84,11 +83,6 @@ class Beam extends Bullet{
     
     if(notprevent)   length = x - home.border;
     if(owner.isDie)  isDie = true;
-  }
-  
-  void soundstop(){
-    super.soundstop();
-    hit.close();
   }
   
   void draw(){
@@ -227,6 +221,8 @@ class Standard extends Bullet{
 
 //反射弾
 class Reflect extends Shuriken{
+  AudioSample reverse;
+  String reversename;
   
   Reflect(){}
   
@@ -235,6 +231,8 @@ class Reflect extends Shuriken{
     this.x = x;
     this.y = y; 
     this.v = v;
+    
+    copy();
     
     num = 5;
     initial();
@@ -245,14 +243,26 @@ class Reflect extends Shuriken{
     col[2] = 255;
   }
   
+  void copy(){
+    Reflect ref = (Reflect)db.otherobj.get(5);
+    reverse = db.setsound(ref.reversename);
+  }
+  
   void plus(){
     //反射
+    
+    boolean reflect = false;
     if(y >= height-r/2){
-      v.set(v.x, -v.y);
       y = height-r/2;
+      reflect = true;
     }else if(y <= r/2){
-      v.set(v.x, -v.y);
       y = r/2;
+      reflect = true;
+    }
+    
+    if(reflect){
+      v.set(v.x, -v.y);
+      if(reverse != null)  reverse.trigger();
     }
   }
   
