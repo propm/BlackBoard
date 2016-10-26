@@ -1,7 +1,7 @@
 
 import java.nio.ByteBuffer;
 
-class KinectClient{
+/*class KinectClient{
   Client Ly1client, Ly2client, Lz1client, Lz2client;
   float Ly1 = 0.0,Lz1 = 0.0, Ly2 = 0.0,Lz2 = 0.0;
 
@@ -114,4 +114,6 @@ class KinectClient{
     
   }
 }
+
+*/
   

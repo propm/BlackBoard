@@ -26,6 +26,9 @@ class Player extends Enemy{
   
   String erasename, createname;
   
+  
+  Player(){}
+   
   Player(float _x, float _y){
     if(db.otherobj.size() > 0){
       initial();
@@ -113,7 +116,7 @@ class Player extends Enemy{
   }
   
   //キネクトから座標を受け取る
-  void readXYZ(){
+  /*void readXYZ(){
     float x1, y1, x2, y2, z1, z2;
     x1 = x2 = y1 = y2 = z1 = z2 = 0;
     
@@ -133,6 +136,8 @@ class Player extends Enemy{
     
     z = abs(z2-z1);
   }
+  
+  */
   
   void titleAttack(){
     if(ATflag){
