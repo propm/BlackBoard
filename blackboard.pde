@@ -32,7 +32,7 @@ Home home;
 MyObj title;
 
 final int MAXchoke = 11100;
-final int[] times = {-1, -1, 60*1, 60*5, -1, 60*10, 60*10};    //sceneと対応　　　-1は時間制限なし
+final int[] times = {-1, -1, 60*20, 60*5, -1, 60*10, 60*10};    //sceneと対応　　　-1は時間制限なし
 final int sendframes = 2;
 
 boolean firstinitial;
@@ -116,8 +116,8 @@ void allInitial(){
   home = new Home();
   
   try{
-    //bgm = minim.loadFile("bbtitle.mp3");
-    //bgm.loop();
+    bgm = minim.loadFile("bbtitle.mp3");
+    bgm.loop();
   }catch(Exception e){}
   
   score = choke = 0;
