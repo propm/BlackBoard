@@ -24,18 +24,22 @@ class Player extends Enemy{
   AudioSample create;   //壁を作るときの音
   Polygon bpol;         //前のpol
   
-  Player(){
+  String erasename, createname;
+  
+  Player(float _x, float _y){
     if(db.otherobj.size() > 0){
       initial();
     }
+    x = _x;
+    y = _y;
   }
   
   //コピー
   void copy(){
     Player p = (Player)db.otherobj.get(0);
     
-    erase = p.erase;
-    create = p.create;
+    erase = db.setsound(p.erasename);
+    create = db.setsound(p.createname);
     pol    = new Polygon(p.pol.ver);
   }
   
@@ -90,8 +94,6 @@ class Player extends Enemy{
   void move(){
     bx = x;
     by = y;
-    x = mouseX;
-    y = mouseY;
     
     switch(key){
       case 1:
@@ -358,6 +360,7 @@ class Home extends MyObj{
   float anglev;        //角速度  （単位：度）
   
   AudioSample damaged;
+  String damagedname;
   
   Home(){
     if(db.otherobj.size() > 1){
@@ -385,7 +388,7 @@ class Home extends MyObj{
   void copy(){
     Home oh = (Home)db.otherobj.get(1);
     image = oh.image.copy();
-    damaged = oh.damaged;
+    damaged = db.setsound(oh.damagedname);
     imgm = oh.imgm;
   }
   
@@ -507,7 +510,7 @@ class Wall extends MyObj{
   int count;
   
   AudioSample reflect;
-  AudioSample damaged;
+  String reflectname;
   
   Wall(){}
   
@@ -529,9 +532,8 @@ class Wall extends MyObj{
   
   void copy(){
     Wall ow = (Wall)db.otherobj.get(2);
-    die = ow.die;
-    damaged = ow.damaged;
-    reflect = ow.reflect;
+    die = db.setsound(ow.diename);
+    reflect = db.setsound(ow.reflectname);
   }
   
   void update(){
@@ -572,8 +574,8 @@ class Wall extends MyObj{
           if(judge(pol, b.pol)){
             hp -= b.damage;
             b.hp = 0;
+            if(b.AT != null)  b.AT.trigger();
             
-            if(damaged != null)  damaged.trigger();
           }
           break;
           
@@ -594,7 +596,6 @@ class Wall extends MyObj{
             switch(b.num){
               case 5:
                 s.hp = 0;
-                if(damaged != null)  damaged.trigger();
                 break;
               
               case 3:
@@ -647,7 +648,6 @@ class Wall extends MyObj{
   void soundstop(){
     super.soundstop();
     if(reflect != null)  reflect.close();
-    if(damaged != null)  damaged.close();
   }
   
   void draw(){

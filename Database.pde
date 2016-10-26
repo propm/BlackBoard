@@ -33,6 +33,8 @@ class DataBase{
                                        //5:大砲　　6:忍者
   ArrayList<MyObj> otherobj;       //敵以外のオブジェクト
   
+  AudioPlayer warning;
+  
   //中身を入れる
   void initial(){
     objects = rt.objects.clone();
@@ -44,6 +46,7 @@ class DataBase{
     otherobj.add(new Wall());
     otherobj.add(new Bullet());
     otherobj.add(new Shuriken());
+    otherobj.add(new Reflect());
     
     oriEnemys.add(new Attacker());
     oriEnemys.add(new Sin());
@@ -52,6 +55,8 @@ class DataBase{
     oriEnemys.add(new Cannon());
     oriEnemys.add(new Ninja());
     oriEnemys.add(new Boss());
+    
+    warning = minim.loadFile("warning.mp3");
   }
   
   void settitle(){
@@ -98,32 +103,32 @@ class DataBase{
       
       Enemy e = oriEnemys.get(i-1);
       e.pol = new Polygon();
-      e.die = setsound("enemydestroyed.mp3");    //死ぬときの音
-      e.bul = setsound("");                      //普通弾発射時の音
+      e.diename = "enemydestroyed.mp3";    //死ぬときの音
+      //e.bul = setsound("fire.mp3");                      //普通弾発射時の音
       
       switch(i){
         case 1:
           //引数は右からオブジェクト、num, hp, rank, bulletflag, Bi, 移動速度, damage, imgfile名
           setEnemys(e, i, 2, 1, false, -1, new PVector(-2, 0), 10, "attacker.png", "attacker_attack.png");
-          e.AT = setsound("");    //壁に攻撃するときの音
+          e.ATname = "attacker_attack.mp3";    //壁に攻撃するときの音
           break;
         case 2:
           setEnemys(e, i, 1, 2, true, 75, new PVector(-3, 0), 20, "flying1.png", "flying2.png");
           break;
         case 3:
           setEnemys(e, i, 1, 4, true, 0, new PVector(-6, 0), 50, "tangent1.png", "tangent2.png");
-          e.bul = setsound("");    //ビームを打っているときずっとなる音
+          e.bulname = "beam.mp3";    //ビームを打っているときずっとなる音
           break;
         case 4:
           setEnemys(e, i, 5, 3, true, 50, new PVector(-2, 2), 30, "attacker.png", "attacker_attack.png");
-          e.AT = setsound("");    //突撃し始めるときの音
+          e.ATname = "parachuter_attack.mp3";    //突撃し始めるときの音
           break;
         case 5:
-          setEnemys(e, i, 5, 3, true, 60*3, new PVector(0, 0), 0, "cannon.png", "cannon_attack.png");
+          setEnemys(e, i, 5, 3, true, 60*4, new PVector(0, 0), 0, "cannon.png", "cannon_attack.png");
           Cannon c = (Cannon)e;
-          c.charge = setsound("");  //チャージ時の音
-          c.bul = setsound("");     //レーザーを打つときの音
-          c.appear = setsound("");  //召喚時の音
+          c.chargename = "laser_charge.mp3";  //チャージ時の音
+          c.bulname = "laser.mp3";     //レーザーを打つときの音
+          c.appearname = "summon.mp3";  //召喚時の音
           break;
         case 6:
           setEnemys(e, i, -1, 4, true, 60*4, new PVector(0, 0), 0, "ninja.png", "ninja_attack.png");
@@ -135,6 +140,9 @@ class DataBase{
           setImage(e, "boss2.png", bosssize);
           setOriPolygon(e, i);
           
+          Boss bo = (Boss)e;
+          bo.reflectfirename = "reflect_fire.mp3";
+          bo.strongfirename = "reflectable_fire.mp3";
           break;
       }
     }
@@ -169,19 +177,18 @@ class DataBase{
         break;
       case 1:    //自陣
         Home oh = (Home)otherobj.get(num);
-        oh.damaged = setsound("");
+        oh.damagedname = "homedamaged.mp3";
         oh.image = reverse(loadImage("cleaner.png"));
         oh.imgm = (float)1/3;
         break;
       case 2:
         Wall ow = (Wall)otherobj.get(num);
-        ow.die = setsound("");
-        ow.damaged = setsound("");
-        ow.reflect = setsound("");
+        ow.diename = "walldestroyed.mp3";
+        ow.reflectname = "reflect.mp3";
         break;
       case 3:    //弾
         Bullet b = (Bullet)otherobj.get(num);
-        b.die = setsound("normalbullet_hit.mp3");
+        b.ATname = "bullet_attack(wall).mp3";
         break;
       case 4:    //手裏剣
         MyObj s = otherobj.get(num);
@@ -190,13 +197,17 @@ class DataBase{
         s.h = (int)(s.image.height/20.0*scwhrate);
         s.image = reSize(s.image, (int)s.w, (int)s.h);
         break;
+      case 5:    //反射弾
+        Reflect ref = (Reflect)otherobj.get(num);
+        ref.reversename = "reflect_reverse.mp3";
     }
   }
   
   //プレイヤーの設定
   void setPlayer(){
     Player p = (Player)otherobj.get(0);
-    p.create = setsound("");
+    p.createname = "";
+    p.erasename = "";
     
     p.pol = new Polygon();
     p.pol.Add(0, 0, 0);

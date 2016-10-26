@@ -20,19 +20,19 @@ Minim       minim;
 AudioPlayer bgm;
 OscP5       osc;
 NetAddress address;
-
+KinectClient kinect;
 Client client;
 
 ArrayList<Enemy>     enemys;
 ArrayList<Bullet>    bullets;
 ArrayList<Wall>      walls;
 Boss boss;
-Player player;
+Player[] player;
 Home home;
 MyObj title;
 
 final int MAXchoke = 11100;
-final int[] times = {-1, -1, 60*2, 60*1, -1, 60*10, 60*10};    //sceneと対応　　　-1は時間制限なし
+final int[] times = {-1, -1, 60*1, 60*5, -1, 60*10, 60*10};    //sceneと対応　　　-1は時間制限なし
 final int sendframes = 2;
 
 boolean firstinitial;
@@ -69,12 +69,14 @@ void settings(){
   if(rt.check())  System.exit(0);  //settings.txtのエラーチェック
   rt.readCommands();
   db.screenh = (int)(db.screenw*db.boardrate);
-  
+  kinect = new KinectClient(this);
   //databaseセット
   db.initial();
   
   size(db.screenw, db.screenh, P2D);
   noSmooth();
+  
+  kinectinit();
 }
 
 void setup(){
@@ -108,16 +110,19 @@ void allInitial(){
   bullets = new ArrayList<Bullet>();
   walls = new ArrayList<Wall>();
   
-  player = new Player();
+  player = new Player[2];
+  player[0] = new Player(0);
+  player[1] = new Player(1);
   home = new Home();
   
   try{
-    bgm = minim.loadFile("bbtitle.mp3");
-    bgm.loop();
+    //bgm = minim.loadFile("bbtitle.mp3");
+    //bgm.loop();
   }catch(Exception e){}
   
   score = choke = 0;
   isStop = false;
+  
   scene = 1;
   time = times[scene-1];
   wholecount = 0;
@@ -137,6 +142,10 @@ void draw(){
 
 //処理用関数
 void process(){
+  
+  //座標の取得
+  kinectupdate();
+  
   //時間によってシーン変更
   if(time > 0){
     if(wholecount++ >= time){
@@ -149,7 +158,7 @@ void process(){
   
   switch(scene){
     case 1:
-      player.update();
+      for(int i = 0; i < player.length; i++)  player[i].update();
       break;
     case 2:
       changeScene();
@@ -184,38 +193,46 @@ void drawing(){
       break;
       
     case 5:
+      buttledraw();
       boss.draw();
+      break;
     case 3:
     case 4:
-      sm.drawView();
-  
-      //自陣
-      home.draw();
-  
-      //壁
-      fill(255, 100, 100);
-      for(int i = 0; i < walls.size(); i++){
-        Wall wall = walls.get(i);
-        wall.draw();
-      }
-  
-      //敵
-      for(int i = 0; i < enemys.size(); i++){
-        Enemy enemy = enemys.get(i);
-        enemy.draw();
-      }
-  
-      for(int i = 0; i < bullets.size(); i++){
-        Bullet bullet = bullets.get(i);
-        bullet.draw();
-      }
+      buttledraw();
       break;
   }
   
   //プレイヤー
-  fill(255, 134, 0);
-  player.draw();
+  for(int i = 0; i < player.length; i++){
+    fill(255, 134, 0);
+    player[i].draw();
+  }
+}
 
+//戦闘時のdraw
+void buttledraw(){
+  sm.drawView();
+  
+  //自陣
+   home.draw();
+  
+   //壁
+   fill(255, 100, 100);
+   for(int i = 0; i < walls.size(); i++){
+     Wall wall = walls.get(i);
+     wall.draw();
+   }
+   
+   //敵
+   for(int i = 0; i < enemys.size(); i++){
+     Enemy enemy = enemys.get(i);
+     enemy.draw();
+   }
+   
+   for(int i = 0; i < bullets.size(); i++){
+     Bullet bullet = bullets.get(i);
+     bullet.draw();
+   }
 }
 
 //********************************↓シーンごとの処理↓*********************************
@@ -254,7 +271,10 @@ void battle(){
     
     //ボスの出現シーン
     case 4:
-      if(wholecount == 60*3)  _bossappear = 0;
+      if(wholecount == 60*3){
+        _bossappear = 0;
+        db.warning.close();
+      }
       break;
       
     //ボス面
@@ -265,7 +285,7 @@ void battle(){
   }
   
   //プレイヤーの動きの処理
-  player.update();
+  for(int i = 0; i < player.length; i++)  player[i].update();
   
   //自陣の処理
   home.update();
@@ -290,6 +310,8 @@ void changeScene(){
     //ボス出現
     case 4:
       _bossappear = 1;
+      if(db.warning != null)  db.warning.loop();
+      
       break;
     
     //ボス面
@@ -349,15 +371,15 @@ void cadaver(ArrayList<?> obj){
 
 //*************************↓イベント処理・送信・受信↓***************************
 
-void mousePressed(){
+/*void mousePressed(){
   player.ATflag = true;
 }
 
 void mouseReleased(){
   player.ATflag = false;
-}
+}*/
 
-void keyPressed(){
+/*void keyPressed(){
   switch(keyCode){
     case RIGHT:
       player.key = 1;
@@ -391,12 +413,7 @@ void keyReleased(){
   
   if(key == BACKSPACE)  backspace = false;
   if(key == ' ')        space = false;
-}
-
-int readInt()
-{
-    return Integer.reverseBytes(ByteBuffer.wrap(client.readBytes(4)).getInt());
-}
+}*/
 
 void send(){
   OscMessage mes = new OscMessage("/text");
@@ -441,6 +458,113 @@ void soundsstop(){
     }
   
   if(boss != null)  boss.soundstop();
-  if(player != null)  player.soundstop();
+  for(int i = 0; i < player.length; i++)
+    if(player != null)  player[i].soundstop();
+    
   if(home != null)  home.soundstop();
 }
+
+//************************************************************************************::
+
+Client Ly1client, Ly2client, Lz1client, Lz2client;
+  float Ly1 = 0.0,Lz1 = 0.0, Ly2 = 0.0,Lz2 = 0.0;
+
+  Client Ry1client,Ry2client,Rz1client,Rz2client;
+  float Ry1 = 0.0,Rz1 = 0.0, Ry2 = 0.0,Rz2 = 0.0;
+
+  String LIP;
+  String RIP ;
+  
+  void kinectinit(){
+    LIP = "10.0.1.204";
+    RIP = "10.0.1.186";
+    
+    Ly1client = new Client(this, LIP, 50005);
+    Ly2client = new Client(this, LIP, 60006);
+    Lz1client = new Client(this, LIP, 40004);
+    Lz2client = new Client(this, LIP, 30003);
+    
+    Ry1client = new Client(this, RIP, 50002);
+    Ry2client = new Client(this, RIP, 60002);
+    Rz1client = new Client(this, RIP, 40002);
+    Rz2client = new Client(this, RIP, 30002);
+    
+  }
+  
+  
+  void kinectupdate(){
+    GetLeft();
+    GetRight();
+  }
+  
+  float GetLeftPositionX(){
+    if(Lz1 <= 1.0){
+      return (width*Lz1)/2.0;
+    }else{
+      return 0;
+    }
+  }
+  
+  float GetLeftPositionY(){
+    if(Lz1 <= 1.0){
+      return height*(1.0-Ly1);
+    }else{
+      return 0;
+    }
+  }
+  
+  float GetRightPositionX(){
+    if(Lz1 <= 1.0){
+      return width-(width*Rz1)/2;
+    }else{
+      return 0;
+    }
+  }
+  
+  float GetRightPositionY(){
+    if(Lz1 <= 1.0){
+      return height*(1.0-Ry1);
+    }else{
+      return 0;
+    }
+  }
+  
+  
+  
+  void GetLeft(){
+    if(Ly1client.available() >= 4){
+      Ly1 = (float)Integer.reverseBytes(ByteBuffer.wrap(Ly1client.readBytes(4)).getInt())/10000.0;
+    }
+      
+    if(Ly2client.available() >= 4){
+      Ly2 = (float)Integer.reverseBytes(ByteBuffer.wrap(Ly2client.readBytes(4)).getInt())/10000.0;
+    }
+      
+    if(Lz1client.available() >= 4){
+      Lz1 = (float)Integer.reverseBytes(ByteBuffer.wrap(Lz1client.readBytes(4)).getInt())/10000.0;
+    }
+      
+    if(Lz2client.available() >= 4){
+      Lz2 = (float)Integer.reverseBytes(ByteBuffer.wrap(Lz2client.readBytes(4)).getInt())/10000.0;
+    }
+    
+  }
+  
+  void GetRight(){
+    if(Ry1client.available() >= 4){
+      Ry1 = (float)Integer.reverseBytes(ByteBuffer.wrap(Ry1client.readBytes(4)).getInt())/10000.0;
+    }
+      
+    if(Ry2client.available() >= 4){
+      Ry2 = (float)Integer.reverseBytes(ByteBuffer.wrap(Ry2client.readBytes(4)).getInt())/10000.0;
+    }
+      
+    if(Rz1client.available() >= 4){
+      Rz1 = (float)Integer.reverseBytes(ByteBuffer.wrap(Rz1client.readBytes(4)).getInt())/10000.0;
+    }
+      
+    if(Rz2client.available() >= 4){
+      Rz2 = (float)Integer.reverseBytes(ByteBuffer.wrap(Rz2client.readBytes(4)).getInt())/10000.0;
+    }
+    
+  }
