@@ -76,7 +76,7 @@ void settings(){
   size(db.screenw, db.screenh, P2D);
   noSmooth();
   
-  kinectinit();
+  //kinectinit();
 }
 
 void setup(){
@@ -110,9 +110,9 @@ void allInitial(){
   bullets = new ArrayList<Bullet>();
   walls = new ArrayList<Wall>();
   
-  player = new Player[2];
+  player = new Player[1];
   player[0] = new Player(0);
-  player[1] = new Player(1);
+  //player[1] = new Player(1);
   home = new Home();
   
   try{
@@ -144,7 +144,7 @@ void draw(){
 void process(){
   
   //座標の取得
-  kinectupdate();
+  //kinectupdate();
   
   //時間によってシーン変更
   if(time > 0){
@@ -272,7 +272,6 @@ void battle(){
     case 4:
       if(wholecount == 60*3){
         _bossappear = 0;
-        db.warning.close();
       }
       break;
       
@@ -309,7 +308,7 @@ void changeScene(){
     //ボス出現
     case 4:
       _bossappear = 1;
-      if(db.warning != null)  db.warning.loop();
+      if(db.warning != null)  db.warning.trigger();
       
       break;
     
@@ -370,21 +369,21 @@ void cadaver(ArrayList<?> obj){
 
 //*************************↓イベント処理・送信・受信↓***************************
 
-/*void mousePressed(){
-  player.ATflag = true;
+void mousePressed(){
+  player[0].ATflag = true;
 }
 
 void mouseReleased(){
-  player.ATflag = false;
-}*/
+  player[0].ATflag = false;
+}
 
-/*void keyPressed(){
+void keyPressed(){
   switch(keyCode){
     case RIGHT:
-      player.key = 1;
+      player[0].key = 1;
       break;
     case LEFT:
-      player.key = 2;
+      player[0].key = 2;
       break;
   }
   
@@ -406,13 +405,13 @@ void keyReleased(){
   switch(keyCode){
     case RIGHT:
     case LEFT:
-      player.key = 0;
+      player[0].key = 0;
       break;
   }
   
   if(key == BACKSPACE)  backspace = false;
   if(key == ' ')        space = false;
-}*/
+}
 
 void send(){
   OscMessage mes = new OscMessage("/text");
@@ -457,8 +456,9 @@ void soundsstop(){
     }
   
   if(boss != null)  boss.soundstop();
-  for(int i = 0; i < player.length; i++)
-    if(player != null)  player[i].soundstop();
+  if(player != null)
+    for(int i = 0; i < player.length; i++)
+      if(player != null)  player[i].soundstop();
     
   if(home != null)  home.soundstop();
 }
@@ -521,6 +521,38 @@ Client Ly1client, Ly2client, Lz1client, Lz2client;
   }
   
   float GetRightPositionY(){
+    if(Lz1 <= 1.0){
+      return height*(1.0-Ry1);
+    }else{
+      return 0;
+    }
+  }
+  
+  float GetLeftPositionX2(){
+    if(Lz1 <= 1.0){
+      return (width*Lz1)/2.0;
+    }else{
+      return 0;
+    }
+  }
+  
+  float GetLeftPositionY2(){
+    if(Lz1 <= 1.0){
+      return height*(1.0-Ly1);
+    }else{
+      return 0;
+    }
+  }
+  
+  float GetRightPositionX2(){
+    if(Lz1 <= 1.0){
+      return width-(width*Rz1)/2;
+    }else{
+      return 0;
+    }
+  }
+  
+  float GetRightPositionY2(){
     if(Lz1 <= 1.0){
       return height*(1.0-Ry1);
     }else{

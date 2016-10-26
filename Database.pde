@@ -33,7 +33,7 @@ class DataBase{
                                        //5:大砲　　6:忍者
   ArrayList<MyObj> otherobj;       //敵以外のオブジェクト
   
-  AudioPlayer warning;
+  AudioSample warning;
   
   //中身を入れる
   void initial(){
@@ -56,7 +56,7 @@ class DataBase{
     oriEnemys.add(new Ninja());
     oriEnemys.add(new Boss());
     
-    warning = minim.loadFile("warning.mp3");
+    warning = setsound("warning.mp3");
   }
   
   void settitle(){

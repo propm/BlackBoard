@@ -99,17 +99,19 @@ class Player extends Enemy{
   void move(){
     bx = x;
     by = y;
+    x = mouseX;
+    y = mouseY;
     
-    /*switch(key){
+    switch(key){
       case 1:
         radian += PI/180 * 2;
         break;
       case 2:
         radian -= PI/180 * 2;
         break;
-    }*/
+    }
     
-    readXYZ();
+    //readXYZ();
   }
   
   void setBver(){
@@ -120,19 +122,33 @@ class Player extends Enemy{
   //キネクトから座標を受け取る
   void readXYZ(){
     
-    /*
     float x1, y1, x2, y2, z1, z2;
     x1 = x2 = y1 = y2 = z1 = z2 = 0;
+    
+    switch(side){
+      case 0:
+        x1 = GetLeftPositionX();
+        x2 = GetLeftPositionX2();
+        y1 = GetLeftPositionY();
+        y2 = GetLeftPositionY2();
+        break;
+      case 1:
+        x1 = GetLeftPositionX();
+        x2 = GetLeftPositionX2();
+        y1 = GetLeftPositionY();
+        y2 = GetLeftPositionY2();
+        break;
+    }
     
     radian = atan2(y2-y1, x2-x1);
     
     x = abs(x2-x1)*width/2;
     y = abs(y2-y1)*height;
     
-    z = abs(z2-z1);
-    */
+    //z = abs(z2-z1);
     
-    switch(side){
+    
+    /*switch(side){
       case 0:
         x = GetLeftPositionX();
         y = GetLeftPositionY();
@@ -141,7 +157,7 @@ class Player extends Enemy{
         x = GetRightPositionX();
         y = GetRightPositionY();
         break;
-    }
+    }*/
   }
   
   void titleAttack(){

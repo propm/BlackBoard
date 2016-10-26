@@ -485,6 +485,7 @@ class Boss extends Enemy{
         if(s.isReflected){
           if(judge(new PVector(s.x, s.y), s.r/2, pol)){
             isStan = true;
+            image = imgs.get(1);
             s.hp = 0;
           }
         }
