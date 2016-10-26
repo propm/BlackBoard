@@ -494,7 +494,10 @@ class Boss extends Enemy{
   
   void attack(){
     if(++sc <= lashtime){
-      if(sc%rapidi < 1)  bullets.add(new Standard(x-w/4.0, random(height), -standardbs));
+      if(sc%rapidi < 1){
+        bullets.add(new Standard(x-w/4.0, random(height), -standardbs));
+        if(bul != null)  bul.trigger();
+      }
     }else if(sc >= lashtime + standardi)  sc = 0;
     
     if(++rc >= reflecti){
