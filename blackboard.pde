@@ -20,7 +20,7 @@ Minim       minim;
 AudioPlayer bgm;
 OscP5       osc;
 NetAddress address;
-KinectClient kinect;
+
 Client client;
 
 ArrayList<Enemy>     enemys;
@@ -69,7 +69,7 @@ void settings(){
   if(rt.check())  System.exit(0);  //settings.txtのエラーチェック
   rt.readCommands();
   db.screenh = (int)(db.screenw*db.boardrate);
-  kinect = new KinectClient(this);
+
   //databaseセット
   db.initial();
   
@@ -111,8 +111,8 @@ void allInitial(){
   walls = new ArrayList<Wall>();
   
   player = new Player[2];
-  player[0] = new Player(0);
-  player[1] = new Player(1);
+  player[0] = new Player(GetLeftPositionX(),GetLeftPositionY());
+  player[1] = new Player(GetRightPositionX(),GetRightPositionY());
   home = new Home();
   
   try{
@@ -181,7 +181,6 @@ void drawing(){
   switch(scene){
     case 1:
       background(0);
-      //background(34, 139, 34);
       if(title != null && title.image != null){
         image(title.image, title.x, title.y);
         title.pol.Draw();
