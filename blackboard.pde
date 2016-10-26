@@ -111,8 +111,8 @@ void allInitial(){
   walls = new ArrayList<Wall>();
   
   player = new Player[2];
-  player[0] = new Player(GetLeftPositionX(),GetLeftPositionY());
-  player[1] = new Player(GetRightPositionX(),GetRightPositionY());
+  player[0] = new Player(0);
+  player[1] = new Player(1);
   home = new Home();
   
   try{

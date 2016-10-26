@@ -25,16 +25,16 @@ class Player extends Enemy{
   Polygon bpol;         //前のpol
   
   String erasename, createname;
+  int side;
   
   
   Player(){}
    
-  Player(float _x, float _y){
+  Player(int side){
     if(db.otherobj.size() > 0){
       initial();
     }
-    x = _x;
-    y = _y;
+    this.side = side;
   }
   
   //コピー
@@ -72,6 +72,8 @@ class Player extends Enemy{
     bver = new ArrayList<PVector>();
     for(int i = 0; i < pol.ver.size(); i++)
       bver.add(pol.ver.get(i));
+      
+    radian = PI/2;
   }
   
   //動作
@@ -98,16 +100,16 @@ class Player extends Enemy{
     bx = x;
     by = y;
     
-    switch(key){
+    /*switch(key){
       case 1:
         radian += PI/180 * 2;
         break;
       case 2:
         radian -= PI/180 * 2;
         break;
-    }
+    }*/
     
-    //readXYZ();
+    readXYZ();
   }
   
   void setBver(){
@@ -116,18 +118,11 @@ class Player extends Enemy{
   }
   
   //キネクトから座標を受け取る
-  /*void readXYZ(){
+  void readXYZ(){
+    
+    /*
     float x1, y1, x2, y2, z1, z2;
     x1 = x2 = y1 = y2 = z1 = z2 = 0;
-    
-    if(client.available() >= 24){
-      z1 = readInt();
-      y1 = readInt();
-      x1 = readInt();
-      z2 = readInt();
-      y2 = readInt();
-      x2 = readInt();
-    }
     
     radian = atan2(y2-y1, x2-x1);
     
@@ -135,9 +130,19 @@ class Player extends Enemy{
     y = abs(y2-y1)*height;
     
     z = abs(z2-z1);
+    */
+    
+    switch(side){
+      case 0:
+        x = GetLeftPositionX();
+        y = GetLeftPositionY();
+        break;
+      case 1:
+        x = GetRightPositionX();
+        y = GetRightPositionY();
+        break;
+    }
   }
-  
-  */
   
   void titleAttack(){
     if(ATflag){

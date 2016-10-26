@@ -219,7 +219,6 @@ class Enemy extends MyObj{
     boolean wasAttack = false;
     if(++Bcount > Bi){
       if(bulletflag) {
-        wasAttack = true;
         switch(charanum){
           //フライングとパラシュート形態
           case 4:
@@ -227,6 +226,7 @@ class Enemy extends MyObj{
             if(p.change)  break;
           case 2:
             bullets.add(new Bullet(x, y+h/2, new PVector(-3*db.scwhrate, random(-1, 1), 0)));
+            wasAttack = true;
             break;
           //タンジェント
           case 3:
