@@ -40,6 +40,7 @@ boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
 boolean isStop;
 boolean isDebag;             //デバッグモードならtrue
+boolean isMouse;             //mouseでプレイヤーを操作するときはtrue
 
 int time;            //次のシーンに入るまでの時間を入れる
 int score, choke;
@@ -57,6 +58,8 @@ int _bossappear;
 //*************************↓初期設定など↓***************************
 
 void settings(){
+  isMouse = true;
+  
   minim = new Minim(this);    //音楽・効果音用
   osc = new OscP5(this, 1234);
   address = new NetAddress("172.23.5.84", 1234);
@@ -77,7 +80,7 @@ void settings(){
   size(db.screenw, db.screenh, P2D);
   noSmooth();
   
-  //kinectinit();
+  if(!isMouse)  kinectinit();
 }
 
 void setup(){
@@ -110,9 +113,11 @@ void allInitial(){
   bullets = new ArrayList<Bullet>();
   walls = new ArrayList<Wall>();
   
-  player = new Player[1];
-  player[0] = new Player(0);
-  //player[1] = new Player(1);
+  player = new Player[isMouse ? 1:2 ];
+  for(int i = 0; i < player.length; i++){
+    player[i] = new Player(i);
+  }
+  
   home = new Home();
   
   try{
@@ -144,11 +149,11 @@ void draw(){
 void process(){
   
   //座標の取得
-  //kinectupdate();
+  if(!isMouse)  kinectupdate();
   
   //時間によってシーン変更
   if(time > 0){
-    if(wholecount++ >= time){
+    if(wholecount >= time){
       changeScene();
       process();
       wholecount--;
@@ -535,55 +540,31 @@ Client Ly1client, Ly2client, Lz1client, Lz2client;
     float rateX = 0;
     if(side == 0)       rateX = Lz1;
     else if(side == 1)  rateX = Rz1;
-    else                println("引数が間違っています");
+    else{
+      println("引数が間違っています");
+      return 0;
+    }
     
-    if(rateX <= 1.0)  return (width*rateX)/2.0;
-    else              return 0;
+    if(rateX <= 1.0){
+      if(side == 0)       return (width*rateX)/2.0;
+      else if(side == 1)  return (width*(1.0-rateX))/2.0 + width/2.0;
+    }
+    
+    return 0;
   }
   
   float getPositionY1(int side){
     float rateY = 0;
     if(side == 0)       rateY = Ly1;
     else if(side == 1)  rateY = Ry1;
-    else                println("引数が間違っています");
+    else{
+      println("引数が間違っています");
+      return 0;
+    }
     
     if(rateY <= 1.0)  return height*(1.0-rateY);
     else              return 0;
   }
-  
-  /*
-  float GetLeftPositionX(){
-    if(Lz1 <= 1.0){
-      return (width*Lz1)/2.0;
-    }else{
-      return 0;
-    }
-  }
-  
-  float GetLeftPositionY(){
-    if(Lz1 <= 1.0){
-      return height*(1.0-Ly1);
-    }else{
-      return 0;
-    }
-  }
-  
-  float GetRightPositionX(){
-    if(Lz1 <= 1.0){
-      return width-(width*Rz1)/2;
-    }else{
-      return 0;
-    }
-  }
-  
-  float GetRightPositionY(){
-    if(Lz1 <= 1.0){
-      return height*(1.0-Ry1);
-    }else{
-      return 0;
-    }
-  }
-  */
   
 void GetLeft(){
  while(Ly1client.available() +Ly2client.available() +Lz1client.available() +Lz2client.available() >=24){

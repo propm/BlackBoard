@@ -99,19 +99,22 @@ class Player extends Enemy{
   void move(){
     bx = x;
     by = y;
-    x = mouseX;
-    y = mouseY;
     
-    switch(key){
-      case 1:
-        radian += PI/180 * 2;
-        break;
-      case 2:
-        radian -= PI/180 * 2;
-        break;
+    if(isMouse){
+      x = mouseX;
+      y = mouseY;
+      
+      switch(key){
+        case 1:
+          radian += PI/180 * 2;
+          break;
+        case 2:
+          radian -= PI/180 * 2;
+          break;
+      }
+    }else{
+      readXYZ();
     }
-    
-    //readXYZ();
   }
   
   void setBver(){
@@ -125,13 +128,13 @@ class Player extends Enemy{
     float x1, y1, x2, y2, z1, z2;
     x1 = x2 = y1 = y2 = z1 = z2 = 0;
     
-    x1 = getPositionX1(side);
-    y1 = getPositionY1(side);
+    x = getPositionX1(side);
+    y = getPositionY1(side);
     
-    radian = atan2(y2-y1, x2-x1);
+    //radian = atan2(y2-y1, x2-x1);
     
-    x = abs(x2-x1)*width/2;
-    y = abs(y2-y1)*height;
+    //x = abs(x2-x1)*width/2;
+    //y = abs(y2-y1)*height;
     
     //z = abs(z2-z1);
   }
@@ -146,6 +149,7 @@ class Player extends Enemy{
   
   //攻撃するか壁を作るか判定
   void ATorCreate(){
+    if(!isMouse)  ATflag = true;      //mouseで操作してない場合はATflagの判定は不要
     if(!ATflag)  bframecount = 0;
     
     if(abs(x - createxy.x) <= abledifference && abs(y - createxy.y) <= abledifference){
@@ -531,6 +535,8 @@ class Wall extends MyObj{
     pol = new Polygon();
     for(int i = 0; i < 4; i++)
       pol.Add(new PVector(0, 0, 0));
+      
+    setPolygon(x, y);
   }
   
   void copy(){
@@ -540,7 +546,7 @@ class Wall extends MyObj{
   }
   
   void update(){
-    setPolygonAngle();
+    setPolygon(x, y);
     dicision();
     timer();
   }
@@ -554,12 +560,10 @@ class Wall extends MyObj{
   }
   
   //radianが0のとき、右上から時計回り(右上が0）
-  void setPolygonAngle(){
-    
-    pol.ver.set(0, new PVector(x+w/2*cos(radian)+h/2*cos(radian-PI/2), y+w/2*sin(radian)+h/2*sin(radian-PI/2), 0));
-    pol.ver.set(1, new PVector(x+w/2*cos(radian)+h/2*cos(radian+PI/2), y+w/2*sin(radian)+h/2*sin(radian+PI/2), 0));
-    pol.ver.set(2, new PVector(x+w/2*cos(radian+PI)+h/2*cos(radian+PI/2), y+w/2*sin(radian+PI)+h/2*sin(radian+PI/2), 0));
-    pol.ver.set(3, new PVector(x+w/2*cos(radian+PI)+h/2*cos(radian-PI/2), y+w/2*sin(radian+PI)+h/2*sin(radian-PI/2), 0));
+  void setPolygon(float x, float y){
+    for(int i = 0; i < pol.ver.size(); i++){
+      pol.ver.set(i, new PVector(x, y));
+    }
     pol.Init();
   }
   

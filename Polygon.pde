@@ -153,6 +153,7 @@ class Polygon {
 
     // 判定用　移動前と移動後の凸包
     Polygon jpol = createConvex(ver, next);
+    jpol.Draw();
 
     float mint = 1000;
     int sidecount;    //多角形の1つの辺で1つの壁のいくつの辺と交わっているか
