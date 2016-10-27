@@ -125,20 +125,8 @@ class Player extends Enemy{
     float x1, y1, x2, y2, z1, z2;
     x1 = x2 = y1 = y2 = z1 = z2 = 0;
     
-    switch(side){
-      case 0:
-        x1 = GetLeftPositionX();
-        x2 = GetLeftPositionX2();
-        y1 = GetLeftPositionY();
-        y2 = GetLeftPositionY2();
-        break;
-      case 1:
-        x1 = GetLeftPositionX();
-        x2 = GetLeftPositionX2();
-        y1 = GetLeftPositionY();
-        y2 = GetLeftPositionY2();
-        break;
-    }
+    x1 = getPositionX1(side);
+    y1 = getPositionY1(side);
     
     radian = atan2(y2-y1, x2-x1);
     
@@ -146,18 +134,6 @@ class Player extends Enemy{
     y = abs(y2-y1)*height;
     
     //z = abs(z2-z1);
-    
-    
-    /*switch(side){
-      case 0:
-        x = GetLeftPositionX();
-        y = GetLeftPositionY();
-        break;
-      case 1:
-        x = GetRightPositionX();
-        y = GetRightPositionY();
-        break;
-    }*/
   }
   
   void titleAttack(){

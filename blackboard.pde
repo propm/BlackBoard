@@ -32,7 +32,7 @@ Home home;
 MyObj title;
 
 final int MAXchoke = 11100;
-final int[] times = {-1, -1, 60*20, 60*5, -1, 60*10, 60*10};    //sceneと対応　　　-1は時間制限なし
+final int[] times = {-1, -1, 60*20, 60*5, -1, 60*10, 60*5, 60*15};    //sceneと対応　　　-1は時間制限なし
 final int sendframes = 2;
 
 boolean firstinitial;
@@ -466,13 +466,13 @@ void soundsstop(){
 //************************************************************************************::
 
 Client Ly1client, Ly2client, Lz1client, Lz2client;
-  float Ly1 = 0.0,Lz1 = 0.0, Ly2 = 0.0,Lz2 = 0.0;
+  float Ly1 = 0.0, Lz1 = 0.0, Ly2 = 0.0, Lz2 = 0.0;
 
-  Client Ry1client,Ry2client,Rz1client,Rz2client;
-  float Ry1 = 0.0,Rz1 = 0.0, Ry2 = 0.0,Rz2 = 0.0;
+  Client Ry1client, Ry2client, Rz1client, Rz2client;
+  float Ry1 = 0.0, Rz1 = 0.0, Ry2 = 0.0, Rz2 = 0.0;
 
   String LIP;
-  String RIP ;
+  String RIP;
   
   void kinectinit(){
     LIP = "10.0.1.204";
@@ -487,7 +487,6 @@ Client Ly1client, Ly2client, Lz1client, Lz2client;
     Ry2client = new Client(this, RIP, 60002);
     Rz1client = new Client(this, RIP, 40002);
     Rz2client = new Client(this, RIP, 30002);
-    
   }
   
   
@@ -496,6 +495,27 @@ Client Ly1client, Ly2client, Lz1client, Lz2client;
     GetRight();
   }
   
+  float getPositionX1(int side){
+    float rateX = 0;
+    if(side == 0)       rateX = Lz1;
+    else if(side == 1)  rateX = Rz1;
+    else                println("引数が間違っています");
+    
+    if(rateX <= 1.0)  return (width*rateX)/2.0;
+    else              return 0;
+  }
+  
+  float getPositionY1(int side){
+    float rateY = 0;
+    if(side == 0)       rateY = Ly1;
+    else if(side == 1)  rateY = Ry1;
+    else                println("引数が間違っています");
+    
+    if(rateY <= 1.0)  return height*(1.0-rateY);
+    else              return 0;
+  }
+  
+  /*
   float GetLeftPositionX(){
     if(Lz1 <= 1.0){
       return (width*Lz1)/2.0;
@@ -527,40 +547,7 @@ Client Ly1client, Ly2client, Lz1client, Lz2client;
       return 0;
     }
   }
-  
-  float GetLeftPositionX2(){
-    if(Lz1 <= 1.0){
-      return (width*Lz1)/2.0;
-    }else{
-      return 0;
-    }
-  }
-  
-  float GetLeftPositionY2(){
-    if(Lz1 <= 1.0){
-      return height*(1.0-Ly1);
-    }else{
-      return 0;
-    }
-  }
-  
-  float GetRightPositionX2(){
-    if(Lz1 <= 1.0){
-      return width-(width*Rz1)/2;
-    }else{
-      return 0;
-    }
-  }
-  
-  float GetRightPositionY2(){
-    if(Lz1 <= 1.0){
-      return height*(1.0-Ry1);
-    }else{
-      return 0;
-    }
-  }
-  
-  
+  */
   
   void GetLeft(){
     if(Ly1client.available() >= 4){
