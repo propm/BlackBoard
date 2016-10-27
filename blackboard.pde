@@ -32,10 +32,11 @@ Home home;
 MyObj title;
 
 final int MAXchoke = 11100;
-final int[] times = {-1, -1, 60*1, 60*1, 60*60, 60*10, 60*5, 60*15};    //sceneと対応　　　-1は時間制限なし
+final int[] times = {-1, -1, 60*1, 60*1, 60*60, 60*10, -1, 60*15};    //sceneと対応　　　-1は時間制限なし
 final int sendframes = 2;      //_bossappearなどの変数の中身を外部プログラムに送るときの信号の長さ
 final int Scoretime  = 60*1;   //scoreの数字を何秒間変化させるか
-final int scorePertime = 50;   //残り時間1フレームあたり何点もらえるか
+final int scorePertime = 5;    //残り時間1フレームあたり何点もらえるか
+//final float scorew = ;
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
@@ -54,6 +55,7 @@ int combo;
 
 PVector scrollxy;
 PVector scrollv;
+PVector scorewh;
 
 PFont font;
 
@@ -160,13 +162,14 @@ void draw(){
 
 //処理用関数
 void process(){
+  wholecount++;
   
   //座標の取得
   if(!isMouse)  kinectupdate();
   
   //時間によってシーン変更
   if(time > 0){
-    if(wholecount++ >= time){
+    if(wholecount >= time){
       changeScene();
       process();
       wholecount--;
@@ -174,9 +177,10 @@ void process(){
     }
   }
   
+  if(scene < 3 || scene > 5)  for(int i = 0; i < player.length; i++)  player[i].update();
+  
   switch(scene){
     case 1:
-      for(int i = 0; i < player.length; i++)  player[i].update();
       break;
     case 2:
       changeScene();
@@ -192,7 +196,7 @@ void process(){
       changeScene();
       break;
     case 7:
-      if(vsn < variousnum)  scoreprocess();
+      if(!expressfinish)  scoreprocess();
       break;
   }
 }
@@ -225,7 +229,7 @@ void drawing(){
       background(0);
       textSize(80);
       fill(255);
-      for(int i = 0; i < vsn; i++){
+      for(int i = 0; i <= vsn; i++){
         int a = i;
         if(i == variousnum-1)  a++;
         text(scoretext[i]+(int)exscore[i], (int)((float)width/2), (int)((float)height/14*(a*3+3)));
@@ -345,6 +349,7 @@ float[] exscore;      //表示するスコア
 float plusscore;      //1フレームで追加するスコア
 
 boolean scorescrollfinish;    //スクロールが終わっていたらtrue
+boolean expressfinish;        //表示が終わったらtrue
 
 //スコア表示の処理
 void scoreprocess(){
@@ -354,9 +359,12 @@ void scoreprocess(){
     exscore[vsn] += plusscore;         //表示するスコアの変更
   }else{
     if(exscore[vsn] != Maxscore[vsn])  exscore[vsn] = Maxscore[vsn];    //表示したいスコアを越えていたら戻す
-    vsn++;
+    if(vsn >= variousnum-1){
+      expressfinish = true;
+      return;
+    }
     
-    if(vsn >= variousnum)  return;
+    vsn++;
     plusscore = (float)Maxscore[vsn]/Scoretime;                         //次のスコアの準備
     scorecount = 0;
   }
@@ -387,7 +395,6 @@ void scoreprocess(){
 //シーン変更
 void changeScene(){
   scene++;
-  wholecount = 0;
   time = times[scene-1];
   
   switch(scene){
@@ -405,28 +412,36 @@ void changeScene(){
       
     //スコア表示画面
     case 7:
-      exscore = new float[variousnum];
-      for(int i = 0; i < variousnum; i++){
-        exscore[i] = 0;
-      }
-      
-      scorecount = 0;
-      vsn = 0;
-      plusscore = (float)score/Scoretime;
-      
-      Maxscore = new int[variousnum];
-      Maxscore[0] = score;
-      Maxscore[1] = scorePertime* (times[4] - wholecount);
-      Maxscore[2] = Maxscore[0]+Maxscore[1];
-      
-      //scorescrollfinish = false;
-      //scrollv = new PVector(-(float)width/Scorescrolltime, 0);
+      scoreinitial();
       break;
       
     case 8:
       //scrollxy.set(0, 0);
       break;
   }
+  
+  wholecount = 0;
+}
+
+void scoreinitial(){
+  exscore = new float[variousnum];
+  for(int i = 0; i < variousnum; i++){
+    exscore[i] = 0;
+  }
+  
+  scorecount = 0;
+  vsn = 0;
+  plusscore = (float)score/Scoretime;
+  
+  Maxscore = new int[variousnum];
+  Maxscore[0] = score;
+  Maxscore[1] = scorePertime* (times[4] - wholecount);
+  Maxscore[2] = Maxscore[0]+Maxscore[1];
+  
+  expressfinish = false;
+  
+  //scorescrollfinish = false;
+  //scrollv = new PVector(-(float)width/Scorescrolltime, 0);
 }
 
 //画像反転用関数
@@ -502,6 +517,8 @@ void keyPressed(){
     backspace = true;
     println("やり直し");
   }
+  
+  if(key == ENTER && scene == 1)  changeScene();
   
   if(key == ' ' && !space){
     if(!isStop)  isStop = true;
