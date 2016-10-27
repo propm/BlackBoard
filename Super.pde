@@ -11,7 +11,7 @@ class MyObj implements Cloneable{
   ArrayList<PImage> imgs;    //使う画像を保存
   PImage image;              //今使われているimage
   
-  Polygon pol;
+  Polygon pol, oripol;
   AudioSample die;
   
   String diename;

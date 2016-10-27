@@ -55,6 +55,8 @@ int combo;
 PVector scrollxy;
 PVector scrollv;
 
+PFont font;
+
 int _reflect;
 int _damaged;
 int _kill;
@@ -95,6 +97,10 @@ void setup(){
   firstinitial = true;
   isDebag = true;
   backspace = space = false;
+  
+  font = createFont("あんずもじ", 48);
+  textFont(font);
+  textAlign(CENTER);
   
   allInitial();
 }
@@ -217,11 +223,12 @@ void drawing(){
       break;
     case 7:
       background(0);
-      textSize(100);
-      textAlign(CENTER);
+      textSize(80);
       fill(255);
       for(int i = 0; i < vsn; i++){
-        text(scoretext[i]+(int)exscore[i], (int)((float)width/2), (int)((float)height/7*(i+3)));
+        int a = i;
+        if(i == variousnum-1)  a++;
+        text(scoretext[i]+(int)exscore[i], (int)((float)width/2), (int)((float)height/14*(a*3+3)));
       }
       break;
   }

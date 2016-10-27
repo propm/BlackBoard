@@ -1,6 +1,6 @@
 //プレイヤー
 class Player extends Enemy{
-  final float abledifference = 5.0;    //壁を作るときに許容される誤差
+  final float abledifference = 10.0;    //壁を作るときに許容される誤差
   
   float bx, by;            //1フレーム前の座標
   
@@ -519,8 +519,6 @@ class Wall extends MyObj{
   AudioSample reflect;
   String reflectname;
   
-  Polygon oripol;
-  
   Wall(){}
   
   Wall(float x, float y, float w, float h, float radian){
@@ -570,7 +568,6 @@ class Wall extends MyObj{
     for(int i = 0; i < pol.ver.size(); i++){
       PVector oriv = oripol.ver.get(i);
       pol.ver.set(i, new PVector(x+oriv.x, y+oriv.y));
-      println(pol.ver.get(i));
     }
     pol.Init();
   }
@@ -590,7 +587,6 @@ class Wall extends MyObj{
             hp -= b.damage;
             b.hp = 0;
             if(b.AT != null)  b.AT.trigger();
-            
           }
           break;
           
