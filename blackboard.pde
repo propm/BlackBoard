@@ -32,8 +32,9 @@ Home home;
 MyObj title;
 
 final int MAXchoke = 11100;
-final int[] times = {-1, -1, 60*20, 60*5, -1, 60*10, 60*5, 60*15};    //sceneと対応　　　-1は時間制限なし
-final int sendframes = 2;
+final int[] times = {-1, -1, 60*1, 60*5, -1, 60*10, 60*5, 60*15};    //sceneと対応　　　-1は時間制限なし
+final int sendframes = 2;    //_bossappearなどの変数の中身を外部プログラムに送るときの信号の長さ
+final int Scoretime  = 10;   //scoreの数字を何秒間変化させるか
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
@@ -296,6 +297,16 @@ void battle(){
   
   send();
 }
+
+int scoretime;
+int expressscore;
+float plusscore;
+/*
+void score(){
+  scoretime++;
+  expressscore += 
+  
+}*/
 
 //*************************↓その他汎用関数↓***************************
 

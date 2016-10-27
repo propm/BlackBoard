@@ -411,7 +411,7 @@ class Boss extends Enemy{
   final float standardbs = 1.5*db.scwhrate;
   final int rbs = 20;
   final float reffreq = 2.5;
-  final int stantime  = 60*5;
+  final int stantime  = 60*7;
   
   float basicy;
   int sc;     //通常弾count
@@ -420,6 +420,8 @@ class Boss extends Enemy{
   float plustheta;
   boolean isStrong;     //次に発射するのが反射可能弾ならtrue
   boolean isStan;       //気絶中ならtrue
+  
+  int stancount;        //気絶している最中はカウント
   
   AudioSample strongfire;
   AudioSample reflectfire;
@@ -449,6 +451,7 @@ class Boss extends Enemy{
     
     sc = rc = 0;
     theta = 0;
+    stancount = 0;
     alpha = 255;
     isStrong = false;
     isStan = false;
@@ -475,8 +478,15 @@ class Boss extends Enemy{
   
   void alpha(){}
   
-  //跳ね返された手裏剣との判定
+  //跳ね返された反射可能弾との判定
   void dicision(){
+    if(isStan)  stancount++;
+    if(stancount > stantime){
+      isStan = false;
+      image = imgs.get(0);
+      stancount = 0;
+    }
+    
     for(int i = 0; i < bullets.size(); i++){
       Bullet b = bullets.get(i);
       
