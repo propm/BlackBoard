@@ -32,9 +32,9 @@ Home home;
 MyObj title;
 
 final int MAXchoke = 11100;
-final int[] times = {-1, -1, 60*1, 60*5, -1, 60*10, 60*5, 60*15};    //sceneと対応　　　-1は時間制限なし
-final int sendframes = 2;    //_bossappearなどの変数の中身を外部プログラムに送るときの信号の長さ
-final int Scoretime  = 10;   //scoreの数字を何秒間変化させるか
+final int[] times = {-1, -1, 60*10, 60*1, -1, 60*10, 60*5, 60*15};    //sceneと対応　　　-1は時間制限なし
+final int sendframes = 2;      //_bossappearなどの変数の中身を外部プログラムに送るときの信号の長さ
+final int Scoretime  = 60*1;   //scoreの数字を何秒間変化させるか
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
@@ -89,7 +89,6 @@ void setup(){
   isDebag = true;
   backspace = space = false;
   
-  textSize(36);
   allInitial();
 }
 
@@ -172,6 +171,10 @@ void process(){
       break;
     case 6:
       if(boss != null)  boss = null;
+      changeScene();
+      break;
+    case 7:
+      scoreprocess();
       break;
   }
 }
@@ -199,6 +202,13 @@ void drawing(){
     case 3:
     case 4:
       buttledraw();
+      break;
+    case 7:
+      background(0);
+      textSize(175);
+      textAlign(CENTER);
+      fill(255);
+      text((int)exscore, (int)((float)width/2), (int)((float)height/2));
       break;
   }
   
@@ -281,6 +291,10 @@ void battle(){
       //ボスの処理
       boss.update();
       break;
+      
+    case 6:
+      bgm.close();
+      break;
   }
   
   //プレイヤーの動きの処理
@@ -298,15 +312,19 @@ void battle(){
   send();
 }
 
-int scoretime;
-int expressscore;
-float plusscore;
-/*
-void score(){
-  scoretime++;
-  expressscore += 
+int scorecount;     //score表示用カウント
+float exscore;      //表示するスコア
+float plusscore;    //1フレームで追加するスコア
+
+void scoreprocess(){
+  scorecount++;
+  if(scorecount <= Scoretime){
+    exscore += plusscore;
+  }else{
+    if(exscore != score)  exscore = score;
+  }
   
-}*/
+}
 
 //*************************↓その他汎用関数↓***************************
 
@@ -326,6 +344,14 @@ void changeScene(){
     //ボス面
     case 5:
       boss = new Boss(width/8.0*7, height/2.0);
+      break;
+      
+    //スコア表示画面
+    case 7:
+      exscore = 0;
+      scorecount = 0;
+      plusscore = (float)score/Scoretime;
+      println((float)score/Scoretime);
       break;
   }
 }
@@ -350,7 +376,7 @@ PImage reverse(PImage img){
   return img;
 }
 
-int score(Enemy e){
+int getscore(Enemy e){
   switch(e.rank){
     case 1:
       return 1000;

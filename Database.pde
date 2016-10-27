@@ -134,7 +134,7 @@ class DataBase{
           setEnemys(e, i, -1, 4, true, 60*4, new PVector(0, 0), 0, "ninja.png", "ninja_attack.png");
           break;
         case 7:
-          e.hp = 100;
+          e.hp = 1;
           float bosssize = 6.0;
           setImage(e, "boss1.png", bosssize);
           setImage(e, "boss2.png", bosssize);

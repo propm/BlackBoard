@@ -281,7 +281,7 @@ class Player extends Enemy{
     combo++;
     
     if(e.hp <= 0){
-      score += score(e);
+      score += getscore(e);
       choke += e.maxhp*e.energy;
       _kill = sendframes;
     }
@@ -343,6 +343,7 @@ class Player extends Enemy{
     rect(-w/2, -h/2, w, h);
     popMatrix();
     
+    textSize(36);
     text(combo, x+width/60.0, y-height/80.0);
     
     pol.Draw();
