@@ -351,7 +351,6 @@ void changeScene(){
       exscore = 0;
       scorecount = 0;
       plusscore = (float)score/Scoretime;
-      println((float)score/Scoretime);
       break;
   }
 }
@@ -586,40 +585,50 @@ Client Ly1client, Ly2client, Lz1client, Lz2client;
   }
   */
   
-  void GetLeft(){
-    if(Ly1client.available() >= 4){
-      Ly1 = (float)Integer.reverseBytes(ByteBuffer.wrap(Ly1client.readBytes(4)).getInt())/10000.0;
-    }
-      
-    if(Ly2client.available() >= 4){
-      Ly2 = (float)Integer.reverseBytes(ByteBuffer.wrap(Ly2client.readBytes(4)).getInt())/10000.0;
-    }
-      
-    if(Lz1client.available() >= 4){
-      Lz1 = (float)Integer.reverseBytes(ByteBuffer.wrap(Lz1client.readBytes(4)).getInt())/10000.0;
-    }
-      
-    if(Lz2client.available() >= 4){
-      Lz2 = (float)Integer.reverseBytes(ByteBuffer.wrap(Lz2client.readBytes(4)).getInt())/10000.0;
-    }
-    
-  }
-  
-  void GetRight(){
-    if(Ry1client.available() >= 4){
-      Ry1 = (float)Integer.reverseBytes(ByteBuffer.wrap(Ry1client.readBytes(4)).getInt())/10000.0;
-    }
-      
-    if(Ry2client.available() >= 4){
-      Ry2 = (float)Integer.reverseBytes(ByteBuffer.wrap(Ry2client.readBytes(4)).getInt())/10000.0;
-    }
-      
-    if(Rz1client.available() >= 4){
-      Rz1 = (float)Integer.reverseBytes(ByteBuffer.wrap(Rz1client.readBytes(4)).getInt())/10000.0;
-    }
-      
-    if(Rz2client.available() >= 4){
-      Rz2 = (float)Integer.reverseBytes(ByteBuffer.wrap(Rz2client.readBytes(4)).getInt())/10000.0;
-    }
-    
-  }
+void GetLeft(){
+ while(Ly1client.available() +Ly2client.available() +Lz1client.available() +Lz2client.available() >=24){
+   if(Ly1client.available() >= 4)
+     {
+         Ly1 = (float)Integer.reverseBytes(ByteBuffer.wrap(Ly1client.readBytes(4)).getInt())/10000.0;
+     }
+     
+     if(Ly2client.available() >= 4)
+     {
+         Ly2 = (float)Integer.reverseBytes(ByteBuffer.wrap(Ly2client.readBytes(4)).getInt())/10000.0;
+     }
+     
+     if(Lz1client.available() >= 4)
+     {
+         Lz1 = (float)Integer.reverseBytes(ByteBuffer.wrap(Lz1client.readBytes(4)).getInt())/10000.0;
+     }
+     
+     if(Lz2client.available() >= 4)
+     {
+         Lz2 = (float)Integer.reverseBytes(ByteBuffer.wrap(Lz2client.readBytes(4)).getInt())/10000.0;
+     }
+ }
+}
+
+void GetRight(){
+ while(Ry1client.available()+ Ry2client.available() +Rz1client.available()+Rz2client.available() >=24){
+   if(Ry1client.available() >= 4)
+     {
+         Ry1 = (float)Integer.reverseBytes(ByteBuffer.wrap(Ry1client.readBytes(4)).getInt())/10000.0;
+     }
+     
+     if(Ry2client.available() >= 4)
+     {
+         Ry2 = (float)Integer.reverseBytes(ByteBuffer.wrap(Ry2client.readBytes(4)).getInt())/10000.0;
+     }
+     
+     if(Rz1client.available() >= 4)
+     {
+         Rz1 = (float)Integer.reverseBytes(ByteBuffer.wrap(Rz1client.readBytes(4)).getInt())/10000.0;
+     }
+     
+     if(Rz2client.available() >= 4)
+     {
+         Rz2 = (float)Integer.reverseBytes(ByteBuffer.wrap(Rz2client.readBytes(4)).getInt())/10000.0;
+     }
+ }
+}
