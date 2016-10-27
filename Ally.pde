@@ -519,6 +519,8 @@ class Wall extends MyObj{
   AudioSample reflect;
   String reflectname;
   
+  Polygon oripol;
+  
   Wall(){}
   
   Wall(float x, float y, float w, float h, float radian){
@@ -533,9 +535,13 @@ class Wall extends MyObj{
     copy();
     
     pol = new Polygon();
-    for(int i = 0; i < 4; i++)
-      pol.Add(new PVector(0, 0, 0));
-      
+    oripol = new Polygon();
+    oripol.Add(h/2, -w/2, 0);
+    oripol.Add(h/2, w/2, 0);
+    oripol.Add(-h/2, w/2, 0);
+    oripol.Add(-h/2, -w/2, 0);
+    
+    for(int i = 0; i < oripol.ver.size(); i++)  pol.Add(0, 0, 0);
     setPolygon(x, y);
   }
   
@@ -562,7 +568,9 @@ class Wall extends MyObj{
   //radianが0のとき、右上から時計回り(右上が0）
   void setPolygon(float x, float y){
     for(int i = 0; i < pol.ver.size(); i++){
-      pol.ver.set(i, new PVector(x, y));
+      PVector oriv = oripol.ver.get(i);
+      pol.ver.set(i, new PVector(x+oriv.x, y+oriv.y));
+      println(pol.ver.get(i));
     }
     pol.Init();
   }

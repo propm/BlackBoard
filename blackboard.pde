@@ -32,9 +32,10 @@ Home home;
 MyObj title;
 
 final int MAXchoke = 11100;
-final int[] times = {-1, -1, 60*10, 60*1, -1, 60*10, 60*5, 60*15};    //sceneと対応　　　-1は時間制限なし
+final int[] times = {-1, -1, 60*1, 60*1, 60*60, 60*10, 60*5, 60*15};    //sceneと対応　　　-1は時間制限なし
 final int sendframes = 2;      //_bossappearなどの変数の中身を外部プログラムに送るときの信号の長さ
 final int Scoretime  = 60*1;   //scoreの数字を何秒間変化させるか
+final int scorePertime = 50;   //残り時間1フレームあたり何点もらえるか
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
@@ -43,12 +44,16 @@ boolean isDebag;             //デバッグモードならtrue
 boolean isMouse;             //mouseでプレイヤーを操作するときはtrue
 
 int time;            //次のシーンに入るまでの時間を入れる
-int score, choke;
+int score, choke;    //普通のスコア、現在の粉エネルギー
+int timescore;       //ボス面の残り時間によるボーナススコア
 int bscore, benergy;
 int wholecount;      //道中が始まってからのカウント
 int scene;           //1:タイトル　2:難易度選択　3:道中　4:ボス登場　5:ボス　6:ボス破滅　7:スコア画面  8:ランキング
 int debagcounter;    //どこが重いか確認する用
 int combo;
+
+PVector scrollxy;
+PVector scrollv;
 
 int _reflect;
 int _damaged;
@@ -63,7 +68,6 @@ void settings(){
   minim = new Minim(this);    //音楽・効果音用
   osc = new OscP5(this, 1234);
   address = new NetAddress("172.23.5.84", 1234);
-  //client = new Client(this, "172.23.6.216", 50005);
   
   rt = new ReadText();
   db = new DataBase();        //データベース
@@ -133,6 +137,9 @@ void allInitial(){
   wholecount = 0;
   combo = 0;
   
+  scrollxy = new PVector(0, 0);
+  scrollv = new PVector(0, 0);
+  
   _reflect = _damaged = _bossappear = 0;
 }
 
@@ -153,7 +160,7 @@ void process(){
   
   //時間によってシーン変更
   if(time > 0){
-    if(wholecount >= time){
+    if(wholecount++ >= time){
       changeScene();
       process();
       wholecount--;
@@ -179,7 +186,7 @@ void process(){
       changeScene();
       break;
     case 7:
-      scoreprocess();
+      if(vsn < variousnum)  scoreprocess();
       break;
   }
 }
@@ -210,10 +217,12 @@ void drawing(){
       break;
     case 7:
       background(0);
-      textSize(175);
+      textSize(100);
       textAlign(CENTER);
       fill(255);
-      text((int)exscore, (int)((float)width/2), (int)((float)height/2));
+      for(int i = 0; i < vsn; i++){
+        text(scoretext[i]+(int)exscore[i], (int)((float)width/2), (int)((float)height/7*(i+3)));
+      }
       break;
   }
   
@@ -317,22 +326,58 @@ void battle(){
   send();
 }
 
-int scorecount;     //score表示用カウント
-float exscore;      //表示するスコア
-float plusscore;    //1フレームで追加するスコア
+final int Scorescrolltime = 20;    //フレーム数
+final int variousnum = 3;          //表示する数字がいくつあるか
+final String[] scoretext = {"敵・弾撃破: ", "残り時間: ", "合計: "};
 
+int[] Maxscore;
+
+int scorecount;       //score表示用カウント
+int vsn;              //変化するスコアがどれか　　1:敵・弾撃破によるスコア　2:残り時間によるボーナススコア　3:合計
+float[] exscore;      //表示するスコア
+float plusscore;      //1フレームで追加するスコア
+
+boolean scorescrollfinish;    //スクロールが終わっていたらtrue
+
+//スコア表示の処理
 void scoreprocess(){
   scorecount++;
+  
   if(scorecount <= Scoretime){
-    exscore += plusscore;
+    exscore[vsn] += plusscore;         //表示するスコアの変更
   }else{
-    if(exscore != score)  exscore = score;
+    if(exscore[vsn] != Maxscore[vsn])  exscore[vsn] = Maxscore[vsn];    //表示したいスコアを越えていたら戻す
+    vsn++;
+    
+    if(vsn >= variousnum)  return;
+    plusscore = (float)Maxscore[vsn]/Scoretime;                         //次のスコアの準備
+    scorecount = 0;
   }
   
+  /*
+  //スクロールする前ならスクロール処理をし、終わったあとならスコアを表示する
+  if(scorescrollfinish){
+    
+    if(scorecount <= Scoretime){
+      exscore += plusscore;      //表示するスコアの変更
+    }else{
+      if(exscore != score)  exscore = score;    //表示したいスコアを越えていたら戻す
+    }
+  }else{
+    
+    //スコア画面のx, yを移動
+    if(scorecount <= Scorescrolltime)  scrollxy.add(scrollv);
+    else{
+      scrollv.set(0, 0);
+      scorescrollfinish = true;
+    }
+  }
+  */
 }
 
 //*************************↓その他汎用関数↓***************************
 
+//シーン変更
 void changeScene(){
   scene++;
   wholecount = 0;
@@ -353,9 +398,26 @@ void changeScene(){
       
     //スコア表示画面
     case 7:
-      exscore = 0;
+      exscore = new float[variousnum];
+      for(int i = 0; i < variousnum; i++){
+        exscore[i] = 0;
+      }
+      
       scorecount = 0;
+      vsn = 0;
       plusscore = (float)score/Scoretime;
+      
+      Maxscore = new int[variousnum];
+      Maxscore[0] = score;
+      Maxscore[1] = scorePertime* (times[4] - wholecount);
+      Maxscore[2] = Maxscore[0]+Maxscore[1];
+      
+      //scorescrollfinish = false;
+      //scrollv = new PVector(-(float)width/Scorescrolltime, 0);
+      break;
+      
+    case 8:
+      //scrollxy.set(0, 0);
       break;
   }
 }
