@@ -358,7 +358,7 @@ class Player extends Enemy{
 
 //自陣
 class Home extends MyObj{
-  final int MaxHP = 100;
+  final int MaxHP = 1500;
   int bhp;
   float border;        //自陣の境界
   

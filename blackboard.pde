@@ -424,7 +424,7 @@ void scoreprocess(){
 //シーン変更
 void changeScene(){
   scene++;
-  if(scene > times.length)  allInitial();
+  if(scene > times.length-1)  allInitial();
   time = times[scene-1];
   
   switch(scene){
