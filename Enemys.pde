@@ -562,7 +562,6 @@ class Boss extends Enemy{
       case 0:
         // 登場時の処理
         y -= upspeed;
-        println(y);
         imgy = y - marginy;
         if (imgy + boss1.height / 2 <= height / 2) {
           y = height / 2 - boss1.height / 2 + marginy;
@@ -600,7 +599,6 @@ class Boss extends Enemy{
           // この処理がくる少し前からボスは見えなくなっている。
           // result画面にchangeScene()していいと思う。
           
-          println("change");
           changeScene();
         }
         break;

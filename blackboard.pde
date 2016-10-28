@@ -216,9 +216,12 @@ void process(){
       soundstop = true;
       if(!darkerfinish)  battle();
       
-      if(backalpha > 255)  darkerfinish = true;
+      if(backalpha == 256){
+        darkerfinish = true;
+        scoreinitial();
+        backalpha++;
+      }
       if(darkerfinish){
-        if(backalpha == 256)  scoreinitial();
         scoreprocess();
       }
       break;
@@ -314,7 +317,6 @@ void gameoverdraw(){
     text("Game Over", width/2, height/14*5);
     textSize(60);
     text("score: "+(int)exscore[0], width/2, height/14*8);
-    println(score);
   }
   
   text((times[scene-1]- wholecount)/60, (float)width/30*2, (float)height/10*2);
@@ -409,6 +411,7 @@ boolean expressfinish;        //表示が終わったらtrue
 void scoreprocess(){
   scorecount++;
   
+  if(isGameOver)  println(scorecount);
   if(scorecount <= Scoretime){
     exscore[vsn] += plusscore;         //表示するスコアの変更
   }else{
@@ -431,7 +434,6 @@ void scoreprocess(){
 //シーン変更
 void changeScene(){
   scene++;
-  println(scene);
   if(scene > times.length-1)  allInitial();
   time = times[scene-1];
   
@@ -461,7 +463,6 @@ void changeScene(){
       
     //スコア表示画面
     case 7:
-      println("a");
       boss = null;
       send();                //変更前のスコアを送る
       sendable = false;      //ここでsendしたので、processのsendは呼ばない
