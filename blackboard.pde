@@ -32,7 +32,7 @@ Home home;
 MyObj title;
 
 final int MAXchoke = 11100;
-final int[] times = {-1, -1, 60*90, -1, 60*60, -1, 60*20, 60*23};    //sceneと対応　　　-1は時間制限なし
+final int[] times = {-1, -1, 60*10, -1, 60*60, -1, 60*20, 60*23};    //sceneと対応　　　-1は時間制限なし
 final int sendframes = 2;      //_bossappearなどの変数の中身を外部プログラムに送るときの信号の長さ
 final int Scoretime  = 60*1;   //scoreの数字を何秒間変化させるか
 final int scorePertime = 5;    //残り時間1フレームあたり何点もらえるか
@@ -74,8 +74,8 @@ void settings(){
   isDebag = true;
   
   minim = new Minim(this);    //音楽・効果音用
-  osc = new OscP5(this, 1234);
-  address = new NetAddress("172.23.5.4", 1234);
+  osc = new OscP5(this, 12345);
+  address = new NetAddress("172.23.5.4", 12345);
   
   rt = new ReadText();
   db = new DataBase();        //データベース
@@ -256,13 +256,13 @@ void drawing(){
       break;
     case 7:
       background(0);
-      textSize(80);
+      textSize(60);
       fill(255);
       for(int i = 0; i <= vsn; i++){
         int a = i;
         if(i == variousnum-1)  a++;
-        if(isGameOver && i == 1)  continue;
-        text(scoretext[i]+(int)exscore[i], (int)((float)width/2), (int)((float)height/14*(a*3+3)));
+        if(isGameOver && i >= 1)  continue;
+        text(scoretext[i]+(int)exscore[i]+"pt", (int)((float)width/2), (int)((float)height/14*(a*2+3)));
       }
       
       text((times[scene-1]- wholecount)/60, (float)width/30*2, (float)height/10*2);
@@ -393,8 +393,9 @@ void battle(){
   if(boss != null)  boss.cadaver();
 }
 
-final int variousnum = 3;          //表示する数字がいくつあるか
-final String[] scoretext = {"敵・弾撃破: ", "残り時間: ", "合計: "};
+final int variousnum = 5;          //表示する数字がいくつあるか
+final String[] scoretext = {"敵撃破点: ", "残り時間ボーナス: ", "残りhpボーナス: ", "ボス撃破ボーナス: ", "合計: "};
+final int bossdestroyscore = 10000;
 
 int[] Maxscore;
 
@@ -411,7 +412,6 @@ boolean expressfinish;        //表示が終わったらtrue
 void scoreprocess(){
   scorecount++;
   
-  if(isGameOver)  println(scorecount);
   if(scorecount <= Scoretime){
     exscore[vsn] += plusscore;         //表示するスコアの変更
   }else{
@@ -487,9 +487,11 @@ void scoreinitial(){
   plusscore = (float)score/Scoretime;
   
   Maxscore = new int[variousnum];
-  Maxscore[0] = score;
-  Maxscore[1] = scorePertime* (times[4] - remaintime);
-  Maxscore[2] = Maxscore[0]+Maxscore[1];
+  Maxscore[0] = score;                                            //敵・弾撃破スコア
+  Maxscore[1] = scorePertime* (times[4] - remaintime);            //残り時間
+  Maxscore[2] = home.hp;                                          //残りhp
+  Maxscore[3] = bossdestroyscore;                                 //ボス撃破スコア
+  Maxscore[4] = Maxscore[0]+Maxscore[1]+Maxscore[2]+Maxscore[3];  //合計
   
   expressfinish = false;
 }

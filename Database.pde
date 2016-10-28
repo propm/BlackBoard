@@ -112,7 +112,7 @@ class DataBase{
         case 1:
           //引数は右からオブジェクト、num, hp, rank, bulletflag, Bi, 移動速度, damage, imgfile名
           setEnemys(e, i, 2, 1, false, -1, new PVector(-2, 0), 10, "attacker.png", "attacker_attack.png");
-          e.ATname = "attacker_attack.wav";    //壁に攻撃するときの音
+          e.ATname = "attacker_attack.mp3";    //壁に攻撃するときの音
           break;
         case 2:
           setEnemys(e, i, 1, 2, true, 75, new PVector(-3, 0), 20, "flying1.png", "flying2.png");
