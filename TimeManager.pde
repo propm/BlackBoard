@@ -24,7 +24,7 @@ class TimeManager{
             case 3:
               if(bgm != null)  bgm.close();
               bgm = minim.loadFile(ds.stringdata[0]);
-              bgm.loop();
+              if(bgm != null)  bgm.loop();
               break;
           }
         if(events.size() == 0)  break;

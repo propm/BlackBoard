@@ -359,6 +359,12 @@ void battle(){
       if(wholecount == 60*3){
         _bossappear = 0;
         boss = new Boss(width/8.0*7, height/2.0);
+        
+        bgm.close();
+        try{
+          bgm = minim.loadFile("Exothermic-boss.wav");
+        }catch(Exception e){}
+        if(bgm != null)  bgm.loop();
       }
       
       if(boss != null)  boss.update();
