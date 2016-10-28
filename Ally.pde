@@ -201,10 +201,6 @@ class Player extends Enemy{
         case 4:
         case 5:
         case 6:
-          if(b.num == 6){
-            Strong st = (Strong)b;
-            if(st.isReflected)  continue;
-          }
           if(bdicision(b)){
             if(!b.bisOver){
               b.hp--;
@@ -537,14 +533,9 @@ class Wall extends MyObj{
     copy();
     
     pol = new Polygon();
-    oripol = new Polygon();
-    oripol.Add(h/2, -w/2, 0);
-    oripol.Add(h/2, w/2, 0);
-    oripol.Add(-h/2, w/2, 0);
-    oripol.Add(-h/2, -w/2, 0);
     
-    for(int i = 0; i < oripol.ver.size(); i++)  pol.Add(0, 0, 0);
-    setPolygon(x, y);
+    for(int i = 0; i < 4; i++)  pol.Add(0, 0, 0);
+    setPolygonAngle();
   }
   
   void copy(){
@@ -554,7 +545,6 @@ class Wall extends MyObj{
   }
   
   void update(){
-    setPolygon(x, y);
     dicision();
     timer();
   }
@@ -568,11 +558,11 @@ class Wall extends MyObj{
   }
   
   //radianが0のとき、右上から時計回り(右上が0）
-  void setPolygon(float x, float y){
-    for(int i = 0; i < pol.ver.size(); i++){
-      PVector oriv = oripol.ver.get(i);
-      pol.ver.set(i, new PVector(x+oriv.x, y+oriv.y));
-    }
+  void setPolygonAngle(){
+    pol.ver.set(0, new PVector(x+w/2*cos(radian)+h/2*cos(radian-PI/2), y+w/2*sin(radian)+h/2*sin(radian-PI/2), 0));
+    pol.ver.set(1, new PVector(x+w/2*cos(radian)+h/2*cos(radian+PI/2), y+w/2*sin(radian)+h/2*sin(radian+PI/2), 0));
+    pol.ver.set(2, new PVector(x+w/2*cos(radian+PI)+h/2*cos(radian+PI/2), y+w/2*sin(radian+PI)+h/2*sin(radian+PI/2), 0));
+    pol.ver.set(3, new PVector(x+w/2*cos(radian+PI)+h/2*cos(radian-PI/2), y+w/2*sin(radian+PI)+h/2*sin(radian-PI/2), 0));
     pol.Init();
   }
   

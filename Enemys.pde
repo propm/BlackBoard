@@ -237,7 +237,7 @@ class Cannon extends Enemy{
   
   Cannon(){
     if(db.oriEnemys.size() >= 7){
-      x = random(width/4)+width/8*3;
+      x = random(width/11.0*10)+ width/11.0;
       y = random(height);
       initial();
     }
@@ -318,7 +318,7 @@ class Ninja extends Enemy{
   boolean isStealth;        //透明化するときtrue
   
   Ninja(){
-    this(random(width/4)+width/8*3, random(height));
+    this(random(width/2)+width/8*3, random(height));
   }
   
   Ninja(float x, float y){
