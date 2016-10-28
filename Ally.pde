@@ -387,7 +387,7 @@ class Home extends MyObj{
     
     image.resize(w, h);
     
-    hp = 1000;
+    hp = 1500;
     anglev = 3;
     angle = 0;
   }
@@ -528,7 +528,7 @@ class Wall extends MyObj{
     this.h = (int)h;
     this.radian = radian;
     isDie = false;
-    hp = 100;
+    hp = 200;
     
     copy();
     

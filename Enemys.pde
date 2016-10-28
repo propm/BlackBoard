@@ -313,9 +313,12 @@ class Cannon extends Enemy{
 
 //忍者
 class Ninja extends Enemy{
-  final float ALPHA = 200;  //最大不透明度
+  final float ALPHA = 120;  //最大不透明度
+  final int stealfreq = 60; //透明度が変わる方向が何フレームで変化するか
   float alphav;             //不透明度の増減の速さ(1フレームにどれだけ不透明度が変化するか)
   boolean isStealth;        //透明化するときtrue
+  
+  int stealthcount;
   
   Ninja(){
     this(random(width/2)+width/8*3, random(height));
@@ -338,6 +341,7 @@ class Ninja extends Enemy{
     imgy = y - marginy;
     movePolygon(0, imgy-bimgy);
     
+    stealthcount = 0;
     alpha = ALPHA;
     alphav = 5;
     isStealth = false;
@@ -363,8 +367,11 @@ class Ninja extends Enemy{
   }
   
   void stealth(){
-    //黒板消しが重なっていたら消える
-    if(isOver)  isStealth = true;
+    //一定周期で点滅
+    if(stealthcount++ > stealfreq){
+      isStealth = !isStealth;
+      stealthcount = 0;
+    }
     
     if(isStealth){
       alpha -= alphav;
