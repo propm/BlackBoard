@@ -30,13 +30,12 @@ class MyObj implements Cloneable{
   void die(){
     if(hp == 0){
       isDie = true;
-      if(die != null)  die.trigger();
+      if(!soundstop && die != null)  die.trigger();
     }
   }
   
-  
   void soundstop(){
-    if(die != null)  die.close();
+    if(die != null)  die.stop();
   }
 }
 
@@ -205,7 +204,7 @@ class Enemy extends MyObj{
   
   //攻撃
   void attack(){
-    if(bullet() && bul != null)  bul.trigger();
+    if(bullet() && bul != null && !soundstop)  bul.trigger();
   }
   
   //hpに応じて不透明度変更
@@ -251,8 +250,8 @@ class Enemy extends MyObj{
   
   void soundstop(){
     super.soundstop();
-    if(AT != null)  AT.close();
-    if(bul != null)  bul.close();
+    if(AT != null)  AT.stop();
+    if(bul != null)  bul.stop();
   }
   
   //描画

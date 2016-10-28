@@ -25,7 +25,7 @@ class Attacker extends Enemy{
       if(Acount == 30)  Acount = -1;
       if(Acount == 0){
         image = imgs.get(1);
-        if(AT != null)  AT.trigger();
+        if(AT != null && !soundstop)  AT.trigger();
       }
     }
   }
@@ -146,7 +146,7 @@ class Tangent extends Sin{
   void dicision(){
     if(y > height-r/2)  out = true;
     if(y < height-r/2 && out){
-      if(bul != null)  bul.trigger();
+      if(bul != null && !soundstop)  bul.trigger();
       out = false;
     }
     if(y < r/2)  bul.stop();
@@ -209,7 +209,7 @@ class Parachuter extends Attacker{
     if(y >= stopy && !change){
       change = true;
       isCrasher = true;
-      if(AT != null)  AT.trigger();
+      if(AT != null && !soundstop)  AT.trigger();
       
       initial(1);
       charanum = 4;
@@ -258,7 +258,7 @@ class Cannon extends Enemy{
     imgy = y - marginy;
     movePolygon(0, imgy-bimgy);
     
-    if(appear != null)  appear.trigger();
+    if(appear != null && !soundstop)  appear.trigger();
   }
   
   void copy(){
@@ -297,13 +297,13 @@ class Cannon extends Enemy{
   
   void soundstop(){
     super.soundstop();
-    if(charge != null)  charge.close();
-    if(appear != null)  appear.close();
+    if(charge != null)  charge.stop();
+    if(appear != null)  appear.stop();
   }
   
   void charge(){
     if(once){
-      if(charge != null)  charge.trigger();
+      if(charge != null && !soundstop)  charge.trigger();
       once = false;
     }
   }
@@ -514,7 +514,7 @@ class Boss extends Enemy{
     if(++sc <= lashtime){
       if(sc%rapidi < 1){
         bullets.add(new Standard(x-w/4.0, random(height), -standardbs));
-        if(bul != null)  bul.trigger();
+        if(bul != null && !soundstop)  bul.trigger();
       }
     }else if(sc >= lashtime + standardi)  sc = 0;
     
@@ -522,11 +522,11 @@ class Boss extends Enemy{
       if(isStrong){
         bullets.add(new Reflect(x, y, new PVector(-rbs*cos(45*PI/180.0), rbs*sin(45*PI/180.0))));
         bullets.add(new Reflect(x, y, new PVector(-rbs*cos(-45*PI/180.0), rbs*sin(-45*PI/180.0))));
-        if(reflectfire != null)  reflectfire.trigger();
+        if(reflectfire != null && !soundstop)  reflectfire.trigger();
       }
       else{
         bullets.add(new Strong(x, y));
-        if(strongfire != null)  strongfire.trigger();
+        if(strongfire != null && !soundstop)  strongfire.trigger();
       }
       isStrong = !isStrong;
       rc = 0;

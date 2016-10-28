@@ -32,7 +32,7 @@ Home home;
 MyObj title;
 
 final int MAXchoke = 11100;
-final int[] times = {-1, -1, 60*30, 60*3, 60*60, 60*5, 60*20, 60*1};    //sceneと対応　　　-1は時間制限なし
+final int[] times = {-1, -1, 60*30, 60*3, 60*60, 60*5, 60*20, 60*30};    //sceneと対応　　　-1は時間制限なし
 final int sendframes = 2;      //_bossappearなどの変数の中身を外部プログラムに送るときの信号の長さ
 final int Scoretime  = 60*1;   //scoreの数字を何秒間変化させるか
 final int scorePertime = 5;    //残り時間1フレームあたり何点もらえるか
@@ -45,15 +45,20 @@ boolean isDebag;             //デバッグモードならtrue
 boolean isMouse;             //mouseでプレイヤーを操作するときはtrue
 boolean sendable;
 boolean isPlaying;           //バトル中ならtrue
+boolean isGameOver;          //ゲームオーバーならtrue
+boolean gameoveronce;        
+boolean darkerfinish;        //ゲームオーバー時に暗くなるのが終わったらtrue
+boolean soundstop;           //効果音を止めたいときにtrueにする
 
 int time;            //次のシーンに入るまでの時間を入れる
 int score, choke;    //普通のスコア、現在の粉エネルギー
 int timescore;       //ボス面の残り時間によるボーナススコア
 int bscore, benergy;
 int wholecount;      //道中が始まってからのカウント
-int scene;           //1:タイトル　2:難易度選択　3:道中　4:ボス登場　5:ボス　6:ボス破滅　7:スコア画面  8:ランキング
+int scene;           //1:タイトル　2:難易度選択　3:道中　4:ボス登場　5:ボス　6:ボス破滅　7:スコア画面  8:ゲームオーバー
 int debagcounter;    //どこが重いか確認する用
 int combo;
+int backalpha;       //ゲームオーバー時の徐々に暗くなってくときの不透明度
 
 PFont font;
 
@@ -102,8 +107,6 @@ void setup(){
   textFont(font);
   textAlign(CENTER);
   
-  isPlaying = false;
-  
   allInitial();
 }
 
@@ -144,8 +147,14 @@ void allInitial(){
   scene = 1;
   time = times[scene-1];
   wholecount = 0;
+  backalpha = 0;
   combo = 0;
   sendable = true;
+  gameoveronce = true;
+  isPlaying = false;
+  isGameOver = false;
+  darkerfinish = false;
+  soundstop = false;
   
   _reflect = _damaged = _bossappear = 0;
 }
@@ -176,6 +185,14 @@ void process(){
     }
   }
   
+  if(isGameOver && gameoveronce){
+    gameoveronce = false;
+    scene = 8;
+    soundsstop();
+    soundstop = true;
+    bgm.close();
+  }
+  
   if(scene < 3 || scene > 5)  for(int i = 0; i < player.length; i++)  player[i].update();
   
   switch(scene){
@@ -188,7 +205,6 @@ void process(){
     case 4:
     case 5:
       battle();
-      drawing();
       break;
     case 6:
       if(boss != null)  boss = null;
@@ -196,6 +212,16 @@ void process(){
       break;
     case 7:
       if(!expressfinish)  scoreprocess();
+      break;
+    case 8:
+      soundstop = true;
+      if(!darkerfinish)  battle();
+      
+      if(backalpha > 255)  darkerfinish = true;
+      if(darkerfinish){
+        if(backalpha == 256)  scoreinitial();
+        scoreprocess();
+      }
       break;
   }
   
@@ -233,10 +259,14 @@ void drawing(){
       for(int i = 0; i <= vsn; i++){
         int a = i;
         if(i == variousnum-1)  a++;
+        if(isGameOver && i == 1)  continue;
         text(scoretext[i]+(int)exscore[i], (int)((float)width/2), (int)((float)height/14*(a*3+3)));
       }
       
       text((times[scene-1]- wholecount)/60, (float)width/30*2, (float)height/10*2);
+      break;
+    case 8:
+      gameoverdraw();
       break;
   }
   
@@ -271,6 +301,23 @@ void buttledraw(){
      Bullet bullet = bullets.get(i);
      bullet.draw();
    }
+}
+
+//ゲームオーバー時の表示
+void gameoverdraw(){
+  if(backalpha <= 255){
+    fill(0, backalpha++);
+    rect(0, 0, width, height);
+  }else{
+    background(0);
+    fill(255);
+    textSize(90);
+    text("Game Over", width/2, height/14*5);
+    textSize(60);
+    text("score: "+(int)exscore[0], width/2, height/14*8);
+  }
+  
+  text((times[scene-1]- wholecount)/60, (float)width/30*2, (float)height/10*2);
 }
 
 //********************************↓シーンごとの処理↓*********************************
@@ -321,7 +368,6 @@ void battle(){
       break;
       
     case 6:
-      bgm.close();
       break;
   }
   
@@ -378,7 +424,7 @@ void scoreprocess(){
 //シーン変更
 void changeScene(){
   scene++;
-  if(scene >= times.length)  allInitial();
+  if(scene > times.length)  allInitial();
   time = times[scene-1];
   
   switch(scene){
@@ -391,7 +437,7 @@ void changeScene(){
     //ボス出現
     case 4:
       _bossappear = 1;
-      if(db.warning != null)  db.warning.trigger();
+      if(db.warning != null && !soundstop)  db.warning.trigger();
       
       break;
     
@@ -407,14 +453,12 @@ void changeScene(){
       
     //スコア表示画面
     case 7:
-      send();
-      sendable = false;
-      isPlaying = false;
+      send();                //変更前のスコアを送る
+      sendable = false;      //ここでsendしたので、processのsendは呼ばない
+      isPlaying = false;     //プレイ終了
+      
       _bossappear = _kill = _damaged = _reflect = 0;
       scoreinitial();
-      break;
-      
-    case 8:
       break;
   }
   
@@ -433,7 +477,8 @@ void scoreinitial(){
   
   Maxscore = new int[variousnum];
   Maxscore[0] = score;
-  Maxscore[1] = scorePertime* (times[4] - remaintime);
+  if(!isGameOver)  Maxscore[1] = scorePertime* (times[4] - remaintime);
+  else             Maxscore[1] = 0;
   Maxscore[2] = Maxscore[0]+Maxscore[1];
   
   expressfinish = false;

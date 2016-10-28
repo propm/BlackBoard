@@ -266,7 +266,7 @@ class Reflect extends Shuriken{
     
     if(reflect){
       v.set(v.x, -v.y);
-      if(reverse != null)  reverse.trigger();
+      if(reverse != null && !soundstop)  reverse.trigger();
     }
   }
   

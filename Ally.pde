@@ -217,7 +217,7 @@ class Player extends Enemy{
       }
     }
     
-    if(erase != null)  erase.trigger();
+    if(erase != null && !soundstop)  erase.trigger();
   }
   
   //敵と自機が重なっているかどうかの判定:  戻り値→変更前のisOver
@@ -326,7 +326,7 @@ class Player extends Enemy{
       createflag = true;
       if(count/60 >= 1){
         walls.add(new Wall(x, y, height/2.0, h*2, PI/2));
-        if(create != null)  create.trigger();
+        if(create != null && !soundstop)  create.trigger();
         choke -= energy;
         count = 0;
       }
@@ -335,8 +335,8 @@ class Player extends Enemy{
   
   void soundstop(){
     super.soundstop();
-    if(create != null)  create.close();
-    if(erase != null)   erase.close();
+    if(create != null)  create.stop();
+    if(erase != null)   erase.stop();
   }
   
   void draw(){
@@ -358,6 +358,7 @@ class Player extends Enemy{
 
 //自陣
 class Home extends MyObj{
+  final int MaxHP = 100;
   int bhp;
   float border;        //自陣の境界
   
@@ -387,7 +388,7 @@ class Home extends MyObj{
     
     image.resize(w, h);
     
-    hp = 1500;
+    hp = MaxHP;
     anglev = 3;
     angle = 0;
   }
@@ -407,10 +408,20 @@ class Home extends MyObj{
     y = sin(angle/180*PI)*4 + height/2;
     
     damage();
+    hpupdate();
+  }
+  
+  //hp関係の処理
+  void hpupdate(){
     if(bhp != hp){
-      //println("hp: "+hp);
+      println(hp);
       _damaged = sendframes;
-      if(damaged != null)  damaged.trigger();
+      if(damaged != null && !soundstop)  damaged.trigger();
+      
+      if(hp <= 0){
+        hp = 0;
+        isGameOver = true;
+      }
     }
   }
   
@@ -499,7 +510,7 @@ class Home extends MyObj{
   
   void soundstop(){
     super.soundstop();
-    if(damaged != null)  damaged.close();
+    if(damaged != null)  damaged.stop();
   }
   
   void draw(){
@@ -580,7 +591,7 @@ class Wall extends MyObj{
           if(judge(pol, b.pol)){
             hp -= b.damage;
             b.hp = 0;
-            if(b.AT != null)  b.AT.trigger();
+            if(b.AT != null && !soundstop)  b.AT.trigger();
           }
           break;
           
@@ -609,7 +620,7 @@ class Wall extends MyObj{
                 s.x = x+h/2.0+s.r/2.0;
                 s.isReflected = true;
                 
-                if(reflect != null)  reflect.trigger();
+                if(reflect != null && !soundstop)  reflect.trigger();
                 _reflect = sendframes;
                 break;
             }
@@ -646,13 +657,13 @@ class Wall extends MyObj{
   void die(){
     if(hp <= 0){
       isDie = true;
-      if(die != null)  die.trigger();
+      if(die != null && !soundstop)  die.trigger();
     }
   }
   
   void soundstop(){
     super.soundstop();
-    if(reflect != null)  reflect.close();
+    if(reflect != null)  reflect.stop();
   }
   
   void draw(){
