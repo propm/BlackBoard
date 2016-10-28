@@ -179,7 +179,7 @@ class DataBase{
         break;
       case 1:    //自陣
         Home oh = (Home)otherobj.get(num);
-        oh.damagedname = "homedamaged.mp3";
+        oh.damagedname = "homedamaged.wav";
         oh.image = reverse(loadImage("cleaner.png"));
         oh.imgm = (float)1/3;
         break;
@@ -211,7 +211,7 @@ class DataBase{
   //プレイヤーの設定
   void setPlayer(){
     Player p = (Player)otherobj.get(0);
-    p.createname = "";
+    p.createname = "wallcreated.mp3";
     p.erasename = "";
     
     p.pol = new Polygon();
