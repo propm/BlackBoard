@@ -36,7 +36,6 @@ final int[] times = {-1, -1, 60*1, 60*1, 60*60, 60*10, -1, 60*15};    //sceneと
 final int sendframes = 2;      //_bossappearなどの変数の中身を外部プログラムに送るときの信号の長さ
 final int Scoretime  = 60*1;   //scoreの数字を何秒間変化させるか
 final int scorePertime = 5;    //残り時間1フレームあたり何点もらえるか
-//final float scorew = ;
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
@@ -52,10 +51,6 @@ int wholecount;      //道中が始まってからのカウント
 int scene;           //1:タイトル　2:難易度選択　3:道中　4:ボス登場　5:ボス　6:ボス破滅　7:スコア画面  8:ランキング
 int debagcounter;    //どこが重いか確認する用
 int combo;
-
-PVector scrollxy;
-PVector scrollv;
-PVector scorewh;
 
 PFont font;
 
@@ -144,9 +139,6 @@ void allInitial(){
   time = times[scene-1];
   wholecount = 0;
   combo = 0;
-  
-  scrollxy = new PVector(0, 0);
-  scrollv = new PVector(0, 0);
   
   _reflect = _damaged = _bossappear = 0;
 }
@@ -337,7 +329,6 @@ void battle(){
   send();
 }
 
-final int Scorescrolltime = 20;    //フレーム数
 final int variousnum = 3;          //表示する数字がいくつあるか
 final String[] scoretext = {"敵・弾撃破: ", "残り時間: ", "合計: "};
 
@@ -361,6 +352,7 @@ void scoreprocess(){
     if(exscore[vsn] != Maxscore[vsn])  exscore[vsn] = Maxscore[vsn];    //表示したいスコアを越えていたら戻す
     if(vsn >= variousnum-1){
       expressfinish = true;
+      score += Maxscore[1];
       return;
     }
     
@@ -369,25 +361,6 @@ void scoreprocess(){
     scorecount = 0;
   }
   
-  /*
-  //スクロールする前ならスクロール処理をし、終わったあとならスコアを表示する
-  if(scorescrollfinish){
-    
-    if(scorecount <= Scoretime){
-      exscore += plusscore;      //表示するスコアの変更
-    }else{
-      if(exscore != score)  exscore = score;    //表示したいスコアを越えていたら戻す
-    }
-  }else{
-    
-    //スコア画面のx, yを移動
-    if(scorecount <= Scorescrolltime)  scrollxy.add(scrollv);
-    else{
-      scrollv.set(0, 0);
-      scorescrollfinish = true;
-    }
-  }
-  */
 }
 
 //*************************↓その他汎用関数↓***************************
@@ -416,7 +389,6 @@ void changeScene(){
       break;
       
     case 8:
-      //scrollxy.set(0, 0);
       break;
   }
   
@@ -439,9 +411,6 @@ void scoreinitial(){
   Maxscore[2] = Maxscore[0]+Maxscore[1];
   
   expressfinish = false;
-  
-  //scorescrollfinish = false;
-  //scrollv = new PVector(-(float)width/Scorescrolltime, 0);
 }
 
 //画像反転用関数
@@ -549,6 +518,7 @@ void send(){
   mes.add(_damaged);
   mes.add(_kill);
   mes.add(_bossappear);
+  mes.add(expressfinish ? 1:0);
   osc.send(mes, address);
 }
 
