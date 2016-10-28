@@ -189,9 +189,10 @@ class Shuriken extends Bullet{
     image(image, -w/2, -h/2);
     popMatrix();
     
-    noFill();
-    stroke(255, 255, 0);
-    ellipse(x, y, r, r);
+    if(num == 3){
+      fill(255, 255, 0, 100);
+      ellipse(x, y, r, r);
+    }
   }
 }
 
