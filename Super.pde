@@ -258,7 +258,7 @@ class Enemy extends MyObj{
   void draw(){
     tint(255, alpha);
     image(image, imgx, imgy);
-    tint(255, 255);
+    noTint();
     pol.Draw();
   }
 }

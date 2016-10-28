@@ -427,12 +427,22 @@ class Boss extends Enemy{
   float plustheta;
   boolean isStrong;     //次に発射するのが反射可能弾ならtrue
   boolean isStan;       //気絶中ならtrue
+  boolean bisStan;      //1フレーム前のisStan
   
   int stancount;        //気絶している最中はカウント
+  
+  float handx, handy; // ボスの手の高さ（ボスの左上の座標からの相対
+  int count; // ボスが登場or死亡したときからのカウント(毎フレーム1足す) & stan時にも使用
+  int bossscene; // 0: ボス登場 1: ボス攻撃＆スタン　2: ボス死亡
+  
+  float upspeed = 2; // 登場するときのスピード(要調整)
+  float downspeed = 1.5; // 死んだあとの沈むスピード(要調整)
+  
   
   AudioSample strongfire;
   AudioSample reflectfire;
   
+  PImage boss1, boss2;
   String strongfirename, reflectfirename;
   
   Boss(){}
@@ -447,8 +457,11 @@ class Boss extends Enemy{
     marginx = w/2;
     marginy = h/2;
     
-    this.y = basicy = y;
+    basicy = y;
     this.x = x;
+    this.y = height - image.height/4.0 + marginy;
+    count = 0;
+    bossscene = 0;
     
     imgx = x - marginx;
     imgy = y - marginy;
@@ -464,6 +477,7 @@ class Boss extends Enemy{
     isStan = false;
     isMoveobj = true;
     isCrasher = true;
+    isDie = false;
   }
   
   void copy(){
@@ -472,6 +486,9 @@ class Boss extends Enemy{
     Boss bo = (Boss)db.oriEnemys.get(6);
     strongfire = db.setsound(bo.strongfirename);
     reflectfire = db.setsound(bo.reflectfirename);
+    
+    boss1 = imgs.get(0);
+    boss2 = imgs.get(1);
   }
   
   void move(){
@@ -511,6 +528,8 @@ class Boss extends Enemy{
   }
   
   void attack(){
+    
+    //通常弾発射
     if(++sc <= lashtime){
       if(sc%rapidi < 1){
         bullets.add(new Standard(x-w/4.0, random(height), -standardbs));
@@ -518,13 +537,16 @@ class Boss extends Enemy{
       }
     }else if(sc >= lashtime + standardi)  sc = 0;
     
+    //反射弾・反射可能弾発射
     if(++rc >= reflecti){
       if(isStrong){
+        //反射弾
         bullets.add(new Reflect(x, y, new PVector(-rbs*cos(45*PI/180.0), rbs*sin(45*PI/180.0))));
         bullets.add(new Reflect(x, y, new PVector(-rbs*cos(-45*PI/180.0), rbs*sin(-45*PI/180.0))));
         if(reflectfire != null && !soundstop)  reflectfire.trigger();
       }
       else{
+        //反射可能弾
         bullets.add(new Strong(x, y));
         if(strongfire != null && !soundstop)  strongfire.trigger();
       }
@@ -533,23 +555,141 @@ class Boss extends Enemy{
     }
   }
   
-  void update(){
-    move();
-    attack();
-    dicision();
+  void update() {
+    count++;
+    
+    switch(bossscene) {
+      case 0:
+        // 登場時の処理
+        y -= upspeed;
+        println(y);
+        imgy = y - marginy;
+        if (imgy + boss1.height / 2 <= height / 2) {
+          y = height / 2 - boss1.height / 2 + marginy;
+          // 登場完了のときこの処理がくる
+          // ボス動き＆攻撃開始
+          count = 0;
+          changeScene();
+        }
+        break;
+      
+      case 1:
+        // 攻撃＆スタン
+        if (isStan) {
+          // スタン状態なら
+          // スタン状態のときボス動かないほうがいいかな…
+        }
+        else {
+          // 戦闘状態
+          if(bisStan != isStan)  count = 0;
+          
+          move();
+          attack();
+          bisStan = isStan;
+        }
+        dicision();
+        break;
+    
+      case 2:
+        // 死んでからの処理
+        y += downspeed;
+        imgy = y - marginy;
+        if (imgy >= height) {
+          y = height+marginy;
+          // ボスが死んで画面から見えなくなったときにこの処理がくる
+          // この処理がくる少し前からボスは見えなくなっている。
+          // result画面にchangeScene()していいと思う。
+          
+          println("change");
+          changeScene();
+        }
+        break;
+    }
+    
+    imgx = x - marginx;
+    imgy = y - marginy;
+    
+    draw();
   }
   
   //死処理
   void cadaver(){
-    if(hp <= 0){
+    if(hp <= 0 && !isDie){
+      if(die != null)  die.trigger();
       changeScene();
+      
       isDie = true;
     }
   }
   
+  void draw() {
+    int t;
+    switch(bossscene) {
+      case 0:
+        // ボスが登場した時この処理
+        
+        //t = int(255 * count / ((height - boss1.height / 4) - (height / 2 - boss1.height / 2)) * upspeed);
+        // ↑の簡略版↓
+        t = int(255 * count / (height / 2 + boss1.height / 4) * upspeed);
+        if (t > 255) t = 255;
+        
+        // tint(0)で透明 (255)で不透明
+        // ボスの描画
+        tint(t);
+        image(boss1, imgx, imgy);
+        noTint();
+        
+        break;
+      case 1:
+        // ボス攻撃＆スタン
+        
+        if(isStan) {
+          // スタン状態なら
+          int taimin = 60; // 1秒経過後1ピクピク予定(要調整)
+          if (count % (taimin * 2) < taimin) {
+            int bu = count % (taimin - (taimin * 2)) / (taimin / 8);
+            
+            if (bu % 2 == 0) {
+              // 要調整
+              image(boss2, imgx - 2, imgy - 4);
+            }
+            else {
+              image(boss2, imgx, imgy);
+            }
+          }
+          else {
+            image(boss2, imgx, imgy);
+          }
+        }
+        else {
+          // 戦闘状態なら
+          image(boss1, imgx, imgy);
+        }
+        
+        break;
+        
+      case 2:
+        // ボスが死んだ場合この処理
+        float desp = height - boss1.height * 7 / 11; // 消え始める位置
+        if (imgy > desp) {
+          t = 255 - int(255 * (imgy - desp) / (height - boss1.height / 4 - desp));
+          if (t < 0) t = 0;
+          tint(t);
+        }
+        
+        if (imgy <= height - boss1.height / 4) image(boss2, imgx + boss1.width / 10 * cos((-90 + count) * 5 * PI/180), imgy);
+        noTint();
+        
+        break;
+    }
+    
+    pol.Draw();
+  }
+  
+  /*
   void draw(){
     super.draw();
     fill(255, 20, 147);
     ellipse(x, y, 20, 20);
-  }
+  }*/
 }

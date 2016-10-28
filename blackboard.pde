@@ -32,7 +32,7 @@ Home home;
 MyObj title;
 
 final int MAXchoke = 11100;
-final int[] times = {-1, -1, 60*30, 60*3, 60*60, 60*5, 60*20, 60*30};    //sceneと対応　　　-1は時間制限なし
+final int[] times = {-1, -1, 60*3, -1, 60*60, -1, 60*20, 60*23};    //sceneと対応　　　-1は時間制限なし
 final int sendframes = 2;      //_bossappearなどの変数の中身を外部プログラムに送るときの信号の長さ
 final int Scoretime  = 60*1;   //scoreの数字を何秒間変化させるか
 final int scorePertime = 5;    //残り時間1フレームあたり何点もらえるか
@@ -188,6 +188,8 @@ void process(){
   if(isGameOver && gameoveronce){
     gameoveronce = false;
     scene = 8;
+    wholecount = 0;
+    time = times[scene-1];
     soundsstop();
     soundstop = true;
     bgm.close();
@@ -204,11 +206,8 @@ void process(){
     case 3:
     case 4:
     case 5:
-      battle();
-      break;
     case 6:
-      if(boss != null)  boss = null;
-      changeScene();
+      battle();
       break;
     case 7:
       if(!expressfinish)  scoreprocess();
@@ -243,14 +242,14 @@ void drawing(){
     
     case 2:
       break;
-      
-    case 5:
-      buttledraw();
-      boss.draw();
-      break;
     case 3:
-    case 4:
       buttledraw();
+      break;
+    case 4:
+    case 5:
+    case 6:
+      buttledraw();
+      if(boss != null)  boss.draw();
       break;
     case 7:
       background(0);
@@ -315,6 +314,7 @@ void gameoverdraw(){
     text("Game Over", width/2, height/14*5);
     textSize(60);
     text("score: "+(int)exscore[0], width/2, height/14*8);
+    println(score);
   }
   
   text((times[scene-1]- wholecount)/60, (float)width/30*2, (float)height/10*2);
@@ -358,16 +358,17 @@ void battle(){
     case 4:
       if(wholecount == 60*3){
         _bossappear = 0;
+        boss = new Boss(width/8.0*7, height/2.0);
       }
-      break;
       
-    //ボス面
-    case 5:
+      if(boss != null)  boss.update();
+      break;
+    
+    case 5:    //ボス面
+    case 6:    //ボス倒される
+      
       //ボスの処理
       boss.update();
-      break;
-      
-    case 6:
       break;
   }
   
@@ -424,6 +425,7 @@ void scoreprocess(){
 //シーン変更
 void changeScene(){
   scene++;
+  println(scene);
   if(scene > times.length-1)  allInitial();
   time = times[scene-1];
   
@@ -443,16 +445,18 @@ void changeScene(){
     
     //ボス面
     case 5:
-      _bossappear = 0;
-      boss = new Boss(width/8.0*7, height/2.0);
+      boss.bossscene = 1;
       break;
       
     case 6:
+      boss.bossscene = 2;
       remaintime = wholecount;
       break;
       
     //スコア表示画面
     case 7:
+      println("a");
+      boss = null;
       send();                //変更前のスコアを送る
       sendable = false;      //ここでsendしたので、processのsendは呼ばない
       isPlaying = false;     //プレイ終了
@@ -477,8 +481,7 @@ void scoreinitial(){
   
   Maxscore = new int[variousnum];
   Maxscore[0] = score;
-  if(!isGameOver)  Maxscore[1] = scorePertime* (times[4] - remaintime);
-  else             Maxscore[1] = 0;
+  Maxscore[1] = scorePertime* (times[4] - remaintime);
   Maxscore[2] = Maxscore[0]+Maxscore[1];
   
   expressfinish = false;

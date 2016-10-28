@@ -106,7 +106,7 @@ class DataBase{
       Enemy e = oriEnemys.get(i-1);
       e.pol = new Polygon();
       e.diename = "enemydestroyed.wav";    //死ぬときの音
-      //e.bul = setsound("fire.mp3");                      //普通弾発射時の音
+      e.bul = setsound("fire.wav");                      //普通弾発射時の音
       
       switch(i){
         case 1:

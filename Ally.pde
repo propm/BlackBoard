@@ -414,7 +414,6 @@ class Home extends MyObj{
   //hp関係の処理
   void hpupdate(){
     if(bhp != hp){
-      println(hp);
       _damaged = sendframes;
       if(damaged != null && !soundstop)  damaged.trigger();
       
