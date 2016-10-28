@@ -145,6 +145,7 @@ class DataBase{
           Boss bo = (Boss)e;
           bo.reflectfirename = "reflect_fire.mp3";
           bo.strongfirename = "reflectable_fire.mp3";
+          bo.diename = "boss_destroyed.mp3";
           break;
       }
     }

@@ -119,21 +119,25 @@ class Polygon {
   }
 
   void Draw() {
-    strokeWeight(1);
-    stroke(255, 255, 0);
-    for (int i = 0; i < ver.size(); i++) {
-      PVector p1 = ver.get(i);
-      PVector p2 = ver.get((i + 1) % ver.size());
+    if(isDebag){
+      strokeWeight(1);
+      stroke(255, 255, 0);
+      for (int i = 0; i < ver.size(); i++) {
+        PVector p1 = ver.get(i);
+        PVector p2 = ver.get((i + 1) % ver.size());
 
-      line(p1.x, p1.y, p2.x, p2.y);
+        line(p1.x, p1.y, p2.x, p2.y);
+      }
     }
   }
 
   void Draw(PVector center, float r) {
-    strokeWeight(1);
-    stroke(255, 255, 0);
-    noFill();
-    ellipse(center.x, center.y, r, r);
+    if(isDebag){
+      strokeWeight(1);
+      stroke(255, 255, 0);
+      noFill();
+      ellipse(center.x, center.y, r, r);
+    }
   }
   
   void Update() {

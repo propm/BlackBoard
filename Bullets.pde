@@ -224,7 +224,11 @@ class Reflect extends Shuriken{
   AudioSample reverse;
   String reversename;
   
-  Reflect(){}
+  ArrayList<PImage> imgs;
+  
+  Reflect(){
+    imgs = new ArrayList<PImage>();
+  }
   
   //x, yは中心座標
   Reflect(float x, float y, PVector v){
