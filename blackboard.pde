@@ -43,6 +43,7 @@ boolean isStop;
 boolean isDebag;             //デバッグモードならtrue
 boolean isMouse;             //mouseでプレイヤーを操作するときはtrue
 boolean sendable;
+boolean isPlaying;           //バトル中ならtrue
 
 int time;            //次のシーンに入るまでの時間を入れる
 int score, choke;    //普通のスコア、現在の粉エネルギー
@@ -67,7 +68,7 @@ void settings(){
   
   minim = new Minim(this);    //音楽・効果音用
   osc = new OscP5(this, 1234);
-  address = new NetAddress("10.0.1.205", 1234);
+  address = new NetAddress("172.23.5.5", 1234);
   
   rt = new ReadText();
   db = new DataBase();        //データベース
@@ -99,6 +100,8 @@ void setup(){
   font = createFont("あんずもじ", 48);
   textFont(font);
   textAlign(CENTER);
+  
+  isPlaying = false;
   
   allInitial();
 }
@@ -338,6 +341,7 @@ final String[] scoretext = {"敵・弾撃破: ", "残り時間: ", "合計: "};
 
 int[] Maxscore;
 
+int remaintime;       //ボス面の残りタイム
 int scorecount;       //score表示用カウント
 int vsn;              //変化するスコアがどれか　　1:敵・弾撃破によるスコア　2:残り時間によるボーナススコア　3:合計
 float[] exscore;      //表示するスコア
@@ -376,6 +380,12 @@ void changeScene(){
   time = times[scene-1];
   
   switch(scene){
+    
+    //道中
+    case 3:
+      isPlaying = true;
+      break;
+    
     //ボス出現
     case 4:
       _bossappear = 1;
@@ -389,10 +399,15 @@ void changeScene(){
       boss = new Boss(width/8.0*7, height/2.0);
       break;
       
+    case 6:
+      remaintime = wholecount;
+      break;
+      
     //スコア表示画面
     case 7:
       send();
       sendable = false;
+      isPlaying = false;
       _bossappear = _kill = _damaged = _reflect = 0;
       scoreinitial();
       break;
@@ -416,7 +431,7 @@ void scoreinitial(){
   
   Maxscore = new int[variousnum];
   Maxscore[0] = score;
-  Maxscore[1] = scorePertime* (times[4] - wholecount);
+  Maxscore[1] = scorePertime* (times[4] - remaintime);
   Maxscore[2] = Maxscore[0]+Maxscore[1];
   
   expressfinish = false;
@@ -527,7 +542,7 @@ void send(){
   mes.add(_damaged);
   mes.add(_kill);
   mes.add(_bossappear);
-  mes.add(expressfinish ? 0:1);
+  mes.add(isPlaying ? 1:0);
   
   osc.send(mes, address);
 }

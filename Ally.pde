@@ -1,6 +1,8 @@
 //プレイヤー
 class Player extends Enemy{
   final float abledifference = 10.0;    //壁を作るときに許容される誤差
+  final int ATbframe         = 5;        //攻撃するときに現在と角度を比べるベクトルが何フレーム前のものか
+  final float eraseablelen   = 30;      //角度を変えたときにもう一度消したと認識される長さ
   
   float bx, by;            //1フレーム前の座標
   
@@ -165,8 +167,6 @@ class Player extends Enemy{
     bATflag = ATflag;
   }
   
-  final int ATbframe       = 5;        //攻撃するときに現在と角度を比べるベクトルが何フレーム前のものか
-  final float eraseablelen = 10;      //角度を変えたときにもう一度消したと認識される長さ
   float dirx, diry;        //角度が変わったとき、もしくは当たり判定に入ったときの座標
   int bframecount;         //値がatbframeになるまで++
   boolean alleover;        //どの敵とも重なっていなかったらfalse
