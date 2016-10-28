@@ -277,6 +277,8 @@ class Reflect extends Shuriken{
 //反射可能
 class Strong extends Reflect{
   
+  Strong(){}
+  
   //x, yは中心座標
   Strong(float x, float y){
     this.x = x;

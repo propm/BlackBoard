@@ -32,7 +32,7 @@ Home home;
 MyObj title;
 
 final int MAXchoke = 11100;
-final int[] times = {-1, -1, 60*1, 60*1, 60*60, 60*10, -1, 60*15};    //sceneと対応　　　-1は時間制限なし
+final int[] times = {-1, -1, 60*1, 60*3, 60*60, 60*10, 60*20, 60*1};    //sceneと対応　　　-1は時間制限なし
 final int sendframes = 2;      //_bossappearなどの変数の中身を外部プログラムに送るときの信号の長さ
 final int Scoretime  = 60*1;   //scoreの数字を何秒間変化させるか
 final int scorePertime = 5;    //残り時間1フレームあたり何点もらえるか
@@ -42,6 +42,7 @@ boolean backspace, space;    //backspace、spaceが押されている間true
 boolean isStop;
 boolean isDebag;             //デバッグモードならtrue
 boolean isMouse;             //mouseでプレイヤーを操作するときはtrue
+boolean sendable;
 
 int time;            //次のシーンに入るまでの時間を入れる
 int score, choke;    //普通のスコア、現在の粉エネルギー
@@ -66,7 +67,7 @@ void settings(){
   
   minim = new Minim(this);    //音楽・効果音用
   osc = new OscP5(this, 1234);
-  address = new NetAddress("172.23.5.84", 1234);
+  address = new NetAddress("10.0.1.205", 1234);
   
   rt = new ReadText();
   db = new DataBase();        //データベース
@@ -139,6 +140,7 @@ void allInitial(){
   time = times[scene-1];
   wholecount = 0;
   combo = 0;
+  sendable = true;
   
   _reflect = _damaged = _bossappear = 0;
 }
@@ -191,6 +193,9 @@ void process(){
       if(!expressfinish)  scoreprocess();
       break;
   }
+  
+  if(sendable)  send();
+  else          sendable = true;
 }
 
 //描画用関数
@@ -206,7 +211,6 @@ void drawing(){
       break;
     
     case 2:
-      changeScene();
       break;
       
     case 5:
@@ -226,6 +230,8 @@ void drawing(){
         if(i == variousnum-1)  a++;
         text(scoretext[i]+(int)exscore[i], (int)((float)width/2), (int)((float)height/14*(a*3+3)));
       }
+      
+      text((times[scene-1]- wholecount)/60, (float)width/30*2, (float)height/10*2);
       break;
   }
   
@@ -325,8 +331,6 @@ void battle(){
   cadaver(bullets);
   cadaver(walls);
   if(boss != null)  boss.cadaver();
-  
-  send();
 }
 
 final int variousnum = 3;          //表示する数字がいくつあるか
@@ -368,6 +372,7 @@ void scoreprocess(){
 //シーン変更
 void changeScene(){
   scene++;
+  if(scene >= times.length)  scene = 1;
   time = times[scene-1];
   
   switch(scene){
@@ -380,11 +385,15 @@ void changeScene(){
     
     //ボス面
     case 5:
+      _bossappear = 0;
       boss = new Boss(width/8.0*7, height/2.0);
       break;
       
     //スコア表示画面
     case 7:
+      send();
+      sendable = false;
+      _bossappear = _kill = _damaged = _reflect = 0;
       scoreinitial();
       break;
       
@@ -518,7 +527,8 @@ void send(){
   mes.add(_damaged);
   mes.add(_kill);
   mes.add(_bossappear);
-  mes.add(expressfinish ? 1:0);
+  mes.add(expressfinish ? 0:1);
+  
   osc.send(mes, address);
 }
 

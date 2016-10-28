@@ -7,6 +7,7 @@ class DataBase{
   final float boardw  = 79.8913*2;
   
   final float boardrate = boardh/boardw;
+  final int otherobjsize = 7;
   
   String[] objects;              //オブジェクトの名前
   float scwhrate;                //width/1600.0
@@ -47,6 +48,7 @@ class DataBase{
     otherobj.add(new Bullet());
     otherobj.add(new Shuriken());
     otherobj.add(new Reflect());
+    otherobj.add(new Strong());
     
     oriEnemys.add(new Attacker());
     oriEnemys.add(new Sin());
@@ -200,6 +202,9 @@ class DataBase{
       case 5:    //反射弾
         Reflect ref = (Reflect)otherobj.get(num);
         ref.reversename = "reflect_reverse.mp3";
+      case 6:
+        //Strong st = (Strong)otherobj.get(num);
+        break;
     }
   }
   
