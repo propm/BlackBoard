@@ -32,7 +32,7 @@ Home home;
 MyObj title;
 
 final int MAXchoke = 11100;
-final int[] times = {-1, -1, 60*1, 60*3, 60*60, 60*10, 60*20, 60*1};    //sceneと対応　　　-1は時間制限なし
+final int[] times = {-1, -1, 60*1, 60*3, 60*60, 60*5, 60*20, 60*1};    //sceneと対応　　　-1は時間制限なし
 final int sendframes = 2;      //_bossappearなどの変数の中身を外部プログラムに送るときの信号の長さ
 final int Scoretime  = 60*1;   //scoreの数字を何秒間変化させるか
 final int scorePertime = 5;    //残り時間1フレームあたり何点もらえるか
@@ -68,7 +68,7 @@ void settings(){
   
   minim = new Minim(this);    //音楽・効果音用
   osc = new OscP5(this, 1234);
-  address = new NetAddress("172.23.5.5", 1234);
+  address = new NetAddress("172.23.5.4", 1234);
   
   rt = new ReadText();
   db = new DataBase();        //データベース
@@ -376,7 +376,7 @@ void scoreprocess(){
 //シーン変更
 void changeScene(){
   scene++;
-  if(scene >= times.length)  scene = 1;
+  if(scene >= times.length)  allInitial();
   time = times[scene-1];
   
   switch(scene){
@@ -558,7 +558,7 @@ void stop(){
 
 void stop(boolean a){
   if(bgm != null)  bgm.close();
-  soundsstop();
+  //soundsstop();
 }
 
 void soundsstop(){
