@@ -36,6 +36,7 @@ final int[] times = {-1, -1, 60*1, 60*3, 60*60, 60*5, 60*20, 60*1};    //scene�
 final int sendframes = 2;      //_bossappearなどの変数の中身を外部プログラムに送るときの信号の長さ
 final int Scoretime  = 60*1;   //scoreの数字を何秒間変化させるか
 final int scorePertime = 5;    //残り時間1フレームあたり何点もらえるか
+final int scoremarginf = 10;   //スコアを表示するときの間の時間
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
@@ -65,6 +66,7 @@ int _bossappear;
 
 void settings(){
   isMouse = true;
+  isDebag = false;
   
   minim = new Minim(this);    //音楽・効果音用
   osc = new OscP5(this, 1234);
@@ -94,7 +96,6 @@ void setup(){
   
   db.setobjects();
   firstinitial = true;
-  isDebag = true;
   backspace = space = false;
   
   font = createFont("あんずもじ", 48);
@@ -136,7 +137,8 @@ void allInitial(){
     bgm.loop();
   }catch(Exception e){}
   
-  score = choke = 0;
+  score = 0;
+  choke = MAXchoke;
   isStop = false;
   
   scene = 1;

@@ -201,6 +201,10 @@ class Player extends Enemy{
         case 4:
         case 5:
         case 6:
+          if(b.num == 6){
+            Strong st = (Strong)b;
+            if(st.isReflected)  continue;
+          }
           if(bdicision(b)){
             if(!b.bisOver){
               b.hp--;
