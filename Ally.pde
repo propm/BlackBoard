@@ -31,7 +31,7 @@ class Player extends Enemy{
   
   
   Player(){}
-   
+  
   Player(int side){
     if(db.otherobj.size() > 0){
       initial();

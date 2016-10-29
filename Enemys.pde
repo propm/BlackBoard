@@ -226,9 +226,12 @@ class Parachuter extends Attacker{
 //大砲
 class Cannon extends Enemy{
   final int chargeframe = 60*3;  //何フレームチャージするか
+  final int effectnum   = 6;     //一つの円でいくつの弾を表示するか
   boolean once;
+  boolean isCharge;
   
-  ArrayList<Enemy> chargeeffect;
+  ArrayList<Particle> chargeeffect;
+  PVector chargexy;
   
   AudioSample charge;    //チャージするときの音
   AudioSample appear;    //召喚時の音
@@ -257,6 +260,10 @@ class Cannon extends Enemy{
     float bimgy = imgy;
     imgy = y - marginy;
     movePolygon(0, imgy-bimgy);
+    
+    chargeeffect = new ArrayList<Particle>();
+    chargexy = new PVector(x, y+h/2);
+    isCharge = true;
     
     if(appear != null && !soundstop)  appear.trigger();
   }
@@ -288,11 +295,19 @@ class Cannon extends Enemy{
   void attack(){
     super.attack();
     
-    if(Bcount >= Bi - chargeframe){
-      if(Bcount == Bi - chargeframe)  once = true;
-      charge();
+    if(isCharge){
+      //charge();
+    }else{
+      charge.stop();
     }
-    else   charge.stop();
+      
+    if(Bcount == Bi - chargeframe){
+      once = true;
+      if(charge != null)  charge.trigger();
+      isCharge = true;
+    }else if(Bcount == 0){
+      isCharge = false;
+    }
   }
   
   void soundstop(){
@@ -303,10 +318,21 @@ class Cannon extends Enemy{
   
   void charge(){
     if(once){
-      if(charge != null && !soundstop)  charge.trigger();
       once = false;
+      //for(int i = 0; i < 
+    }
+    for(int i = 0; i < chargeeffect.size(); i++){
+      chargeeffect.get(i).move();
+      
     }
   }
+  
+  /*void draw(){
+    tint(255, 0, 0, alpha);
+    image(image, imgx, imgy);
+    noTint();
+    pol.Draw();
+  }*/
 }
 
 //******************************************************************************************************
