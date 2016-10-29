@@ -9,6 +9,7 @@ import ddf.minim.analysis.*;
 import ddf.minim.ugens.*;
 import ddf.minim.effects.*;
 import processing.net.*;
+import codeanticode.syphon.*;
 
 ScrollManager sm;
 ReadText rt;
@@ -22,6 +23,7 @@ OscP5       osc;
 NetAddress address;
 
 Client client;
+SyphonServer server;
 
 ArrayList<Enemy>     enemys;
 ArrayList<Bullet>    bullets;
@@ -32,7 +34,7 @@ Home home;
 MyObj title;
 
 final int MAXchoke = 11100;
-final int[] times = {-1, -1, 60*90, -1, 60*60, -1, 60*20, 60*23};    //sceneと対応　　　-1は時間制限なし
+final int[] times = {-1, -1, 60*60, -1, 60*60, -1, 60*20, 60*23};    //sceneと対応　　　-1は時間制限なし
 final int sendframes = 2;      //_bossappearなどの変数の中身を外部プログラムに送るときの信号の長さ
 final int Scoretime  = 60*1;   //scoreの数字を何秒間変化させるか
 final int scorePertime = 5;    //残り時間1フレームあたり何点もらえるか
@@ -71,11 +73,11 @@ int _bossappear;
 
 void settings(){
   isMouse = true;
-  isDebag = true;
+  isDebag = false;
   
   minim = new Minim(this);    //音楽・効果音用
   osc = new OscP5(this, 12345);
-  address = new NetAddress("172.23.5.4", 12345);
+  address = new NetAddress("172.23.5.5", 12345);
   
   rt = new ReadText();
   db = new DataBase();        //データベース
@@ -89,13 +91,17 @@ void settings(){
   //databaseセット
   db.initial();
   
-  size(db.screenw, db.screenh, P2D);
+  size(db.screenw, db.screenh, P3D);
+  PJOGL.profile = 1;
   noSmooth();
   
   if(!isMouse)  kinectinit();
 }
 
 void setup(){
+  server = new SyphonServer(this, "processing Syphon");
+  PJOGL.profile = 1;
+  
   db.settitle();        //settingではdataが読み込まれていないからか、素材が読み込めない
   db.scwhrate = width/1600.0;
   
@@ -164,8 +170,11 @@ void allInitial(){
 void draw(){
   if(!isStop){
     process();
+    server.sendScreen();
     if(scene != 2)  drawing();
   }
+  
+//  println(isPlaying);
 }
 
 //処理用関数
@@ -175,16 +184,6 @@ void process(){
   //座標の取得
   if(!isMouse)  kinectupdate();
   
-  //時間によってシーン変更
-  if(time > 0){
-    if(wholecount >= time){
-      changeScene();
-      process();
-      wholecount--;
-      return;
-    }
-  }
-  
   if(isGameOver && gameoveronce){
     gameoveronce = false;
     scene = 8;
@@ -193,6 +192,16 @@ void process(){
     soundsstop();
     soundstop = true;
     bgm.close();
+  }
+  
+  //時間によってシーン変更
+  if(time > 0){
+    if(wholecount >= time){
+      changeScene();
+      process();
+      wholecount--;
+      return;
+    }
   }
   
   if(scene < 3 || scene > 5)  for(int i = 0; i < player.length; i++)  player[i].update();
@@ -211,6 +220,12 @@ void process(){
       break;
     case 7:
       if(!expressfinish)  scoreprocess();
+      else{
+        score = 0;
+        for(int i = 0; i < variousnum; i++)
+          score += Maxscore[i];
+        send();
+      }
       break;
     case 8:
       soundstop = true;
@@ -418,7 +433,6 @@ void scoreprocess(){
     if(exscore[vsn] != Maxscore[vsn])  exscore[vsn] = Maxscore[vsn];    //表示したいスコアを越えていたら戻す
     if(vsn >= variousnum-1){
       expressfinish = true;
-      score += Maxscore[1];
       return;
     }
     
@@ -434,7 +448,10 @@ void scoreprocess(){
 //シーン変更
 void changeScene(){
   scene++;
-  if(scene > times.length-1)  allInitial();
+  if(scene > times.length-1){
+    
+    allInitial();
+  }
   time = times[scene-1];
   
   switch(scene){
@@ -464,12 +481,12 @@ void changeScene(){
     //スコア表示画面
     case 7:
       boss = null;
+      scoreinitial();
       send();                //変更前のスコアを送る
       sendable = false;      //ここでsendしたので、processのsendは呼ばない
       isPlaying = false;     //プレイ終了
       
       _bossappear = _kill = _damaged = _reflect = 0;
-      scoreinitial();
       break;
   }
   
@@ -484,7 +501,6 @@ void scoreinitial(){
   
   scorecount = 0;
   vsn = 0;
-  plusscore = (float)score/Scoretime;
   
   Maxscore = new int[variousnum];
   Maxscore[0] = score;                                            //敵・弾撃破スコア
@@ -493,7 +509,14 @@ void scoreinitial(){
   Maxscore[3] = bossdestroyscore;                                 //ボス撃破スコア
   Maxscore[4] = Maxscore[0]+Maxscore[1]+Maxscore[2]+Maxscore[3];  //合計
   
+  //for(int i = 0; i < Maxscore.length; i++)
+    //plusscore[i] = (float)Maxscore[i]/Scoretime;
+  
+  plusscore = (float)score/Scoretime;
+  
   expressfinish = false;
+  
+  score = Maxscore[4];
 }
 
 //画像反転用関数
@@ -556,6 +579,7 @@ void mouseReleased(){
 
 void keyPressed(){
   switch(keyCode){
+    
     case RIGHT:
       player[0].key = 1;
       break;
@@ -656,8 +680,8 @@ Client Ly1client, Ly2client, Lz1client, Lz2client;
   String RIP;
   
   void kinectinit(){
-    LIP = "10.0.1.204";
-    RIP = "10.0.1.186";
+    LIP = "172.23.9.217";
+    RIP = "172.23.2.59";
     
     Ly1client = new Client(this, LIP, 50005);
     Ly2client = new Client(this, LIP, 60006);
@@ -690,7 +714,7 @@ Client Ly1client, Ly2client, Lz1client, Lz2client;
       else if(side == 1)  return (width*(1.0-rateX))/2.0 + width/2.0;
     }
     
-    return 0;
+    return -100;
   }
   
   float getPositionY1(int side){
@@ -736,6 +760,7 @@ void GetRight(){
      {
          Ry1 = (float)Integer.reverseBytes(ByteBuffer.wrap(Ry1client.readBytes(4)).getInt())/10000.0;
      }
+     
      
      if(Ry2client.available() >= 4)
      {

@@ -333,8 +333,8 @@ class Bullet extends MyObj{
   //普通の弾のinitial
   void sinitial(){
     col[0] = 255;
-    col[1] = 134;
-    col[2] = 0;
+    col[1] = 255;
+    col[2] = 255;
     
     h = (int)(4*db.scwhrate);
     damage = 2;

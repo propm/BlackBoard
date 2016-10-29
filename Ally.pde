@@ -197,10 +197,12 @@ class Player extends Enemy{
       Bullet b = bullets.get(i);
       
       switch(b.num){
+        case 6:
+          Strong st = (Strong)b;
+          if(st.isReflected)  break;
         case 0:
         case 4:
         case 5:
-        case 6:
           if(bdicision(b)){
             if(!b.bisOver){
               b.hp--;
@@ -288,6 +290,7 @@ class Player extends Enemy{
       score += getscore(e);
       choke += e.maxhp*e.energy;
       _kill = sendframes;
+      if(choke > MAXchoke)  choke = MAXchoke;
     }
   }
   
@@ -416,6 +419,7 @@ class Home extends MyObj{
     if(bhp != hp){
       _damaged = sendframes;
       if(damaged != null && !soundstop)  damaged.trigger();
+      println(hp);
       
       if(hp <= 0){
         hp = 0;
