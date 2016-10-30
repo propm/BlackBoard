@@ -117,6 +117,8 @@ class Player extends Enemy{
     }else{
       readXYZ();
     }
+    
+    //println("side:"+side+" "+" x:"+x+" y:"+y);
   }
   
   void setBver(){
@@ -155,7 +157,8 @@ class Player extends Enemy{
     if(!ATflag)  bframecount = 0;
     
     if(abs(x - createxy.x) <= abledifference && abs(y - createxy.y) <= abledifference){
-      if(ATflag)  createwall();
+      if(ATflag){
+        /*if(x >= home.border)*/  createwall();}
       else        count = 0;
     }else{
       createflag = false;
@@ -197,9 +200,6 @@ class Player extends Enemy{
       Bullet b = bullets.get(i);
       
       switch(b.num){
-        case 6:
-          Strong st = (Strong)b;
-          if(st.isReflected)  break;
         case 0:
         case 4:
         case 5:
@@ -308,6 +308,7 @@ class Player extends Enemy{
       Reflect ref = (Reflect)b;
       if(judge(new PVector(ref.x, ref.y), ref.r, convex))  result = true;
     }
+    
     return result;
   }
   

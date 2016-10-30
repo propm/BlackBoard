@@ -211,6 +211,7 @@ class Standard extends Bullet{
     damage = 5;
     hp = 1;
     num = 4;
+    energy = 75;
     
     col[0] = 129;
     col[1] = 41;

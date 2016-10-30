@@ -26,19 +26,19 @@ appearの秒数は複数指定することができる
 
 <size>2000
 
-<appear>Parachuter: 1s, 2s, 3s, 4s, 21s,28s,30s,40s,45s,53s,58s
-/<appear>Sin: 3s, 6s, 9s, 12s, 15s, 18s, 21s, 24s, 27s, 30s,33s,36s,39s,42s,45s,48s,51s,54s
-/<appear>Ninja: 20s,50s
-/<appear>Cannon:10s,20s,50s,57s
-/<appear>Cannon:181,50: 60s,80s,83s,85s
-/<appear>Cannon:450,100: 62s,70s,74s,85s
-/<appear>Cannon:800,50: 64s,63s,70s,78s,83s
-/<appear>Cannon:1300,100: 65s,7s,85s
-/<appear>Cannon:1650,50: 60s,70s,83s,85s 
-/<appear>Cannon:1900,50: 62s,65s,70s,88s
-/<bgm> "Exothermic-douchu.wav": 0s
-/<appear>Tangent: 30s,50s
-/<appear>Attacker: 1s, 3s, 4s, 5s, 6s, 7s, 8s, 9s,10s,11s,12s,13s, 14s, 16s, 18s,20s
-/<appear>Attacker: 22s, 24s, 26s, 28s, 30s,36s,39s,45s,46s,51s,55s,56s,57s
-/<appear>Attacker:1800, 1: 4s,6s,8s,10s,13s,15s,18s,25s,26s,27s,31s,32s,33s,38s,40s,50s
-/<appear>Attacker:1700,1: 8s,10s,17s,25s,26s,27s,40s,45s,50s,55s
+<appear>Parachuter: 21s,28s,30s,40s,45s,53s,58s
+<appear>Sin: 3s, 6s, 9s, 12s, 15s, 18s, 21s, 24s, 27s, 30s,36s,39s,42s,45s,48s,51s,54s
+<appear>Ninja: 20s,50s
+<appear>Cannon:10s,20s,50s,57s
+<appear>Cannon:181,50: 60s,80s,85s
+<appear>Cannon:450,100: 62s,70s,74s,85s
+<appear>Cannon:800,50: 64s,63s,78s,83s
+<appear>Cannon:1300,100: 65s,7s,85s
+<appear>Cannon:1650,50: 60s,83s,85s 
+<appear>Cannon:1900,50: 62s,65s,70s,88s
+<bgm> "Exothermic-douchu.wav": 0s
+<appear>Tangent: 30s,50s
+<appear>Attacker: 1s, 3s, 4s, 5s, 6s, 7s, 8s, 9s,10s,11s,12s,13s, 14s, 16s, 18s,20s
+<appear>Attacker: 22s,26s, 28s,36s,39s,45s,46s,51s,55s,56s,57s
+<appear>Attacker:1800, 1: 4s,6s,8s,10s,13s,15s,18s,25s,31s,32s,38s,40s,50s
+<appear>Attacker:1700,1: 8s,17s,25s,27s,45s,50s,55s

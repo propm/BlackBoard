@@ -171,7 +171,6 @@ class DataBase{
           break;
         case 8:
           String filename = "parachuter_attack.png";
-          println(filename);
           setImage(e, filename);
           setOriPolygon(e, i);
           break;
@@ -264,7 +263,6 @@ class DataBase{
   
   //画像設定
   void setImage(Enemy e, String filename){
-    println(number);
     setImage(e, filename, 20.0);
   }
   

@@ -279,6 +279,7 @@ class Bullet extends MyObj{
   
   int[] col;       //色
   boolean bisOver;
+  //boolean isOver;
   PVector length;       //弾の長さ
   
   ArrayList<PVector> bver;
