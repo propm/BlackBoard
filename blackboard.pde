@@ -9,7 +9,7 @@ import ddf.minim.analysis.*;
 import ddf.minim.ugens.*;
 import ddf.minim.effects.*;
 import processing.net.*;
-import codeanticode.syphon.*;
+//import codeanticode.syphon.*;
 
 ScrollManager sm;
 ReadText rt;
@@ -23,7 +23,7 @@ OscP5       osc;
 NetAddress address;
 
 Client client;
-SyphonServer server;
+//SyphonServer server;
 
 ArrayList<Enemy>     enemys;
 ArrayList<Bullet>    bullets;
@@ -73,7 +73,7 @@ int _bossappear;
 
 void settings(){
   isMouse = true;
-  isDebag = false;
+  isDebag = true;
   
   minim = new Minim(this);    //音楽・効果音用
   osc = new OscP5(this, 12345);
@@ -91,16 +91,15 @@ void settings(){
   //databaseセット
   db.initial();
   
-  size(db.screenw, db.screenh, P3D);
-  PJOGL.profile = 1;
+  size(db.screenw, db.screenh, P2D);
+  //PJOGL.profile = 1;
   noSmooth();
   
   if(!isMouse)  kinectinit();
 }
 
 void setup(){
-  server = new SyphonServer(this, "processing Syphon");
-  PJOGL.profile = 1;
+  //server = new SyphonServer(this, "processing Syphon");
   
   db.settitle();        //settingではdataが読み込まれていないからか、素材が読み込めない
   db.scwhrate = width/1600.0;
@@ -170,11 +169,10 @@ void allInitial(){
 void draw(){
   if(!isStop){
     process();
-    server.sendScreen();
+    //server.sendScreen();
     if(scene != 2)  drawing();
   }
   
-//  println(isPlaying);
 }
 
 //処理用関数

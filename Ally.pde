@@ -374,7 +374,7 @@ class Home extends MyObj{
   String damagedname;
   
   Home(){
-    if(db.otherobj.size() > 1){
+    if(db.otherobj.size() > 0){
       initial();
     }
   }
@@ -419,7 +419,6 @@ class Home extends MyObj{
     if(bhp != hp){
       _damaged = sendframes;
       if(damaged != null && !soundstop)  damaged.trigger();
-      println(hp);
       
       if(hp <= 0){
         hp = 0;

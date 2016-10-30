@@ -4,7 +4,7 @@ class Attacker extends Enemy{
   boolean flag = false;
   
   Attacker(){
-    if(db.oriEnemys.size() >= 7){
+    if(db.oriEnemys.size() > 0){
       x = random(width)+width/3*2;
       initial();
     }
@@ -119,7 +119,7 @@ class Tangent extends Sin{
   
   //初期化
   void initialize(){
-    if(db.oriEnemys.size() >= 7){
+    if(db.oriEnemys.size() > 0){
       initial(3);  //初期設定をコピー
       
       float imgw = imgs.get(0).width;
@@ -178,9 +178,10 @@ class Tangent extends Sin{
 class Parachuter extends Attacker{
   float stopy;           //ジェットパックを使い始めるy座標
   boolean change;
+  int changecount;
   
   Parachuter(){
-    if(db.oriEnemys.size() >= 7){
+    if(db.oriEnemys.size() > 0){
       x = random(width/2)+width/3*2;
       y = -height/3;
       initialize();
@@ -196,6 +197,7 @@ class Parachuter extends Attacker{
   void initialize(){
     initial(4);      //初期設定をコピー
     
+    changecount = 0;
     change = false;
     stopy = random(height/3.0*2-h)+height/3.0;
   }
@@ -206,18 +208,43 @@ class Parachuter extends Attacker{
   
   //形態変化
   void formChange(){
-    if(y >= stopy && !change){
-      change = true;
-      isCrasher = true;
-      if(AT != null && !soundstop)  AT.trigger();
+    if(!change){
       
-      initial(1);
-      charanum = 4;
-      y = stopy;
-      image = imgs.get(1);
-      v.set(v.x*5, 0);
-      pol.v = v.copy();
+      //傘回す
+      if(changecount++ > 20){
+        if(image == imgs.get(0))  image = imgs.get(1);
+        else if(image == imgs.get(1))  image = imgs.get(0);
+        changecount = 0;
+      }
+    
+      //突撃形態へ
+      if(y >= stopy){
+        change = true;
+        isCrasher = true;
+        if(AT != null && !soundstop)  AT.trigger();
+        
+        initial(1);
+        formCopy();
+        charanum = 4;
+        y = stopy;
+        v.set(v.x*5, 0);
+        pol.v = v.copy();
+      }
     }
+  }
+  
+  //突撃形態になるときに画像を変更
+  void formCopy(){
+    Parachuter para = (Parachuter)db.oriEnemys.get(8-1);
+    w = para.w;
+    h = para.h;
+    image = para.imgs.get(0).copy();
+    pol = new Polygon(para.pol.ver);
+    pol.Init();
+    movePolygon(imgx, imgy);
+    
+    imgs.remove(1);
+    imgs.set(0, image);
   }
 }
 
@@ -239,7 +266,7 @@ class Cannon extends Enemy{
   String chargename, appearname;
   
   Cannon(){
-    if(db.oriEnemys.size() >= 7){
+    if(db.oriEnemys.size() > 0){
       x = random(width/11.0*10)+ width/11.0;
       y = random(height);
       initial();
@@ -351,7 +378,7 @@ class Ninja extends Enemy{
   }
   
   Ninja(float x, float y){
-    if(db.oriEnemys.size() >= 7){
+    if(db.oriEnemys.size() > 0){
       this.x = x;
       this.y = y;
       initial();
