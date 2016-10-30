@@ -34,7 +34,7 @@ Home home;
 MyObj title;
 
 final int MAXchoke = 11100;
-final int[] times = {-1, -1, 60*60, -1, 60*60, -1, 60*20, 60*23};    //sceneと対応　　　-1は時間制限なし
+final int[] times = {-1, -1, 60*1, -1, 60*60, -1, 60*20, 60*23};    //sceneと対応　　　-1は時間制限なし
 final int sendframes = 2;      //_bossappearなどの変数の中身を外部プログラムに送るときの信号の長さ
 final int Scoretime  = 60*1;   //scoreの数字を何秒間変化させるか
 final int scorePertime = 5;    //残り時間1フレームあたり何点もらえるか

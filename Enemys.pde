@@ -472,6 +472,14 @@ class Boss extends Enemy{
   final int rbs = 20;
   final float reffreq = 2.5;
   final int stantime  = 60*7;
+  final float ALPHA = 255;  //最大不透明度
+  final int stealfreq = 60; //透明度が変わる方向が何フレームで変化するか
+  
+  final float alphav = 5;   //不透明度の増減の速さ(1フレームにどれだけ不透明度が変化するか)
+  boolean isStealth;        //透明化するときtrue
+  
+  int stealthcount;
+  int Scount;
   
   float basicy;
   int sc;     //通常弾count
@@ -522,6 +530,11 @@ class Boss extends Enemy{
     
     plustheta = 360.0/width*7.0*standardbs;
     
+    Scount = 0;
+    stealthcount = 0;
+    alpha = ALPHA;
+    isStealth = false;
+    
     sc = rc = 0;
     theta = 0;
     stancount = 0;
@@ -557,6 +570,7 @@ class Boss extends Enemy{
   
   //跳ね返された反射可能弾との判定
   void dicision(){
+    println(isStan);
     if(isStan)  stancount++;
     if(stancount > stantime){
       isStan = false;
@@ -608,6 +622,29 @@ class Boss extends Enemy{
     }
   }
   
+  void stealth(){
+    //一定周期で点滅
+    if(stealthcount++ > stealfreq){
+      isStealth = !isStealth;
+      stealthcount = 0;
+    }
+    
+    if(isStealth){
+      alpha -= alphav;
+      if(alpha < 0){
+        isStealth = false;
+        alpha = 0;
+      }
+    }else{
+      if(Scount < 15)  Scount++;          //消えている時間
+      else            alpha += alphav;
+      if(alpha >= ALPHA){
+        alpha = ALPHA;
+        Scount = 0;
+      }
+    }
+  }
+  
   void update() {
     count++;
     
@@ -638,6 +675,7 @@ class Boss extends Enemy{
           move();
           attack();
           bisStan = isStan;
+          stealth();
         }
         dicision();
         break;
@@ -714,7 +752,9 @@ class Boss extends Enemy{
         }
         else {
           // 戦闘状態なら
+          tint(255, alpha);
           image(boss1, imgx, imgy);
+          noTint();
         }
         
         break;
