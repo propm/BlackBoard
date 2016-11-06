@@ -9,6 +9,9 @@ class Polygon {
   int wallside;    //壁のどの辺に衝突しているか  右の辺なら1    範囲：1～4
   int collidenum;  //衝突した多角形の辺の番号
   PVector wallxy;  //衝突した壁の座標
+  PVector bv;      //1フレーム前の方向ベクトル
+  Polygon convex;  //凸包保存
+  
   MyObj owner;     //当たり判定の持ち主
 
   Polygon() {
@@ -56,6 +59,7 @@ class Polygon {
     this.v = new PVector(0, 0, 0);
     this.isCollide = false;
     this.wallside = 0;
+    bv = new PVector(-1, -1, -1);    //v以外ならなんでもいい
   }
 
   void Reverse(int w) {
@@ -156,19 +160,23 @@ class Polygon {
       next.add(add(ver.get(j), v));
 
     // 判定用　移動前と移動後の凸包
-    Polygon jpol = createConvex(ver, next);
-    jpol.Draw();
+    // 方向ベクトルが変わってないなら形は変化しない(衝突していなければその形のまま移動する)
+    if(bv.x != v.x || bv.y != v.y){
+      convex = createConvex(ver, next);
+    }else if(!isCollide){
+      for(int i = 0; i < convex.ver.size(); i++)
+        convex.ver.get(i).add(v);
+    }
+    convex.Draw();
 
     float mint = 1000;
-    int sidecount;    //多角形の1つの辺で1つの壁のいくつの辺と交わっているか
     
     //すべての壁について調べる
     for (int i = 0; i < walls.size(); i++) {
       Polygon polygon1 = walls.get(i).pol;
-      sidecount = 0;
 
       // ここで衝突する壁があれば調べる
-      if (judge(jpol, polygon1)) {
+      if (judge(convex, polygon1)) {
         if(isCollide)  break;    //前フレームで衝突していたならこのあとの処理はなし
 
         for (int j = 0; j < ver.size(); j++) {
@@ -244,6 +252,8 @@ class Polygon {
         ver.get(i).add(owner.v);
       }
     }
+    
+    bv = v.copy();
   }
 }
 

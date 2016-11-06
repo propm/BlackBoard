@@ -337,10 +337,10 @@ class Player extends Enemy{
     }
   }
   
-  void soundstop(){
-    super.soundstop();
-    if(create != null)  create.stop();
-    if(erase != null)   erase.stop();
+  void soundclose(){
+    super.soundclose();
+    if(create != null)  create.close();
+    if(erase != null)   erase.close();
   }
   
   void draw(){
@@ -511,9 +511,9 @@ class Home extends MyObj{
     }
   }
   
-  void soundstop(){
-    super.soundstop();
-    if(damaged != null)  damaged.stop();
+  void soundclose(){
+    super.soundclose();
+    if(damaged != null)  damaged.close();
   }
   
   void draw(){
@@ -664,9 +664,9 @@ class Wall extends MyObj{
     }
   }
   
-  void soundstop(){
-    super.soundstop();
-    if(reflect != null)  reflect.stop();
+  void soundclose(){
+    super.soundclose();
+    if(reflect != null)  reflect.close();
   }
   
   void draw(){

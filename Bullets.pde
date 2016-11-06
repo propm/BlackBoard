@@ -254,6 +254,9 @@ class Reflect extends Shuriken{
     reverse = db.setsound(ref.reversename);
   }
   
+  //反射できなくなるからこの処理はなし
+  void outdicision(){};
+  
   void plus(){
     //反射
     

@@ -34,8 +34,8 @@ class MyObj implements Cloneable{
     }
   }
   
-  void soundstop(){
-    if(die != null)  die.stop();
+  void soundclose(){
+    //if(die != null)  die.close();
   }
 }
 
@@ -249,10 +249,10 @@ class Enemy extends MyObj{
     return wasAttack;
   }
   
-  void soundstop(){
-    super.soundstop();
-    if(AT != null)  AT.stop();
-    if(bul != null)  bul.stop();
+  void soundclose(){
+    super.soundclose();
+    if(AT != null)  AT.close();
+    if(bul != null)  bul.close();
   }
   
   //描画
@@ -369,8 +369,15 @@ class Bullet extends MyObj{
   
   void update(){
     move();
+    outdicision();
     setBver();
     plus();
+  }
+  
+  //上下の画面外に出たらこのインスタンスを削除
+  void outdicision(){
+    //どんな角度でもこれを満たせば外に出ている
+    if(y+length.mag() < 0 || y-length.mag() > height)  isDie = true;
   }
   
   void plus(){
@@ -387,8 +394,8 @@ class Bullet extends MyObj{
     }
   }
   
-  void soundstop(){
-    if(AT != null)  AT.stop();
+  void soundclose(){
+    if(AT != null)  AT.close();
   }
   
   void draw(){

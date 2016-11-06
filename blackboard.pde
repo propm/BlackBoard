@@ -15,7 +15,6 @@ ScrollManager sm;
 ReadText rt;
 DataBase db;
 TimeManager tm;
-CheckText ct;
 
 Minim       minim;
 AudioPlayer bgm;
@@ -25,20 +24,23 @@ NetAddress address;
 Client client;
 //SyphonServer server;
 
-ArrayList<Enemy>     enemys;
-ArrayList<Bullet>    bullets;
-ArrayList<Wall>      walls;
+ArrayList<Enemy>     enemys;    //敵
+ArrayList<Bullet>    bullets;   //弾
+ArrayList<Wall>      walls;     //壁
+ArrayList<AudioSample> dies;    //死ぬときの音を一時的に保持し、数秒後にclose()するためのもの
+ArrayList<Integer> diescount;   //死ぬときの音がcloseされるまでカウントする
 Boss boss;
 Player[] player;
 Home home;
 MyObj title;
 
 final int MAXchoke = 11100;
-final int[] times = {-1, -1, 60*60, -1, 60*60, -1, 60*20, 60*23};    //sceneと対応　　　-1は時間制限なし
+final int[] times = {-1, -1, 60*60, -1, 60*60, -1, 60*20, 60*18};    //sceneと対応　　　-1は時間制限なし
 final int sendframes = 2;      //_bossappearなどの変数の中身を外部プログラムに送るときの信号の長さ
 final int Scoretime  = 60*1;   //scoreの数字を何秒間変化させるか
 final int scorePertime = 5;    //残り時間1フレームあたり何点もらえるか
 final int scoremarginf = 10;   //スコアを表示するときの間の時間
+final int dietime = 60*2;      //dieが鳴る時間の長さ
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
@@ -117,11 +119,11 @@ void setup(){
 
 //やり直し
 void allInitial(){
-  stop(true);
   
   //一回目以外
   if(!firstinitial){
-    tm = new TimeManager();
+    stop(true);
+    tm = new TimeManager();    //sizeを変更するのがsettingの中でしかできないため、1回目はallInitialにいれることができない
     rt.readCommands();
   }else{
     firstinitial = false;
@@ -132,6 +134,8 @@ void allInitial(){
   enemys = new ArrayList<Enemy>();
   bullets = new ArrayList<Bullet>();
   walls = new ArrayList<Wall>();
+  dies = new ArrayList<AudioSample>();
+  diescount = new ArrayList<Integer>();
   
   player = new Player[isMouse ? 1:2 ];
   for(int i = 0; i < player.length; i++){
@@ -205,8 +209,6 @@ void process(){
   if(scene < 3 || scene > 5)  for(int i = 0; i < player.length; i++)  player[i].update();
   
   switch(scene){
-    case 1:
-      break;
     case 2:
       changeScene();
       break;
@@ -445,9 +447,8 @@ void scoreprocess(){
 
 //シーン変更
 void changeScene(){
-  scene++;
+  scene++; //<>//
   if(scene > times.length-1){
-    
     allInitial();
   }
   time = times[scene-1];
@@ -559,7 +560,23 @@ void cadaver(ArrayList<?> obj){
     o.die();
     
     if(o.isDie){
+      if(o.die != null){
+        dies.add(o.die);        //死ぬときの音を保持、音がcloseされるまでを数えるカウントをセット
+        diescount.add(0);
+      }
+      o.soundclose();
       obj.remove(i);
+      i--;
+    }
+  }
+  
+  //死ぬ音の処理
+  for(int i = 0; i < dies.size(); i++){
+    diescount.set(i, diescount.get(i)+1);
+    if(diescount.get(i) > dietime){
+      dies.get(i).close();
+      dies.remove(i);
+      diescount.remove(i);
       i--;
     }
   }
@@ -639,31 +656,38 @@ void stop(){
 
 void stop(boolean a){
   if(bgm != null)  bgm.close();
-  //soundsstop();
+  if(boss != null)  boss = null;
+  if(home != null)  home = null;
+  if(player != null)  player = null;
+  if(enemys != null)  enemys = null;
+  if(walls != null)   walls = null;
+  if(bullets != null)  bullets = null;
+  
+  soundsstop();
 }
 
 void soundsstop(){
   if(enemys != null)
     for(int i = 0; i < enemys.size(); i++){
-      enemys.get(i).soundstop();
+      enemys.get(i).soundclose();
     }
   
   if(walls != null)
     for(int i = 0; i < walls.size(); i++){
-      walls.get(i).soundstop();
+      walls.get(i).soundclose();
     }
   
   if(bullets != null)
     for(int i = 0; i < bullets.size(); i++){
-      bullets.get(i).soundstop();
+      bullets.get(i).soundclose();
     }
   
-  if(boss != null)  boss.soundstop();
+  if(boss != null)  boss.soundclose();
   if(player != null)
     for(int i = 0; i < player.length; i++)
-      if(player != null)  player[i].soundstop();
+      if(player != null)  player[i].soundclose();
     
-  if(home != null)  home.soundstop();
+  if(home != null)  home.soundclose();
 }
 
 //************************************************************************************::

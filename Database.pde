@@ -41,8 +41,6 @@ class DataBase{
   
   AudioSample warning;
   
-  int number;
-  
   //中身を入れる
   void initial(){
     objects = rt.objects.clone();
@@ -109,7 +107,6 @@ class DataBase{
       e.diename = "enemydestroyed.wav";    //死ぬときの音
       e.bul = setsound("fire.wav");                      //普通弾発射時の音
       String[] imgnames;
-      number = i;
       
       switch(i){
         case 1:

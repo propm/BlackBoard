@@ -149,7 +149,7 @@ class Tangent extends Sin{
       if(bul != null && !soundstop)  bul.trigger();
       out = false;
     }
-    if(y < r/2)  bul.stop();
+    if(y < r/2) if(bul != null)  bul.stop();
   }
   
   void attack(){
@@ -325,7 +325,7 @@ class Cannon extends Enemy{
     if(isCharge){
       //charge();
     }else{
-      charge.stop();
+      if(charge != null)  charge.stop();
     }
       
     if(Bcount == Bi - chargeframe){
@@ -337,10 +337,10 @@ class Cannon extends Enemy{
     }
   }
   
-  void soundstop(){
-    super.soundstop();
-    if(charge != null)  charge.stop();
-    if(appear != null)  appear.stop();
+  void soundclose(){
+    super.soundclose();
+    if(charge != null)  charge.close();
+    if(appear != null)  appear.close();
   }
   
   void charge(){
@@ -570,7 +570,6 @@ class Boss extends Enemy{
   
   //跳ね返された反射可能弾との判定
   void dicision(){
-    println(isStan);
     if(isStan)  stancount++;
     if(stancount > stantime){
       isStan = false;
