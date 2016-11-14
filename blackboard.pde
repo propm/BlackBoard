@@ -184,12 +184,13 @@ void process(){
   //座標の取得
   if(!isMouse)  kinect.update();
   
+  //ゲームオーバーになったときに、シーンを変更する
   if(isGameOver && gameoveronce){
     gameoveronce = false;
     scene = 8;
     wholecount = 0;
     time = times[scene-1];
-    soundsstop();
+    soundsclose();
     soundstop = true;
     bgm.close();
   }
@@ -269,22 +270,20 @@ void drawing(){
     //タイトル
     case 1:
       background(0);
-      if(title != null && title.image != null){
-        image(title.image, title.x, title.y);
-        title.pol.Draw();
-      }
+      //タイトルの描画
+      if(title != null)
+        if(title.image != null){
+          image(title.image, title.x, title.y);
+          title.pol.Draw();
+        }
       break;
     
     //難易度選択（欠番）
     case 2:
       break;
     
-    //道中
+    //道中・ボス
     case 3:
-      buttledraw();
-      break;
-    
-    //ボス
     case 4:
     case 5:
     case 6:
@@ -368,7 +367,7 @@ void gameoverdraw(){
 
 //********************************↓シーンごとの処理↓*********************************
 
-//戦闘　    該当シーン：道中、ボス出現、ボス
+//戦闘　    該当シーン：道中、ボス出現、ボス、ボス破滅
 void battle(){
   bscore = score;
   benergy = choke;
@@ -379,6 +378,7 @@ void battle(){
   if(_damaged < 0)  _damaged = 0;
   if(_kill < 0)  _kill = 0;
   
+  //背景の更新
   sm.update();
   
   //敵の動きの処理
@@ -512,6 +512,7 @@ void changeScene(){
       
     case 6:
       boss.bossscene = 2;
+      bullets = new ArrayList<Bullet>();
       remaintime = wholecount;
       break;
       
@@ -556,7 +557,7 @@ void scoreinitial(){
   
   expressfinish = false;
   
-  score = Maxscore[4];
+  score = Maxscore[4];    //scoreをボーナスも含めたスコアにする
 }
 
 //画像反転用関数
@@ -710,10 +711,11 @@ void stop(boolean a){
   if(walls != null)   walls = null;
   if(bullets != null)  bullets = null;
   
-  soundsstop();
+  soundsclose();
 }
 
-void soundsstop(){
+//音を止める
+void soundsclose(){
   if(enemys != null)
     for(int i = 0; i < enemys.size(); i++){
       enemys.get(i).soundclose();
@@ -736,7 +738,5 @@ void soundsstop(){
     
   if(home != null)  home.soundclose();
 }
-
-//************************************************************************************::
 
   
