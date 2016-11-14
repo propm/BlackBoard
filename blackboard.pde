@@ -41,12 +41,12 @@ final int Scoretime  = 60*1;   //scoreの数字を何秒間変化させるか
 final int scorePertime = 5;    //残り時間1フレームあたり何点もらえるか
 final int scoremarginf = 10;   //スコアを表示するときの間の時間
 final int dietime = 60*2;      //dieが鳴る時間の長さ
+final boolean isMouse = true;    //mouseでプレイヤーを操作するときはtrue
+final boolean isDebag = true;    //デバッグモードならtrue
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
 boolean isStop;
-boolean isDebag;             //デバッグモードならtrue
-boolean isMouse;             //mouseでプレイヤーを操作するときはtrue
 boolean sendable;
 boolean isPlaying;           //バトル中ならtrue
 boolean isGameOver;          //ゲームオーバーならtrue
@@ -74,9 +74,6 @@ int _bossappear;
 //*************************↓初期設定など↓***************************
 
 void settings(){
-  isMouse = true;
-  isDebag = false;
-  
   minim = new Minim(this);    //音楽・効果音用
   osc = new OscP5(this, 12345);
   address = new NetAddress("172.23.5.5", 12345);
@@ -585,22 +582,24 @@ void cadaver(ArrayList<?> obj){
 //*************************↓イベント処理・送信・受信↓***************************
 
 void mousePressed(){
-  player[0].ATflag = true;
+  if(isMouse)  player[0].ATflag = true;
 }
 
 void mouseReleased(){
-  player[0].ATflag = false;
+  if(isMouse)  player[0].ATflag = false;
 }
 
 void keyPressed(){
-  switch(keyCode){
+  if(isMouse){
+    switch(keyCode){
     
-    case RIGHT:
-      player[0].key = 1;
-      break;
-    case LEFT:
-      player[0].key = 2;
-      break;
+      case RIGHT:
+        player[0].key = 1;
+        break;
+      case LEFT:
+        player[0].key = 2;
+        break;
+    }
   }
   
   if(key == BACKSPACE && !backspace){
@@ -620,11 +619,13 @@ void keyPressed(){
 }
 
 void keyReleased(){
-  switch(keyCode){
-    case RIGHT:
-    case LEFT:
-      player[0].key = 0;
-      break;
+  if(isMouse){
+    switch(keyCode){
+      case RIGHT:
+      case LEFT:
+        player[0].key = 0;
+        break;
+    }
   }
   
   if(key == BACKSPACE)  backspace = false;
