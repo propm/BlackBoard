@@ -42,7 +42,7 @@ final int Scoretime  = 60*1;   //scoreの数字を何秒間変化させるか
 final int scorePertime = 5;    //残り時間1フレームあたり何点もらえるか
 final int scoremarginf = 10;   //スコアを表示するときの間の時間
 final int dietime = 60*2;      //dieが鳴る時間の長さ
-final boolean isMouse = false;    //mouseでプレイヤーを操作するときはtrue
+final boolean isMouse = true;    //mouseでプレイヤーを操作するときはtrue
 final boolean isDebag = true;    //デバッグモードならtrue
 
 boolean firstinitial;
@@ -204,50 +204,69 @@ void process(){
     }
   }
   
-  if(scene < 3 || scene > 5)  for(int i = 0; i < player.length; i++)  player[i].update();
+  //バトル中以外のプレイヤーの更新
+  if(scene < 3 || scene > 6)  for(int i = 0; i < player.length; i++)  player[i].update();
   
   switch(scene){
+    
+    //難易度変更（欠番）
     case 2:
-      changeScene();
+      changeScene();  //シーン変更
       break;
+      
+    //道中
     case 3:
+      tm.checksec();  //秒数に応じて敵の追加
+    
+    //ボス
     case 4:
     case 5:
     case 6:
       battle();
       break;
+      
+    //スコア表示
     case 7:
       if(!expressfinish)  scoreprocess();
       else{
         score = 0;
-        for(int i = 0; i < variousnum; i++)
+        for(int i = 0; i < scoretext.length; i++)
           score += Maxscore[i];
         send();
       }
       break;
-    case 8:
-      soundstop = true;
-      if(!darkerfinish)  battle();
       
+    //ゲームオーバー
+    case 8:
+      soundstop = true;             //音を止める
+      if(!darkerfinish)  battle();  //暗くなっている最中なら敵や弾を動かす
+      
+      //暗くなった瞬間なら、暗くなったことを変数に持たせ、スコアの初期化
       if(backalpha == 256){
         darkerfinish = true;
         scoreinitial();
         backalpha++;
       }
+      
+      //十分暗くなっているなら
       if(darkerfinish){
-        scoreprocess();
+        scoreprocess();    //スコアの表示
       }
       break;
   }
   
+  //このフレームでまだsendしてないなら
   if(sendable)  send();
-  else          sendable = true;
+  
+  sendable = true;
 }
 
 //描画用関数
 void drawing(){
   
   switch(scene){
+    
+    //タイトル
     case 1:
       background(0);
       if(title != null && title.image != null){
@@ -256,30 +275,39 @@ void drawing(){
       }
       break;
     
+    //難易度選択（欠番）
     case 2:
       break;
+    
+    //道中
     case 3:
       buttledraw();
       break;
+    
+    //ボス
     case 4:
     case 5:
     case 6:
       buttledraw();
       if(boss != null)  boss.draw();
       break;
+      
+    //スコア画面
     case 7:
       background(0);
       textSize(60);
       fill(255);
       for(int i = 0; i <= vsn; i++){
         int a = i;
-        if(i == variousnum-1)  a++;
+        if(i == scoretext.length-1)  a++;
         if(isGameOver && i >= 1)  continue;
         text(scoretext[i]+(int)exscore[i]+"pt", (int)((float)width/2), (int)((float)height/14*(a*2+3)));
       }
       
       text((times[scene-1]- wholecount)/60, (float)width/30*2, (float)height/10*2);
       break;
+   
+    //ゲームオーバー
     case 8:
       gameoverdraw();
       break;
@@ -312,6 +340,7 @@ void buttledraw(){
      enemy.draw();
    }
    
+   //弾
    for(int i = 0; i < bullets.size(); i++){
      Bullet bullet = bullets.get(i);
      bullet.draw();
@@ -320,6 +349,8 @@ void buttledraw(){
 
 //ゲームオーバー時の表示
 void gameoverdraw(){
+  
+  //if 徐々に暗くする or Gameoverと表示し、scoreを表示する
   if(backalpha <= 255){
     fill(0, backalpha++);
     rect(0, 0, width, height);
@@ -348,7 +379,6 @@ void battle(){
   if(_damaged < 0)  _damaged = 0;
   if(_kill < 0)  _kill = 0;
   
-  if(scene == 3)  tm.checksec();
   sm.update();
   
   //敵の動きの処理
@@ -406,30 +436,36 @@ void battle(){
   if(boss != null)  boss.cadaver();
 }
 
-final int variousnum = 5;          //表示する数字がいくつあるか
-final String[] scoretext = {"敵撃破点: ", "残り時間ボーナス: ", "残りhpボーナス: ", "ボス撃破ボーナス: ", "合計: "};
-final int bossdestroyscore = 10000;
 
-int[] Maxscore;
+//******スコア用変数・定数群*******
+final String[] scoretext = {"敵撃破点: ", "残り時間ボーナス: ", "残りhpボーナス: ", "ボス撃破ボーナス: ", "合計: "};
+final int bossdestroyscore = 10000;       //ボス撃破ボーナス
+
+int[] Maxscore;       //各点数
 
 int remaintime;       //ボス面の残りタイム
 int scorecount;       //score表示用カウント
-int vsn;              //変化するスコアがどれか　　1:敵・弾撃破によるスコア　2:残り時間によるボーナススコア　3:合計
+int vsn;              //変化するスコアがどれか　scoretextに対応
 float[] exscore;      //表示するスコア
-float plusscore;      //1フレームで追加するスコア
+float plusscore;      //1フレームで追加するスコア  各スコアごとに変更される
 
 boolean scorescrollfinish;    //スクロールが終わっていたらtrue
 boolean expressfinish;        //表示が終わったらtrue
+
+//*********************************
 
 //スコア表示の処理
 void scoreprocess(){
   scorecount++;
   
+  //if スコアを表示している最中 ?  表示するスコアの更新 : 表示したスコアの補正と次に表示するスコアの準備
   if(scorecount <= Scoretime){
     exscore[vsn] += plusscore;         //表示するスコアの変更
   }else{
-    if(exscore[vsn] != Maxscore[vsn])  exscore[vsn] = Maxscore[vsn];    //表示したいスコアを越えていたら戻す
-    if(vsn >= variousnum-1){
+    if(exscore[vsn] != Maxscore[vsn])  exscore[vsn] = Maxscore[vsn];    //表示したいスコアと違っていたら戻す
+    
+    //スコアをすべて表示したら、そのことを保持し、終了
+    if(vsn >= scoretext.length-1){
       expressfinish = true;
       return;
     }
@@ -445,11 +481,15 @@ void scoreprocess(){
 
 //シーン変更
 void changeScene(){
-  scene++; //<>//
-  if(scene > times.length-1){
+  
+  //スコアシーンでシーン変更したなら、最初に戻す
+  if(scene >= times.length-1){
     allInitial();
+    scene--;
   }
-  time = times[scene-1];
+  
+  scene++; //<>//
+  time = times[scene-1];  //次のシーンまでの時間を更新
   
   switch(scene){
     
@@ -461,7 +501,7 @@ void changeScene(){
     //ボス出現
     case 4:
       _bossappear = 1;
-      if(db.warning != null && !soundstop)  db.warning.trigger();
+      if(db.warning != null && !soundstop)  db.warning.trigger();    //警戒音を鳴らす
       
       break;
     
@@ -480,26 +520,29 @@ void changeScene(){
       boss = null;
       scoreinitial();
       send();                //変更前のスコアを送る
-      sendable = false;      //ここでsendしたので、processのsendは呼ばない
       isPlaying = false;     //プレイ終了
       
       _bossappear = _kill = _damaged = _reflect = 0;
       break;
   }
   
-  wholecount = 0;
+  wholecount = 0;    //シーン用カウントの初期化
 }
 
+//スコア系初期化
 void scoreinitial(){
-  exscore = new float[variousnum];
-  for(int i = 0; i < variousnum; i++){
+  
+  //表示するスコア（徐々に変化する）の初期化
+  exscore = new float[scoretext.length];
+  for(int i = 0; i < scoretext.length; i++){
     exscore[i] = 0;
   }
   
+  //scoreprocessでつかうカウントと最初にどのスコアを表示するかを初期化
   scorecount = 0;
   vsn = 0;
   
-  Maxscore = new int[variousnum];
+  Maxscore = new int[scoretext.length];
   Maxscore[0] = score;                                            //敵・弾撃破スコア
   Maxscore[1] = scorePertime* (times[4] - remaintime);            //残り時間
   Maxscore[2] = home.hp;                                          //残りhp
@@ -557,6 +600,7 @@ void cadaver(ArrayList<?> obj){
     MyObj o = (MyObj)obj.get(i);
     o.die();
     
+    //死んでいるなら参照削除
     if(o.isDie){
       if(o.die != null){
         dies.add(o.die);        //死ぬときの音を保持、音がcloseされるまでを数えるカウントをセット
@@ -645,6 +689,7 @@ void send(){
   mes.add(isPlaying ? 1:0);
   
   osc.send(mes, address);
+  sendable = false;
 }
 
 //*************************↓終了時↓***************************
