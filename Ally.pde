@@ -132,8 +132,8 @@ class Player extends Enemy{
     float x1, y1, x2, y2, z1, z2;
     x1 = x2 = y1 = y2 = z1 = z2 = 0;
     
-    x = getPositionX1(side);
-    y = getPositionY1(side);
+    x = kinect.getX(side);
+    y = kinect.getY(side);
     
     //radian = atan2(y2-y1, x2-x1);
     
