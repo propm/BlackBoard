@@ -129,11 +129,13 @@ class Player extends Enemy{
   //キネクトから座標を受け取る
   void readXYZ(){
     
-    float x1, y1, x2, y2, z1, z2;
-    x1 = x2 = y1 = y2 = z1 = z2 = 0;
+    //float x1, y1, x2, y2, z1, z2;
+    //x1 = x2 = y1 = y2 = z1 = z2 = 0;
     
     x = kinect.getX(side);
     y = kinect.getY(side);
+    
+    println("x:"+x+" y:"+y+" count:"+wholecount);
     
     //radian = atan2(y2-y1, x2-x1);
     
@@ -349,6 +351,7 @@ class Player extends Enemy{
     translate(x, y);
     rotate(radian);
     rect(-w/2, -h/2, w, h);
+    println("draw");
     popMatrix();
     
     textSize(36);

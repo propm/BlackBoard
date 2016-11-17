@@ -40,32 +40,43 @@ class KinectClient{
   
   float getX(int side){
     float rateX = 0;
+    float result = 0;
     if(side == 0)       rateX = Lz1;
     else if(side == 1)  rateX = Rz1;
     else{
       println("引数が間違っています");
-      return 0;
+      
+      println(result);
+      return result;
     }
     
     if(rateX <= 1.0){
-      if(side == 0)       return (width*rateX)/2.0;
-      else if(side == 1)  return (width*(1.0-rateX))/2.0 + width/2.0;
+      if(side == 0)       result = (width*rateX)/2.0;
+      else if(side == 1)  result = (width*(1.0-rateX))/2.0 + width/2.0;
+    }else{
+      result = -100;
     }
     
-    return -100;
+    println(result);
+    return result;
   }
   
   float getY(int side){
     float rateY = 0;
+    float result = 0;
     if(side == 0)       rateY = Ly1;
     else if(side == 1)  rateY = Ry1;
     else{
       println("引数が間違っています");
-      return 0;
+      println(result);
+      return result;
     }
     
-    if(rateY <= 1.0)  return height*(1.0-rateY);
-    else              return 0;
+    if(rateY <= 1.0)  result = height*(1.0-rateY);
+    else              result = 0;
+    
+    println(result);
+    return result;
   }
   
   void GetLeft(){
