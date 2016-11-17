@@ -189,9 +189,10 @@ class Shuriken extends Bullet{
     image(image, -w/2, -h/2);
     popMatrix();
     
-    noFill();
-    stroke(255, 255, 0);
-    ellipse(x, y, r, r);
+    if(num == 3){
+      fill(255, 255, 0, 100);
+      ellipse(x, y, r, r);
+    }
   }
 }
 
@@ -210,6 +211,7 @@ class Standard extends Bullet{
     damage = 5;
     hp = 1;
     num = 4;
+    energy = 75;
     
     col[0] = 129;
     col[1] = 41;
@@ -224,7 +226,11 @@ class Reflect extends Shuriken{
   AudioSample reverse;
   String reversename;
   
-  Reflect(){}
+  ArrayList<PImage> imgs;
+  
+  Reflect(){
+    imgs = new ArrayList<PImage>();
+  }
   
   //x, yは中心座標
   Reflect(float x, float y, PVector v){
@@ -248,6 +254,9 @@ class Reflect extends Shuriken{
     reverse = db.setsound(ref.reversename);
   }
   
+  //反射できなくなるからこの処理はなし
+  void outdicision(){};
+  
   void plus(){
     //反射
     
@@ -262,7 +271,7 @@ class Reflect extends Shuriken{
     
     if(reflect){
       v.set(v.x, -v.y);
-      if(reverse != null)  reverse.trigger();
+      if(reverse != null && !soundstop)  reverse.trigger();
     }
   }
   
@@ -276,6 +285,8 @@ class Reflect extends Shuriken{
 
 //反射可能
 class Strong extends Reflect{
+  
+  Strong(){}
   
   //x, yは中心座標
   Strong(float x, float y){
@@ -295,4 +306,24 @@ class Strong extends Reflect{
   }
   
   void plus(){}
+}
+
+class Particle extends MyObj{
+  
+  Particle(float x, float y, PVector v){
+    this.x = x;
+    this.y = y;
+    this.v = v.copy();
+    initial();
+  }
+  
+  void initial(){
+    
+  }
+  
+  
+  void move(){
+    x += v.x;
+    y += v.y;
+  }
 }

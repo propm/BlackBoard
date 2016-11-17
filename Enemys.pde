@@ -4,7 +4,7 @@ class Attacker extends Enemy{
   boolean flag = false;
   
   Attacker(){
-    if(db.oriEnemys.size() >= 7){
+    if(db.oriEnemys.size() > 0){
       x = random(width)+width/3*2;
       initial();
     }
@@ -25,7 +25,7 @@ class Attacker extends Enemy{
       if(Acount == 30)  Acount = -1;
       if(Acount == 0){
         image = imgs.get(1);
-        if(AT != null)  AT.trigger();
+        if(AT != null && !soundstop)  AT.trigger();
       }
     }
   }
@@ -119,7 +119,7 @@ class Tangent extends Sin{
   
   //初期化
   void initialize(){
-    if(db.oriEnemys.size() >= 7){
+    if(db.oriEnemys.size() > 0){
       initial(3);  //初期設定をコピー
       
       float imgw = imgs.get(0).width;
@@ -146,10 +146,10 @@ class Tangent extends Sin{
   void dicision(){
     if(y > height-r/2)  out = true;
     if(y < height-r/2 && out){
-      if(bul != null)  bul.trigger();
+      if(bul != null && !soundstop)  bul.trigger();
       out = false;
     }
-    if(y < r/2)  bul.stop();
+    if(y < r/2) if(bul != null)  bul.stop();
   }
   
   void attack(){
@@ -178,9 +178,10 @@ class Tangent extends Sin{
 class Parachuter extends Attacker{
   float stopy;           //ジェットパックを使い始めるy座標
   boolean change;
+  int changecount;
   
   Parachuter(){
-    if(db.oriEnemys.size() >= 7){
+    if(db.oriEnemys.size() > 0){
       x = random(width/2)+width/3*2;
       y = -height/3;
       initialize();
@@ -196,6 +197,7 @@ class Parachuter extends Attacker{
   void initialize(){
     initial(4);      //初期設定をコピー
     
+    changecount = 0;
     change = false;
     stopy = random(height/3.0*2-h)+height/3.0;
   }
@@ -206,18 +208,43 @@ class Parachuter extends Attacker{
   
   //形態変化
   void formChange(){
-    if(y >= stopy && !change){
-      change = true;
-      isCrasher = true;
-      if(AT != null)  AT.trigger();
+    if(!change){
       
-      initial(1);
-      charanum = 4;
-      y = stopy;
-      image = imgs.get(1);
-      v.set(v.x*5, 0);
-      pol.v = v.copy();
+      //傘回す
+      if(changecount++ > 20){
+        if(image == imgs.get(0))  image = imgs.get(1);
+        else if(image == imgs.get(1))  image = imgs.get(0);
+        changecount = 0;
+      }
+    
+      //突撃形態へ
+      if(y >= stopy){
+        change = true;
+        isCrasher = true;
+        if(AT != null && !soundstop)  AT.trigger();
+        
+        initial(1);
+        formCopy();
+        charanum = 4;
+        y = stopy;
+        v.set(v.x*5, 0);
+        pol.v = v.copy();
+      }
     }
+  }
+  
+  //突撃形態になるときに画像を変更
+  void formCopy(){
+    Parachuter para = (Parachuter)db.oriEnemys.get(8-1);
+    w = para.w;
+    h = para.h;
+    image = para.imgs.get(0).copy();
+    pol = new Polygon(para.pol.ver);
+    pol.Init();
+    movePolygon(imgx, imgy);
+    
+    imgs.remove(1);
+    imgs.set(0, image);
   }
 }
 
@@ -226,9 +253,12 @@ class Parachuter extends Attacker{
 //大砲
 class Cannon extends Enemy{
   final int chargeframe = 60*3;  //何フレームチャージするか
+  final int effectnum   = 6;     //一つの円でいくつの弾を表示するか
   boolean once;
+  boolean isCharge;
   
-  ArrayList<Enemy> chargeeffect;
+  ArrayList<Particle> chargeeffect;
+  PVector chargexy;
   
   AudioSample charge;    //チャージするときの音
   AudioSample appear;    //召喚時の音
@@ -236,8 +266,8 @@ class Cannon extends Enemy{
   String chargename, appearname;
   
   Cannon(){
-    if(db.oriEnemys.size() >= 7){
-      x = random(width/4)+width/8*3;
+    if(db.oriEnemys.size() > 0){
+      x = random(width/11.0*10)+ width/11.0;
       y = random(height);
       initial();
     }
@@ -258,7 +288,11 @@ class Cannon extends Enemy{
     imgy = y - marginy;
     movePolygon(0, imgy-bimgy);
     
-    if(appear != null)  appear.trigger();
+    chargeeffect = new ArrayList<Particle>();
+    chargexy = new PVector(x, y+h/2);
+    isCharge = true;
+    
+    if(appear != null && !soundstop)  appear.trigger();
   }
   
   void copy(){
@@ -288,41 +322,63 @@ class Cannon extends Enemy{
   void attack(){
     super.attack();
     
-    if(Bcount >= Bi - chargeframe){
-      if(Bcount == Bi - chargeframe)  once = true;
-      charge();
+    if(isCharge){
+      //charge();
+    }else{
+      if(charge != null)  charge.stop();
     }
-    else   charge.stop();
+      
+    if(Bcount == Bi - chargeframe){
+      once = true;
+      if(charge != null)  charge.trigger();
+      isCharge = true;
+    }else if(Bcount == 0){
+      isCharge = false;
+    }
   }
   
-  void soundstop(){
-    super.soundstop();
+  void soundclose(){
+    super.soundclose();
     if(charge != null)  charge.close();
     if(appear != null)  appear.close();
   }
   
   void charge(){
     if(once){
-      if(charge != null)  charge.trigger();
       once = false;
+      //for(int i = 0; i < 
+    }
+    for(int i = 0; i < chargeeffect.size(); i++){
+      chargeeffect.get(i).move();
+      
     }
   }
+  
+  /*void draw(){
+    tint(255, 0, 0, alpha);
+    image(image, imgx, imgy);
+    noTint();
+    pol.Draw();
+  }*/
 }
 
 //******************************************************************************************************
 
 //忍者
 class Ninja extends Enemy{
-  final float ALPHA = 200;  //最大不透明度
+  final float ALPHA = 120;  //最大不透明度
+  final int stealfreq = 60; //透明度が変わる方向が何フレームで変化するか
   float alphav;             //不透明度の増減の速さ(1フレームにどれだけ不透明度が変化するか)
   boolean isStealth;        //透明化するときtrue
   
+  int stealthcount;
+  
   Ninja(){
-    this(random(width/4)+width/8*3, random(height));
+    this(random(width/2)+width/8*3, random(height));
   }
   
   Ninja(float x, float y){
-    if(db.oriEnemys.size() >= 7){
+    if(db.oriEnemys.size() > 0){
       this.x = x;
       this.y = y;
       initial();
@@ -338,6 +394,7 @@ class Ninja extends Enemy{
     imgy = y - marginy;
     movePolygon(0, imgy-bimgy);
     
+    stealthcount = 0;
     alpha = ALPHA;
     alphav = 5;
     isStealth = false;
@@ -363,8 +420,11 @@ class Ninja extends Enemy{
   }
   
   void stealth(){
-    //黒板消しが重なっていたら消える
-    if(isOver)  isStealth = true;
+    //一定周期で点滅
+    if(stealthcount++ > stealfreq){
+      isStealth = !isStealth;
+      stealthcount = 0;
+    }
     
     if(isStealth){
       alpha -= alphav;
@@ -411,7 +471,15 @@ class Boss extends Enemy{
   final float standardbs = 1.5*db.scwhrate;
   final int rbs = 20;
   final float reffreq = 2.5;
-  final int stantime  = 60*5;
+  final int stantime  = 60*7;
+  final float ALPHA = 255;  //最大不透明度
+  final int stealfreq = 60; //透明度が変わる方向が何フレームで変化するか
+  
+  final float alphav = 5;   //不透明度の増減の速さ(1フレームにどれだけ不透明度が変化するか)
+  boolean isStealth;        //透明化するときtrue
+  
+  int stealthcount;
+  int Scount;
   
   float basicy;
   int sc;     //通常弾count
@@ -420,10 +488,22 @@ class Boss extends Enemy{
   float plustheta;
   boolean isStrong;     //次に発射するのが反射可能弾ならtrue
   boolean isStan;       //気絶中ならtrue
+  boolean bisStan;      //1フレーム前のisStan
+  
+  int stancount;        //気絶している最中はカウント
+  
+  float handx, handy; // ボスの手の高さ（ボスの左上の座標からの相対
+  int count; // ボスが登場or死亡したときからのカウント(毎フレーム1足す) & stan時にも使用
+  int bossscene; // 0: ボス登場 1: ボス攻撃＆スタン　2: ボス死亡
+  
+  float upspeed = 2; // 登場するときのスピード(要調整)
+  float downspeed = 1.5; // 死んだあとの沈むスピード(要調整)
+  
   
   AudioSample strongfire;
   AudioSample reflectfire;
   
+  PImage boss1, boss2;
   String strongfirename, reflectfirename;
   
   Boss(){}
@@ -438,8 +518,11 @@ class Boss extends Enemy{
     marginx = w/2;
     marginy = h/2;
     
-    this.y = basicy = y;
+    basicy = y;
     this.x = x;
+    this.y = height - image.height/4.0 + marginy;
+    count = 0;
+    bossscene = 0;
     
     imgx = x - marginx;
     imgy = y - marginy;
@@ -447,13 +530,20 @@ class Boss extends Enemy{
     
     plustheta = 360.0/width*7.0*standardbs;
     
+    Scount = 0;
+    stealthcount = 0;
+    alpha = ALPHA;
+    isStealth = false;
+    
     sc = rc = 0;
     theta = 0;
+    stancount = 0;
     alpha = 255;
     isStrong = false;
     isStan = false;
     isMoveobj = true;
     isCrasher = true;
+    isDie = false;
   }
   
   void copy(){
@@ -462,6 +552,9 @@ class Boss extends Enemy{
     Boss bo = (Boss)db.oriEnemys.get(6);
     strongfire = db.setsound(bo.strongfirename);
     reflectfire = db.setsound(bo.reflectfirename);
+    
+    boss1 = imgs.get(0);
+    boss2 = imgs.get(1);
   }
   
   void move(){
@@ -475,8 +568,15 @@ class Boss extends Enemy{
   
   void alpha(){}
   
-  //跳ね返された手裏剣との判定
+  //跳ね返された反射可能弾との判定
   void dicision(){
+    if(isStan)  stancount++;
+    if(stancount > stantime){
+      isStan = false;
+      image = imgs.get(0);
+      stancount = 0;
+    }
+    
     for(int i = 0; i < bullets.size(); i++){
       Bullet b = bullets.get(i);
       
@@ -485,6 +585,7 @@ class Boss extends Enemy{
         if(s.isReflected){
           if(judge(new PVector(s.x, s.y), s.r/2, pol)){
             isStan = true;
+            image = imgs.get(1);
             s.hp = 0;
           }
         }
@@ -493,45 +594,192 @@ class Boss extends Enemy{
   }
   
   void attack(){
+    
+    //通常弾発射
     if(++sc <= lashtime){
       if(sc%rapidi < 1){
         bullets.add(new Standard(x-w/4.0, random(height), -standardbs));
-        if(bul != null)  bul.trigger();
+        if(bul != null && !soundstop)  bul.trigger();
       }
     }else if(sc >= lashtime + standardi)  sc = 0;
     
+    //反射弾・反射可能弾発射
     if(++rc >= reflecti){
       if(isStrong){
+        //反射弾
         bullets.add(new Reflect(x, y, new PVector(-rbs*cos(45*PI/180.0), rbs*sin(45*PI/180.0))));
         bullets.add(new Reflect(x, y, new PVector(-rbs*cos(-45*PI/180.0), rbs*sin(-45*PI/180.0))));
-        if(reflectfire != null)  reflectfire.trigger();
+        if(reflectfire != null && !soundstop)  reflectfire.trigger();
       }
       else{
+        //反射可能弾
         bullets.add(new Strong(x, y));
-        if(strongfire != null)  strongfire.trigger();
+        if(strongfire != null && !soundstop)  strongfire.trigger();
       }
       isStrong = !isStrong;
       rc = 0;
     }
   }
   
-  void update(){
-    move();
-    attack();
-    dicision();
+  void stealth(){
+    //一定周期で点滅
+    if(stealthcount++ > stealfreq){
+      isStealth = !isStealth;
+      stealthcount = 0;
+    }
+    
+    if(isStealth){
+      alpha -= alphav;
+      if(alpha < 0){
+        isStealth = false;
+        alpha = 0;
+      }
+    }else{
+      if(Scount < 15)  Scount++;          //消えている時間
+      else            alpha += alphav;
+      if(alpha >= ALPHA){
+        alpha = ALPHA;
+        Scount = 0;
+      }
+    }
+  }
+  
+  void update() {
+    count++;
+    
+    switch(bossscene) {
+      case 0:
+        // 登場時の処理
+        y -= upspeed;
+        imgy = y - marginy;
+        if (imgy + boss1.height / 2 <= height / 2) {
+          y = height / 2 - boss1.height / 2 + marginy;
+          // 登場完了のときこの処理がくる
+          // ボス動き＆攻撃開始
+          count = 0;
+          changeScene();
+        }
+        break;
+      
+      case 1:
+        // 攻撃＆スタン
+        if (isStan) {
+          // スタン状態なら
+          // スタン状態のときボス動かないほうがいいかな…
+        }
+        else {
+          // 戦闘状態
+          if(bisStan != isStan)  count = 0;
+          
+          move();
+          attack();
+          bisStan = isStan;
+          stealth();
+        }
+        dicision();
+        break;
+    
+      case 2:
+        // 死んでからの処理
+        y += downspeed;
+        imgy = y - marginy;
+        if (imgy >= height) {
+          y = height+marginy;
+          // ボスが死んで画面から見えなくなったときにこの処理がくる
+          // この処理がくる少し前からボスは見えなくなっている。
+          // result画面にchangeScene()していいと思う。
+          
+          changeScene();
+        }
+        break;
+    }
+    
+    imgx = x - marginx;
+    imgy = y - marginy;
+    
+    draw();
   }
   
   //死処理
   void cadaver(){
-    if(hp <= 0){
+    if(hp <= 0 && !isDie){
+      if(die != null)  die.trigger();
       changeScene();
+      
       isDie = true;
     }
   }
   
+  void draw() {
+    int t;
+    switch(bossscene) {
+      case 0:
+        // ボスが登場した時この処理
+        
+        //t = int(255 * count / ((height - boss1.height / 4) - (height / 2 - boss1.height / 2)) * upspeed);
+        // ↑の簡略版↓
+        t = int(255 * count / (height / 2 + boss1.height / 4) * upspeed);
+        if (t > 255) t = 255;
+        
+        // tint(0)で透明 (255)で不透明
+        // ボスの描画
+        tint(t);
+        image(boss1, imgx, imgy);
+        noTint();
+        
+        break;
+      case 1:
+        // ボス攻撃＆スタン
+        
+        if(isStan) {
+          // スタン状態なら
+          int taimin = 60; // 1秒経過後1ピクピク予定(要調整)
+          if (count % (taimin * 2) < taimin) {
+            int bu = count % (taimin - (taimin * 2)) / (taimin / 8);
+            
+            if (bu % 2 == 0) {
+              // 要調整
+              image(boss2, imgx - 2, imgy - 4);
+            }
+            else {
+              image(boss2, imgx, imgy);
+            }
+          }
+          else {
+            image(boss2, imgx, imgy);
+          }
+        }
+        else {
+          // 戦闘状態なら
+          tint(255, alpha);
+          image(boss1, imgx, imgy);
+          noTint();
+        }
+        
+        break;
+        
+      case 2:
+        // ボスが死んだ場合この処理
+        float desp = height - boss1.height * 7 / 11; // 消え始める位置
+        if (imgy > desp) {
+          t = 255 - int(255 * (imgy - desp) / (height - boss1.height / 4 - desp));
+          if (t < 0) t = 0;
+          tint(t);
+        }
+        
+        if (imgy <= height - boss1.height / 4) image(boss2, imgx + boss1.width / 10 * cos((-90 + count) * 5 * PI/180), imgy);
+        noTint();
+        
+        break;
+    }
+    
+    pol.Draw();
+  }
+  
+  /*
   void draw(){
     super.draw();
     fill(255, 20, 147);
     ellipse(x, y, 20, 20);
-  }
+  }*/
 }

@@ -11,7 +11,7 @@ class MyObj implements Cloneable{
   ArrayList<PImage> imgs;    //使う画像を保存
   PImage image;              //今使われているimage
   
-  Polygon pol;
+  Polygon pol, oripol;
   AudioSample die;
   
   String diename;
@@ -30,13 +30,12 @@ class MyObj implements Cloneable{
   void die(){
     if(hp == 0){
       isDie = true;
-      if(die != null)  die.trigger();
+      if(!soundstop && die != null)  die.trigger();
     }
   }
   
-  
-  void soundstop(){
-    if(die != null)  die.close();
+  void soundclose(){
+    //if(die != null)  die.close();
   }
 }
 
@@ -205,7 +204,7 @@ class Enemy extends MyObj{
   
   //攻撃
   void attack(){
-    if(bullet() && bul != null)  bul.trigger();
+    if(bullet() && bul != null && !soundstop)  bul.trigger();
   }
   
   //hpに応じて不透明度変更
@@ -234,7 +233,9 @@ class Enemy extends MyObj{
             break;
           //固定砲台
           case 5:
-            bullets.add(new Laser(x, y+h/2, new PVector(-6*db.scwhrate, 0, 0), this));
+            Cannon c = (Cannon)this;
+            bullets.add(new Laser(c.chargexy.x, c.chargexy.y, new PVector(-6*db.scwhrate, 0, 0), this));
+            wasAttack = true;
             break;
           //忍者
           case 6:
@@ -248,8 +249,8 @@ class Enemy extends MyObj{
     return wasAttack;
   }
   
-  void soundstop(){
-    super.soundstop();
+  void soundclose(){
+    super.soundclose();
     if(AT != null)  AT.close();
     if(bul != null)  bul.close();
   }
@@ -258,7 +259,7 @@ class Enemy extends MyObj{
   void draw(){
     tint(255, alpha);
     image(image, imgx, imgy);
-    tint(255, 255);
+    noTint();
     pol.Draw();
   }
 }
@@ -278,6 +279,7 @@ class Bullet extends MyObj{
   
   int[] col;       //色
   boolean bisOver;
+  //boolean isOver;
   PVector length;       //弾の長さ
   
   ArrayList<PVector> bver;
@@ -332,8 +334,8 @@ class Bullet extends MyObj{
   //普通の弾のinitial
   void sinitial(){
     col[0] = 255;
-    col[1] = 134;
-    col[2] = 0;
+    col[1] = 255;
+    col[2] = 255;
     
     h = (int)(4*db.scwhrate);
     damage = 2;
@@ -367,8 +369,15 @@ class Bullet extends MyObj{
   
   void update(){
     move();
+    outdicision();
     setBver();
     plus();
+  }
+  
+  //上下の画面外に出たらこのインスタンスを削除
+  void outdicision(){
+    //どんな角度でもこれを満たせば外に出ている
+    if(y+length.mag() < 0 || y-length.mag() > height)  isDie = true;
   }
   
   void plus(){
@@ -385,8 +394,8 @@ class Bullet extends MyObj{
     }
   }
   
-  void soundstop(){
-    if(AT != null)  AT.stop();
+  void soundclose(){
+    if(AT != null)  AT.close();
   }
   
   void draw(){

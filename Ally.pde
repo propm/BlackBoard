@@ -1,6 +1,8 @@
 //プレイヤー
 class Player extends Enemy{
-  final float abledifference = 5.0;    //壁を作るときに許容される誤差
+  final float abledifference = 10.0;    //壁を作るときに許容される誤差
+  final int ATbframe         = 5;        //攻撃するときに現在と角度を比べるベクトルが何フレーム前のものか
+  final float eraseablelen   = 30;      //角度を変えたときにもう一度消したと認識される長さ
   
   float bx, by;            //1フレーム前の座標
   
@@ -29,7 +31,7 @@ class Player extends Enemy{
   
   
   Player(){}
-   
+  
   Player(int side){
     if(db.otherobj.size() > 0){
       initial();
@@ -100,16 +102,23 @@ class Player extends Enemy{
     bx = x;
     by = y;
     
-    /*switch(key){
-      case 1:
-        radian += PI/180 * 2;
-        break;
-      case 2:
-        radian -= PI/180 * 2;
-        break;
-    }*/
+    if(isMouse){
+      x = mouseX;
+      y = mouseY;
+      
+      switch(key){
+        case 1:
+          radian += PI/180 * 2;
+          break;
+        case 2:
+          radian -= PI/180 * 2;
+          break;
+      }
+    }else{
+      readXYZ();
+    }
     
-    readXYZ();
+    //println("side:"+side+" "+" x:"+x+" y:"+y);
   }
   
   void setBver(){
@@ -120,28 +129,20 @@ class Player extends Enemy{
   //キネクトから座標を受け取る
   void readXYZ(){
     
-    /*
-    float x1, y1, x2, y2, z1, z2;
-    x1 = x2 = y1 = y2 = z1 = z2 = 0;
+    //float x1, y1, x2, y2, z1, z2;
+    //x1 = x2 = y1 = y2 = z1 = z2 = 0;
     
-    radian = atan2(y2-y1, x2-x1);
+    x = kinect.getX(side);
+    y = kinect.getY(side);
     
-    x = abs(x2-x1)*width/2;
-    y = abs(y2-y1)*height;
+    println("x:"+x+" y:"+y+" count:"+wholecount);
     
-    z = abs(z2-z1);
-    */
+    //radian = atan2(y2-y1, x2-x1);
     
-    switch(side){
-      case 0:
-        x = GetLeftPositionX();
-        y = GetLeftPositionY();
-        break;
-      case 1:
-        x = GetRightPositionX();
-        y = GetRightPositionY();
-        break;
-    }
+    //x = abs(x2-x1)*width/2;
+    //y = abs(y2-y1)*height;
+    
+    //z = abs(z2-z1);
   }
   
   void titleAttack(){
@@ -154,10 +155,12 @@ class Player extends Enemy{
   
   //攻撃するか壁を作るか判定
   void ATorCreate(){
+    if(!isMouse)  ATflag = true;      //mouseで操作してない場合はATflagの判定は不要
     if(!ATflag)  bframecount = 0;
     
     if(abs(x - createxy.x) <= abledifference && abs(y - createxy.y) <= abledifference){
-      if(ATflag)  createwall();
+      if(ATflag){
+        /*if(x >= home.border)*/  createwall();}
       else        count = 0;
     }else{
       createflag = false;
@@ -169,8 +172,6 @@ class Player extends Enemy{
     bATflag = ATflag;
   }
   
-  final int ATbframe       = 5;        //攻撃するときに現在と角度を比べるベクトルが何フレーム前のものか
-  final float eraseablelen = 10;      //角度を変えたときにもう一度消したと認識される長さ
   float dirx, diry;        //角度が変わったとき、もしくは当たり判定に入ったときの座標
   int bframecount;         //値がatbframeになるまで++
   boolean alleover;        //どの敵とも重なっていなかったらfalse
@@ -204,7 +205,6 @@ class Player extends Enemy{
         case 0:
         case 4:
         case 5:
-        case 6:
           if(bdicision(b)){
             if(!b.bisOver){
               b.hp--;
@@ -221,7 +221,7 @@ class Player extends Enemy{
       }
     }
     
-    if(erase != null)  erase.trigger();
+    if(erase != null && !soundstop)  erase.trigger();
   }
   
   //敵と自機が重なっているかどうかの判定:  戻り値→変更前のisOver
@@ -289,9 +289,10 @@ class Player extends Enemy{
     combo++;
     
     if(e.hp <= 0){
-      score += score(e);
+      score += getscore(e);
       choke += e.maxhp*e.energy;
       _kill = sendframes;
+      if(choke > MAXchoke)  choke = MAXchoke;
     }
   }
   
@@ -309,6 +310,7 @@ class Player extends Enemy{
       Reflect ref = (Reflect)b;
       if(judge(new PVector(ref.x, ref.y), ref.r, convex))  result = true;
     }
+    
     return result;
   }
   
@@ -326,19 +328,19 @@ class Player extends Enemy{
   void createwall(){
     count++;
     
-    if(choke >= 0/*energy*/){
+    if(choke >= energy){
       createflag = true;
       if(count/60 >= 1){
         walls.add(new Wall(x, y, height/2.0, h*2, PI/2));
-        if(create != null)  create.trigger();
-        //choke -= energy;
+        if(create != null && !soundstop)  create.trigger();
+        choke -= energy;
         count = 0;
       }
     }
   }
   
-  void soundstop(){
-    super.soundstop();
+  void soundclose(){
+    super.soundclose();
     if(create != null)  create.close();
     if(erase != null)   erase.close();
   }
@@ -349,8 +351,10 @@ class Player extends Enemy{
     translate(x, y);
     rotate(radian);
     rect(-w/2, -h/2, w, h);
+    println("draw");
     popMatrix();
     
+    textSize(36);
     text(combo, x+width/60.0, y-height/80.0);
     
     pol.Draw();
@@ -361,6 +365,7 @@ class Player extends Enemy{
 
 //自陣
 class Home extends MyObj{
+  final int MaxHP = 3000;
   int bhp;
   float border;        //自陣の境界
   
@@ -373,7 +378,7 @@ class Home extends MyObj{
   String damagedname;
   
   Home(){
-    if(db.otherobj.size() > 1){
+    if(db.otherobj.size() > 0){
       initial();
     }
   }
@@ -390,7 +395,7 @@ class Home extends MyObj{
     
     image.resize(w, h);
     
-    hp = 1000;
+    hp = MaxHP;
     anglev = 3;
     angle = 0;
   }
@@ -410,10 +415,19 @@ class Home extends MyObj{
     y = sin(angle/180*PI)*4 + height/2;
     
     damage();
+    hpupdate();
+  }
+  
+  //hp関係の処理
+  void hpupdate(){
     if(bhp != hp){
-      //println("hp: "+hp);
       _damaged = sendframes;
-      if(damaged != null)  damaged.trigger();
+      if(damaged != null && !soundstop)  damaged.trigger();
+      
+      if(hp <= 0){
+        hp = 0;
+        isGameOver = true;
+      }
     }
   }
   
@@ -500,8 +514,8 @@ class Home extends MyObj{
     }
   }
   
-  void soundstop(){
-    super.soundstop();
+  void soundclose(){
+    super.soundclose();
     if(damaged != null)  damaged.close();
   }
   
@@ -531,13 +545,14 @@ class Wall extends MyObj{
     this.h = (int)h;
     this.radian = radian;
     isDie = false;
-    hp = 100;
+    hp = 200;
     
     copy();
     
     pol = new Polygon();
-    for(int i = 0; i < 4; i++)
-      pol.Add(new PVector(0, 0, 0));
+    
+    for(int i = 0; i < 4; i++)  pol.Add(0, 0, 0);
+    setPolygonAngle();
   }
   
   void copy(){
@@ -547,7 +562,6 @@ class Wall extends MyObj{
   }
   
   void update(){
-    setPolygonAngle();
     dicision();
     timer();
   }
@@ -562,7 +576,6 @@ class Wall extends MyObj{
   
   //radianが0のとき、右上から時計回り(右上が0）
   void setPolygonAngle(){
-    
     pol.ver.set(0, new PVector(x+w/2*cos(radian)+h/2*cos(radian-PI/2), y+w/2*sin(radian)+h/2*sin(radian-PI/2), 0));
     pol.ver.set(1, new PVector(x+w/2*cos(radian)+h/2*cos(radian+PI/2), y+w/2*sin(radian)+h/2*sin(radian+PI/2), 0));
     pol.ver.set(2, new PVector(x+w/2*cos(radian+PI)+h/2*cos(radian+PI/2), y+w/2*sin(radian+PI)+h/2*sin(radian+PI/2), 0));
@@ -584,8 +597,7 @@ class Wall extends MyObj{
           if(judge(pol, b.pol)){
             hp -= b.damage;
             b.hp = 0;
-            if(b.AT != null)  b.AT.trigger();
-            
+            if(b.AT != null && !soundstop)  b.AT.trigger();
           }
           break;
           
@@ -614,7 +626,7 @@ class Wall extends MyObj{
                 s.x = x+h/2.0+s.r/2.0;
                 s.isReflected = true;
                 
-                if(reflect != null)  reflect.trigger();
+                if(reflect != null && !soundstop)  reflect.trigger();
                 _reflect = sendframes;
                 break;
             }
@@ -651,12 +663,12 @@ class Wall extends MyObj{
   void die(){
     if(hp <= 0){
       isDie = true;
-      if(die != null)  die.trigger();
+      if(die != null && !soundstop)  die.trigger();
     }
   }
   
-  void soundstop(){
-    super.soundstop();
+  void soundclose(){
+    super.soundclose();
     if(reflect != null)  reflect.close();
   }
   
