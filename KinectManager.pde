@@ -46,18 +46,16 @@ class KinectClient{
     else{
       println("引数が間違っています");
       
-      println(result);
       return result;
     }
     
     if(rateX <= 1.0){
-      if(side == 0)       result = (width*rateX)/2.0;
-      else if(side == 1)  result = (width*(1.0-rateX))/2.0 + width/2.0;
+      if(isTwoKinect && side == 1)  result = (width*(1.0-rateX))/2.0 + width/2.0;
+      else                          result = (width*rateX)/2.0;
     }else{
       result = -100;
     }
     
-    println(result);
     return result;
   }
   
@@ -68,14 +66,12 @@ class KinectClient{
     else if(side == 1)  rateY = Ry1;
     else{
       println("引数が間違っています");
-      println(result);
       return result;
     }
     
     if(rateY <= 1.0)  result = height*(1.0-rateY);
     else              result = 0;
     
-    println(result);
     return result;
   }
   
@@ -87,7 +83,7 @@ class KinectClient{
      
       if(Ly2client.available() >= 4)
         Ly2 = (float)Integer.reverseBytes(ByteBuffer.wrap(Ly2client.readBytes(4)).getInt())/10000.0;
-     
+      
       if(Lz1client.available() >= 4)
         Lz1 = (float)Integer.reverseBytes(ByteBuffer.wrap(Lz1client.readBytes(4)).getInt())/10000.0;
      

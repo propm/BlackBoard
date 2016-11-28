@@ -44,6 +44,7 @@ final int scoremarginf = 10;   //スコアを表示するときの間の時間
 final int dietime = 60*2;      //dieが鳴る時間の長さ
 final boolean isMouse = true;    //mouseでプレイヤーを操作するときはtrue
 final boolean isDebag = true;    //デバッグモードならtrue
+final boolean isTwoKinect = true;  //キネクトを2台使うならtrue
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
