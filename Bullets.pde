@@ -223,6 +223,9 @@ class Standard extends Bullet{
 
 //反射弾
 class Reflect extends Shuriken{
+  final int BulletAnimatePieces = 10;
+  final float Rdividenum = 4.0;
+  
   AudioSample reverse;
   String reversename;
   
@@ -234,6 +237,8 @@ class Reflect extends Shuriken{
   
   //x, yは中心座標
   Reflect(float x, float y, PVector v){
+    this();
+    
     this.x = x;
     this.y = y; 
     this.v = v;
@@ -252,6 +257,8 @@ class Reflect extends Shuriken{
   void copy(){
     Reflect ref = (Reflect)db.otherobj.get(5);
     reverse = db.setsound(ref.reversename);
+    for(int i = 0; i < BulletAnimatePieces; i++)
+      imgs.add(ref.imgs.get(i).copy());
   }
   
   //反射できなくなるからこの処理はなし
@@ -276,6 +283,7 @@ class Reflect extends Shuriken{
   }
   
   void draw(){
+    //image(imgs.get(0), x-r/2, y-r/2);
     fill(col[0], col[1], col[2]);
     ellipse(x, y, r, r);
   }
@@ -285,6 +293,7 @@ class Reflect extends Shuriken{
 
 //反射可能
 class Strong extends Reflect{
+  final float Sdividenum = 1.0;
   
   Strong(){}
   

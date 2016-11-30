@@ -228,8 +228,23 @@ class DataBase{
       case 5:    //反射弾
         Reflect ref = (Reflect)otherobj.get(num);
         ref.reversename = "reflect_reverse.wav";
+        for(int i = 0; i < ref.BulletAnimatePieces; i++){
+          PImage img = loadImage("fireR"+(i+1)+".png");
+          int w = (int)(img.width/ref.Rdividenum*scwhrate);
+          int h = (int)(img.height/ref.Rdividenum*scwhrate);
+          img = reSize(img, w, h);
+          ref.imgs.add(img);
+        }
+        break;
       case 6:
-        //Strong st = (Strong)otherobj.get(num);
+        Strong st = (Strong)otherobj.get(num);
+        for(int i = 0; i < st.BulletAnimatePieces; i++){
+          PImage img = loadImage("fireB"+(i+1)+".png");
+          int w = (int)(img.width/st.Sdividenum*scwhrate);
+          int h = (int)(img.height/st.Sdividenum*scwhrate);
+          img = reSize(img, w, h);
+          st.imgs.add(img);
+        }
         break;
     }
   }

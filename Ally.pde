@@ -351,7 +351,6 @@ class Player extends Enemy{
     translate(x, y);
     rotate(radian);
     rect(-w/2, -h/2, w, h);
-    println("draw");
     popMatrix();
     
     textSize(36);

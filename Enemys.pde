@@ -598,7 +598,7 @@ class Boss extends Enemy{
     //通常弾発射
     if(++sc <= lashtime){
       if(sc%rapidi < 1){
-        bullets.add(new Standard(x-w/4.0, random(height), -standardbs));
+        //bullets.add(new Standard(x-w/4.0, random(height), -standardbs));
         if(bul != null && !soundstop)  bul.trigger();
       }
     }else if(sc >= lashtime + standardi)  sc = 0;
