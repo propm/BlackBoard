@@ -228,22 +228,15 @@ class DataBase{
       case 5:    //反射弾
         Reflect ref = (Reflect)otherobj.get(num);
         ref.reversename = "reflect_reverse.wav";
-        for(int i = 0; i < ref.BulletAnimatePieces; i++){
-          PImage img = loadImage("fireR"+(i+1)+".png");
-          int w = (int)(img.width/ref.Rdividenum*scwhrate);
-          int h = (int)(img.height/ref.Rdividenum*scwhrate);
-          img = reSize(img, w, h);
-          ref.imgs.add(img);
-        }
-        break;
       case 6:
-        Strong st = (Strong)otherobj.get(num);
-        for(int i = 0; i < st.BulletAnimatePieces; i++){
-          PImage img = loadImage("fireB"+(i+1)+".png");
-          int w = (int)(img.width/st.Sdividenum*scwhrate);
-          int h = (int)(img.height/st.Sdividenum*scwhrate);
-          img = reSize(img, w, h);
-          st.imgs.add(img);
+        Reflect ref2 = (Reflect)otherobj.get(num);
+        for(int i = 0; i < ref2.BulletAnimatePieces; i++){
+          PImage img = loadImage("fire"+(num == 5 ? "B":"R")+(i+1)+".png");
+          float dividenum = num == 5 ? ref2.Rdividenum : ref2.Sdividenum;
+          ref2.w = (int)(img.width/dividenum*scwhrate);
+          ref2.h = (int)(img.height/dividenum*scwhrate);
+          img = reSize(img, ref2.w, ref2.h);
+          ref2.imgs.add(img);
         }
         break;
     }

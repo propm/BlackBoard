@@ -153,7 +153,7 @@ void allInitial(){
   choke = MAXchoke;
   isStop = false;
   
-  scene = 1;
+  scene = 4;
   time = times[scene-1];
   wholecount = 0;
   backalpha = 0;
