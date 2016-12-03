@@ -30,7 +30,7 @@ class Laser extends Bullet{
   }
   
   void plus(){
-    if(count++ < maxcount && !owner.isDie)  length.setMag(dist(owner.x, owner.y+owner.h/2, x, y));
+    if(count++ < maxcount && !owner.isDie)  length.setMag(dist(((Cannon)owner).laserX, owner.y+owner.h/2, x, y));
     setPolygonAngle();
   }
 }

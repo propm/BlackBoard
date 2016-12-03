@@ -18,7 +18,11 @@ class ParticleManager{
   int border;                 //一つのパーティクルが描画する範囲
   float lightdistance;        //描画する最大の距離の二乗
   
+  boolean isChargeManager;
+  
   Enemy owner;                //パーティクル発生元の敵
+  
+  ParticleManager(){}
   
   //owner, ターゲットの座標、パーティクルが生み出される範囲の直径
   ParticleManager(Enemy e, int x, int y, int r){
@@ -50,6 +54,8 @@ class ParticleManager{
     for(int i = 0; i < ParticleSize; i++){
       ps.add(new Particle(this, r));
     }
+    
+    isChargeManager = true;
   }
   
   //毎フレーム呼ばれる
@@ -131,12 +137,14 @@ class ParticleManager{
   }
 }
 
+//****************************************************************************************
+
+//円のパーティクル
 class Particle{
   final float Friction = 0.95;    //摩擦
   final float EPS = 0.0005;       //計算誤差
   
   int x, y;          //中心座標
-  float slowLevel;   //中心に近づくときの遅延のレベル
   float force;       //向心力
   float m;           //質量
   PVector v;         //速度
@@ -163,7 +171,6 @@ class Particle{
   
   //初期設定
   void initial(){
-    slowLevel = 500;
     m = 1;
     force = 3;
     
@@ -209,5 +216,115 @@ class Particle{
   void explode(){
     v.x = random(100) - 50;
     v.y = random(100) - 50;
+  }
+}
+
+//***********************************************************************************************
+
+class EllipseManager extends ParticleManager{
+  final int DecayRate = 3;    //光の減衰率
+  final int EllipseSize = 3;
+  
+  Ellipse[] es;
+  
+  int[] col;  //ベースの色
+  
+  EllipseManager(Enemy owner, int x, int y, int size){
+    this.owner = owner;
+    
+    int margin = size*4;
+    es = new Ellipse[EllipseSize];
+    for(int i = 0; i < es.length; i++)
+      es[i] = new Ellipse(x-i*margin, y, size, (int)(size*8*(0.7+0.6*i)));
+    
+    Cannon c = (Cannon)owner;
+    c.laserX = es[EllipseSize-1].x-margin/2;
+    
+    col = new int[3];
+    col[0] = 255;
+    col[1] = 134;
+    col[2] = 50;
+    
+    isChargeManager = false;
+  }
+  
+  EllipseManager(Enemy owner, int x, int y, int size, color col){
+    this(owner, x, y, size);
+    
+    this.col[0] = col >> 16 & 0xFF;
+    this.col[1] = col >> 8 & 0xFF;
+    this.col[2] = col & 0xFF;
+  }
+  
+  void update(){
+    
+    int[] basePowered = new int[3];  //ベースrgbの二乗
+    for(int i = 0; i < basePowered.length; i++)
+      basePowered[i] = col[i]*col[i];
+      
+    loadPixels();
+    
+    for(int i = 0; i < es.length; i++){
+      Ellipse e = es[i];
+      
+      int left = max(0, e.x-e.borderw);
+      int right = min(width, e.x+e.borderw);
+      int top = max(0, e.y-e.borderh);
+      int bottom = min(height, e.y+e.borderh);
+      
+      for(int y = top; y < bottom; y++){
+        for(int x = left; x < right; x++){
+          int index = x + y*width;
+          
+          int r = pixels[index] >> 16 & 0xFF;
+          int g = pixels[index] >> 8 & 0xFF;
+          int b = pixels[index] & 0xFF;
+          
+          //楕円の方程式より、x^2/a^2 + y^2/b^2 < 1　なら、x, yは楕円の内側の座標
+          int dx = e.x - x;
+          int dy = e.y - y;
+          float leftside = (float)dx*dx/(e.borderw*e.borderw)
+                          +(float)dy*dy/(e.borderh*e.borderh);  //楕円の方程式の左辺
+          
+          //楕円の内側にあれば
+          if(leftside <= 1){
+            float divide = leftside * DecayRate*300;
+            //0除算の回避（e.x == x && e.y == yの場合のみここを通る）
+            if(divide == 0){
+              divide = 1;
+            }
+            
+            r += basePowered[0] / divide;
+            g += basePowered[1] / divide;
+            b += basePowered[2] / divide;
+          }
+          
+          pixels[index] = color(r, g, b);
+        }
+      }
+    }
+    
+    updatePixels();
+  }
+}
+
+//***********************************************************************************************
+
+//楕円
+class Ellipse{
+  final int DecayRate = 3;    //光の減衰率
+  
+  int x, y;    //中心座標
+  int w, h;
+  
+  int borderw, borderh;  //描画範囲(半径)
+  
+  Ellipse(int x, int y, int w, int h){
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    borderw = w;
+    borderh = h;
   }
 }

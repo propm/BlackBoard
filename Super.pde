@@ -235,7 +235,7 @@ class Enemy extends MyObj{
           //固定砲台
           case 5:
             Cannon c = (Cannon)this;
-            bullets.add(new Laser(c.x, c.y+h/2, new PVector(-6*db.scwhrate, 0, 0), this));
+            bullets.add(new Laser(c.laserX, c.y+h/2, new PVector(-6*db.scwhrate, 0, 0), this));
             wasAttack = true;
             break;
           //忍者

@@ -94,7 +94,7 @@ void settings(){
   //databaseセット
   db.initial();
   
-  size(db.screenw, db.screenh, P3D);
+  size(db.screenw, db.screenh, P2D);
   //PJOGL.profile = 1;
   noSmooth();
   
@@ -155,7 +155,7 @@ void allInitial(){
   choke = MAXchoke;
   isStop = false;
   
-  scene = 4;
+  scene = 1;
   time = times[scene-1];
   wholecount = 0;
   backalpha = 0;
@@ -361,7 +361,10 @@ void particledraw(){
      switch(pm.owner.charanum){
        case 5:
          Cannon c = (Cannon)pm.owner;
-         isRemove = !c.isCharge || c.isDie || scene >= 4;
+         
+         isRemove = c.isDie || scene >= 4;
+         if(!isRemove)
+           isRemove = pm.isChargeManager^c.isCharge;    //不一致ならtrue
          break;
        case 7:
          Boss b = (Boss)pm.owner;

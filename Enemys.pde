@@ -256,6 +256,8 @@ class Cannon extends Enemy{
   final int effectnum   = 6;     //一つの円でいくつの弾を表示するか
   boolean isCharge;              //現在チャージ中かどうか（ParticleManagerの方で使う）
   
+  int laserX;        //発射されるレーザーのx座標（EllipseManagerにいれてもらう）
+  
   AudioSample charge;    //チャージするときの音
   AudioSample appear;    //召喚時の音
   
@@ -285,6 +287,10 @@ class Cannon extends Enemy{
     movePolygon(0, imgy-bimgy);
     
     isCharge = true;
+    
+    //最初にlaserXを代入してもらうためにEllipseManagerを作り、すぐに破棄する
+    pms.add(new EllipseManager(this, (int)x, (int)y+h/2, (int)(5*db.scwhrate)));
+    pms.remove(pms.size()-1);
     
     if(appear != null && !soundstop)  appear.trigger();
   }
@@ -316,12 +322,16 @@ class Cannon extends Enemy{
   void attack(){
     super.attack();
     
+    //チャージ開始
     if(Bcount == Bi - chargeframe){
       if(charge != null)  charge.trigger();
       pms.add(new ParticleManager(this, (int)x, (int)y+h/2, (int)(200*db.scwhrate)));
       isCharge = true;
+      
+    //発射
     }else if(Bcount == 0){
       if(charge != null) charge.stop();
+      pms.add(new EllipseManager(this, (int)x, (int)y+h/2, (int)(5*db.scwhrate)));
       isCharge = false;
     }
   }
