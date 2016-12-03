@@ -675,6 +675,9 @@ class Boss extends Enemy{
         if (isStan) {
           // スタン状態なら
           // スタン状態のときボス動かないほうがいいかな…
+          rc = sc = 0;
+          isCharge = false;
+          if(charge != null)  charge.stop();
         }else{
           // 戦闘状態
           if(bisStan != isStan)  count = 0;

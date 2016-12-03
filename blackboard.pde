@@ -365,7 +365,7 @@ void particledraw(){
          break;
        case 7:
          Boss b = (Boss)pm.owner;
-         isRemove = !b.isCharge || scene >= 6;
+         isRemove = !b.isCharge || b.isStan || scene >= 6;
          break;
      }
      
