@@ -356,7 +356,7 @@ class Home extends MyObj{
   int bhp;
   float border;        //自陣の境界
   
-  PImage image;          //画像
+  PImage image;        //画像
   float imgm;          //画像の拡大倍率
   float angle;         //画像回転角度（単位：度）
   float anglev;        //角速度  （単位：度）
