@@ -43,7 +43,7 @@ class MyObj implements Cloneable{
 
 //敵
 class Enemy extends MyObj{
-  /* x, y:  画像左上(playerの場合は中心)の座標
+  /* x, y:  判定用座標（自陣のエリアとの判定、固定砲台のビームの始点などに使う）
      w, h:  画像の大きさ
      v:     衝突すると変化する、移動速度
   */
@@ -173,6 +173,7 @@ class Enemy extends MyObj{
     }
   }
   
+  //判定用多角形を設定（壁を壊すかどうかで呼ぶ関数を変える（pol.Updateは壁に遮られる処理があるため))
   void setPolygon(){
     if(isCrasher)  movePolygon(v.x, v.y);
     else           pol.Update();
@@ -234,7 +235,7 @@ class Enemy extends MyObj{
           //固定砲台
           case 5:
             Cannon c = (Cannon)this;
-            bullets.add(new Laser(c.chargexy.x, c.chargexy.y, new PVector(-6*db.scwhrate, 0, 0), this));
+            bullets.add(new Laser(c.x, c.y+h/2, new PVector(-6*db.scwhrate, 0, 0), this));
             wasAttack = true;
             break;
           //忍者

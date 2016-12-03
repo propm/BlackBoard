@@ -366,23 +366,3 @@ class Strong extends Reflect{
   
   void plus(){}
 }
-
-class Particle extends MyObj{
-  
-  Particle(float x, float y, PVector v){
-    this.x = x;
-    this.y = y;
-    this.v = v.copy();
-    initial();
-  }
-  
-  void initial(){
-    
-  }
-  
-  
-  void move(){
-    x += v.x;
-    y += v.y;
-  }
-}

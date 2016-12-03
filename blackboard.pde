@@ -30,6 +30,7 @@ ArrayList<Bullet>    bullets;   //弾
 ArrayList<Wall>      walls;     //壁
 ArrayList<AudioSample> dies;    //死ぬときの音を一時的に保持し、数秒後にclose()するためのもの
 ArrayList<Integer> diescount;   //死ぬときの音がcloseされるまでカウントする
+ArrayList<ParticleManager> pms; //チャージエフェクト
 Boss boss;
 Player[] player;
 Home home;
@@ -93,7 +94,7 @@ void settings(){
   //databaseセット
   db.initial();
   
-  size(db.screenw, db.screenh, P2D);
+  size(db.screenw, db.screenh, P3D);
   //PJOGL.profile = 1;
   noSmooth();
   
@@ -135,6 +136,7 @@ void allInitial(){
   bullets = new ArrayList<Bullet>();
   walls = new ArrayList<Wall>();
   dies = new ArrayList<AudioSample>();
+  pms = new ArrayList<ParticleManager>();
   diescount = new ArrayList<Integer>();
   
   player = new Player[isMouse ? 1:2 ];
@@ -153,7 +155,7 @@ void allInitial(){
   choke = MAXchoke;
   isStop = false;
   
-  scene = 4;
+  scene = 1;
   time = times[scene-1];
   wholecount = 0;
   backalpha = 0;
@@ -176,7 +178,6 @@ void draw(){
     //server.sendScreen();
     if(scene != 2)  drawing();
   }
-  
 }
 
 //処理用関数
@@ -345,6 +346,18 @@ void buttledraw(){
    for(int i = 0; i < bullets.size(); i++){
      Bullet bullet = bullets.get(i);
      bullet.draw();
+   }
+   
+   //パーティクル
+   for(int i = 0; i < pms.size(); i++){
+     ParticleManager pm = pms.get(i);
+     Cannon c = (Cannon)pm.owner;
+     if(!c.isCharge || c.isDie || scene >= 4){
+       pms.remove(i);
+       i--;
+     }else{
+       pm.update();
+     }
    }
 }
 
