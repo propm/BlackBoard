@@ -155,7 +155,7 @@ void allInitial(){
   choke = MAXchoke;
   isStop = false;
   
-  scene = 1;
+  scene = 4;
   time = times[scene-1];
   wholecount = 0;
   backalpha = 0;
@@ -291,7 +291,6 @@ void drawing(){
     case 5:
     case 6:
       buttledraw();
-      if(boss != null)  boss.draw();
       break;
       
     //スコア画面
@@ -348,11 +347,30 @@ void buttledraw(){
      bullet.draw();
    }
    
-   //パーティクル
+   if(boss != null)  boss.draw();
+   
+   particledraw();
+}
+
+void particledraw(){
+  //パーティクル
    for(int i = 0; i < pms.size(); i++){
      ParticleManager pm = pms.get(i);
-     Cannon c = (Cannon)pm.owner;
-     if(!c.isCharge || c.isDie || scene >= 4){
+     
+     boolean isRemove = false;    //パーティクルを消すならtrue
+     switch(pm.owner.charanum){
+       case 5:
+         Cannon c = (Cannon)pm.owner;
+         isRemove = !c.isCharge || c.isDie || scene >= 4;
+         break;
+       case 7:
+         Boss b = (Boss)pm.owner;
+         isRemove = !b.isCharge || scene >= 6;
+         break;
+     }
+     
+     //オーナーがチャージ状態でない場合はパーティクルを消す
+     if(isRemove){
        pms.remove(i);
        i--;
      }else{
@@ -503,7 +521,7 @@ void changeScene(){
     scene--;
   }
   
-  scene++; //<>//
+  scene++;
   time = times[scene-1];  //次のシーンまでの時間を更新
   
   switch(scene){

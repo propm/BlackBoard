@@ -164,6 +164,7 @@ class DataBase{
           Boss bo = (Boss)e;
           bo.reflectfirename = "reflect_fire.wav";
           bo.strongfirename = "reflectable_fire.wav";
+          bo.chargename = "laser_charge.wav";
           bo.diename = "boss_destroyed.wav";
           break;
         case 8:

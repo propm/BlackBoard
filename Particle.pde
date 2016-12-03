@@ -20,6 +20,7 @@ class ParticleManager{
   
   Enemy owner;                //パーティクル発生元の敵
   
+  //owner, ターゲットの座標、パーティクルが生み出される範囲の直径
   ParticleManager(Enemy e, int x, int y, int r){
     this.r = r;
     this.targetx = x;
@@ -34,6 +35,13 @@ class ParticleManager{
     baseB = 50;
     
     initial();
+  }
+  
+  ParticleManager(Enemy e, int x, int y, int r, color c){
+    this(e, x, y, r);
+    baseR = c >> 16 & 0xFF;
+    baseG = c >> 8 & 0xFF;
+    baseB = c & 0xFF;
   }
   
   void initial(){
