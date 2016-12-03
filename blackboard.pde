@@ -220,7 +220,7 @@ void process(){
       
     //道中
     case 3:
-      tm.checksec();  //秒数に応じて敵の追加
+      tm.checksec();  //秒数に応じて敵の追加、bgmなども秒数に応じて変更
     
     //ボス
     case 4:
@@ -580,7 +580,7 @@ void scoreinitial(){
   Maxscore[0] = score;                                            //敵・弾撃破スコア
   Maxscore[1] = scorePertime* (times[4] - remaintime);            //残り時間
   Maxscore[2] = home.hp;                                          //残りhp
-  Maxscore[3] = bossdestroyscore;                                 //ボス撃破スコア
+  Maxscore[3] = Maxscore[1] != 0 ? bossdestroyscore : 0;          //ボス撃破スコア
   Maxscore[4] = Maxscore[0]+Maxscore[1]+Maxscore[2]+Maxscore[3];  //合計
   
   //for(int i = 0; i < Maxscore.length; i++)
