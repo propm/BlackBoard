@@ -223,8 +223,19 @@ class Standard extends Bullet{
 
 //反射弾
 class Reflect extends Shuriken{
+  final int BulletAnimatePieces = 10;
+  final float Rdividenum = 4.0;    //reflectの画像の大きさを何で割るか
+  final float Sdividenum = 1.2;    //strongの場合
+  final PVector imagexyrate = new PVector(20.5/40.0, 32/40.0);  //「画像の中心にしたい場所/全体の大きさ」を設定する
+  
   AudioSample reverse;
   String reversename;
+  PVector imagexy;
+  int imageindex;
+  int imagecount;
+  
+  PVector bv;
+  int drawr;    //描画する半径　rは判定用半径
   
   ArrayList<PImage> imgs;
   
@@ -234,6 +245,8 @@ class Reflect extends Shuriken{
   
   //x, yは中心座標
   Reflect(float x, float y, PVector v){
+    this();
+    
     this.x = x;
     this.y = y; 
     this.v = v;
@@ -242,24 +255,60 @@ class Reflect extends Shuriken{
     
     num = 5;
     initial();
-    r = 15;
+    r = 33;
+    drawr = 15;
     maxhp = hp = 2;
     damage = 10;
     
     col[2] = 255;
   }
   
+  void initial(){
+    super.initial();
+    angle = 90;  //画像を時計回りにどれだけ回転させるか
+    imagexy = new PVector(imagexyrate.x * image.width, imagexyrate.y * image.height);
+    bv = v.copy();
+  }
+  
   void copy(){
     Reflect ref = (Reflect)db.otherobj.get(5);
+    copy(ref);
+  }
+  
+  void copy(Reflect ref){
     reverse = db.setsound(ref.reversename);
+    w = ref.w;
+    h = ref.h;
+    for(int i = 0; i < BulletAnimatePieces; i++)
+      imgs.add(ref.imgs.get(i).copy());
+      
+    imageindex = 0;
+    image = imgs.get(imageindex);
   }
   
   //反射できなくなるからこの処理はなし
   void outdicision(){};
   
-  void plus(){
-    //反射
+  void update(){
+    super.update();
     
+    //6フレームごとに画像を差し替え
+    imagecount++;
+    if(imagecount >= 6){
+      imageindex++;
+      imageindex %= 10;
+      image = imgs.get(imageindex);
+      imagecount = 0;
+    }
+    
+    if(bv.x != v.x || bv.y != v.y)  angle = atan2(v.y, v.x)/PI*180 - 90;
+    
+    bv = v.copy();
+  }
+  
+  void plus(){
+    
+    //反射
     boolean reflect = false;
     if(y >= height-r/2){
       y = height-r/2;
@@ -276,8 +325,13 @@ class Reflect extends Shuriken{
   }
   
   void draw(){
-    fill(col[0], col[1], col[2]);
-    ellipse(x, y, r, r);
+    pushMatrix();
+    translate(x, y);
+    rotate(angle*PI/180);
+    image(image, -imagexy.x, -imagexy.y);
+    popMatrix();
+    fill(col[0], col[1], col[2], 120);
+    ellipse(x, y, drawr, drawr);
   }
 }
 
@@ -285,7 +339,6 @@ class Reflect extends Shuriken{
 
 //反射可能
 class Strong extends Reflect{
-  
   Strong(){}
   
   //x, yは中心座標
@@ -299,31 +352,17 @@ class Strong extends Reflect{
     
     maxhp = hp = 7;
     damage = 15;
-    r = 100;
+    r = drawr = 100;
     isReflected = false;
+    angle = 90;
     
     col[0] = col[1] = 255;
   }
   
+  void copy(){
+    Strong st = (Strong)db.otherobj.get(6);
+    copy(st);
+  }
+  
   void plus(){}
-}
-
-class Particle extends MyObj{
-  
-  Particle(float x, float y, PVector v){
-    this.x = x;
-    this.y = y;
-    this.v = v.copy();
-    initial();
-  }
-  
-  void initial(){
-    
-  }
-  
-  
-  void move(){
-    x += v.x;
-    y += v.y;
-  }
 }

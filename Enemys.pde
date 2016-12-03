@@ -254,11 +254,7 @@ class Parachuter extends Attacker{
 class Cannon extends Enemy{
   final int chargeframe = 60*3;  //何フレームチャージするか
   final int effectnum   = 6;     //一つの円でいくつの弾を表示するか
-  boolean once;
-  boolean isCharge;
-  
-  ArrayList<Particle> chargeeffect;
-  PVector chargexy;
+  boolean isCharge;              //現在チャージ中かどうか（ParticleManagerの方で使う）
   
   AudioSample charge;    //チャージするときの音
   AudioSample appear;    //召喚時の音
@@ -288,8 +284,6 @@ class Cannon extends Enemy{
     imgy = y - marginy;
     movePolygon(0, imgy-bimgy);
     
-    chargeeffect = new ArrayList<Particle>();
-    chargexy = new PVector(x, y+h/2);
     isCharge = true;
     
     if(appear != null && !soundstop)  appear.trigger();
@@ -322,17 +316,12 @@ class Cannon extends Enemy{
   void attack(){
     super.attack();
     
-    if(isCharge){
-      //charge();
-    }else{
-      if(charge != null)  charge.stop();
-    }
-      
     if(Bcount == Bi - chargeframe){
-      once = true;
       if(charge != null)  charge.trigger();
+      pms.add(new ParticleManager(this, (int)x, (int)y+h/2, (int)(200*db.scwhrate)));
       isCharge = true;
     }else if(Bcount == 0){
+      if(charge != null) charge.stop();
       isCharge = false;
     }
   }
@@ -341,17 +330,6 @@ class Cannon extends Enemy{
     super.soundclose();
     if(charge != null)  charge.close();
     if(appear != null)  appear.close();
-  }
-  
-  void charge(){
-    if(once){
-      once = false;
-      //for(int i = 0; i < 
-    }
-    for(int i = 0; i < chargeeffect.size(); i++){
-      chargeeffect.get(i).move();
-      
-    }
   }
   
   /*void draw(){
@@ -464,20 +442,23 @@ class Ninja extends Enemy{
 
 //ボス
 class Boss extends Enemy{
-  final float rapidi  = 60/7.0;           //interbal
-  final int lashtime  = 60*3;
-  final int standardi = 60*1;
-  final int reflecti  = 60*5;
-  final float standardbs = 1.5*db.scwhrate;
-  final int rbs = 20;
-  final float reffreq = 2.5;
-  final int stantime  = 60*7;
+  final float rapidi  = 60/7.0;           //通常弾連射のインターバル
+  final int lashtime  = 60*3;             //連射するフレーム数
+  final int standardi = 60*1;             //通常弾の連射と連射の間のインターバル
+  final int reflecti  = 60*5;             //反射弾のインターバル
+  final float standardbs = 1.5*db.scwhrate;  //通常弾の弾速
+  final int rbs = 20;                        //反射弾の弾速
+  final int chargetime = 60*3;            //チャージするフレーム数
+  final PVector ChargeXYrate = new PVector(62/250.0, 165/250.0);
+  //↑チャージする位置（右端、下端を1としたときの）
+  
+  final int stantime  = 60*7;                //気絶する時間
+  
   final float ALPHA = 255;  //最大不透明度
   final int stealfreq = 60; //透明度が変わる方向が何フレームで変化するか
+  final float alphav = ALPHA/stealfreq;   //不透明度の増減の速さ(1フレームにどれだけ不透明度が変化するか)
   
-  final float alphav = 5;   //不透明度の増減の速さ(1フレームにどれだけ不透明度が変化するか)
   boolean isStealth;        //透明化するときtrue
-  
   int stealthcount;
   int Scount;
   
@@ -486,25 +467,28 @@ class Boss extends Enemy{
   int rc;     //反射系弾count
   float theta;            //単位:度
   float plustheta;
+  
   boolean isStrong;     //次に発射するのが反射可能弾ならtrue
   boolean isStan;       //気絶中ならtrue
   boolean bisStan;      //1フレーム前のisStan
-  
   int stancount;        //気絶している最中はカウント
   
-  float handx, handy; // ボスの手の高さ（ボスの左上の座標からの相対
-  int count; // ボスが登場or死亡したときからのカウント(毎フレーム1足す) & stan時にも使用
-  int bossscene; // 0: ボス登場 1: ボス攻撃＆スタン　2: ボス死亡
+  int count;        // ボスが登場or死亡したときからのカウント(毎フレーム1足す) & stan時にも使用
+  int bossscene;    // 0: ボス登場 1: ボス攻撃＆スタン　2: ボス死亡
   
-  float upspeed = 2; // 登場するときのスピード(要調整)
+  float upspeed = 2;     // 登場するときのスピード(要調整)
   float downspeed = 1.5; // 死んだあとの沈むスピード(要調整)
   
+  boolean isCharge;    //チャージ時true
   
-  AudioSample strongfire;
+  AudioSample strongfire;  //効果音
   AudioSample reflectfire;
+  AudioSample charge;
   
   PImage boss1, boss2;
-  String strongfirename, reflectfirename;
+  String strongfirename, reflectfirename, chargename;  //効果音のファイル名
+  
+  PVector chargeXY;  //チャージする位置
   
   Boss(){}
   
@@ -513,6 +497,7 @@ class Boss extends Enemy{
     charanum = 7;
     copy();
     
+    //描画するイメージを指定
     image = imgs.get(0);
     
     marginx = w/2;
@@ -528,12 +513,16 @@ class Boss extends Enemy{
     imgy = y - marginy;
     movePolygon(imgx, imgy);
     
+    chargeXY = new PVector(0, 0);
+    
+    //ボスが上下に動くときの角速度（theta/フレーム）を指定
     plustheta = 360.0/width*7.0*standardbs;
     
     Scount = 0;
     stealthcount = 0;
     alpha = ALPHA;
-    isStealth = false;
+    isStealth = true;
+    isCharge = false;
     
     sc = rc = 0;
     theta = 0;
@@ -549,27 +538,33 @@ class Boss extends Enemy{
   void copy(){
     super.copy();
     
+    //効果音とイメージをコピー
     Boss bo = (Boss)db.oriEnemys.get(6);
     strongfire = db.setsound(bo.strongfirename);
     reflectfire = db.setsound(bo.reflectfirename);
+    charge = db.setsound(bo.chargename);
     
     boss1 = imgs.get(0);
     boss2 = imgs.get(1);
   }
   
   void move(){
+    //上下に移動
     theta += plustheta;
     theta %= 360;
     float ay = (height-h)/2.0*sin(PI/180*theta) + basicy;
     v.set(v.x, ay-y);
     
     super.move();
+    
+    chargeXY.set(imgx+image.width*ChargeXYrate.x, imgy+image.height*ChargeXYrate.y);
   }
   
   void alpha(){}
   
   //跳ね返された反射可能弾との判定
   void dicision(){
+    //気絶しているときの判定
     if(isStan)  stancount++;
     if(stancount > stantime){
       isStan = false;
@@ -577,6 +572,7 @@ class Boss extends Enemy{
       stancount = 0;
     }
     
+    //跳ね返された反射可能弾との判定
     for(int i = 0; i < bullets.size(); i++){
       Bullet b = bullets.get(i);
       
@@ -603,17 +599,31 @@ class Boss extends Enemy{
       }
     }else if(sc >= lashtime + standardi)  sc = 0;
     
+    //チャージし始める瞬間なら
+    if(rc == reflecti - chargetime){
+      isCharge = true;
+      charge.trigger();  //チャージの効果音を鳴らす
+      
+      //パーティクルを生成
+      color col;
+      if(isStrong)  col = color(200, 200, 30);
+      else          col = color(130, 157, 255);
+      pms.add(new ParticleManager(this, (int)chargeXY.x, (int)chargeXY.y, (int)(500*db.scwhrate), col));
+    }
+    
     //反射弾・反射可能弾発射
     if(++rc >= reflecti){
-      if(isStrong){
+      isCharge = false;
+      if(!isStrong){
         //反射弾
-        bullets.add(new Reflect(x, y, new PVector(-rbs*cos(45*PI/180.0), rbs*sin(45*PI/180.0))));
-        bullets.add(new Reflect(x, y, new PVector(-rbs*cos(-45*PI/180.0), rbs*sin(-45*PI/180.0))));
+        bullets.add(new Reflect(chargeXY.x, chargeXY.y, new PVector(-rbs*cos(45*PI/180.0), rbs*sin(45*PI/180.0))));
+        bullets.add(new Reflect(chargeXY.x, chargeXY.y, new PVector(-rbs*cos(-45*PI/180.0), rbs*sin(-45*PI/180.0))));
+        //効果音
         if(reflectfire != null && !soundstop)  reflectfire.trigger();
-      }
-      else{
+        
+      }else{
         //反射可能弾
-        bullets.add(new Strong(x, y));
+        bullets.add(new Strong(chargeXY.x, chargeXY.y));
         if(strongfire != null && !soundstop)  strongfire.trigger();
       }
       isStrong = !isStrong;
@@ -622,12 +632,8 @@ class Boss extends Enemy{
   }
   
   void stealth(){
-    //一定周期で点滅
-    if(stealthcount++ > stealfreq){
-      isStealth = !isStealth;
-      stealthcount = 0;
-    }
     
+    //一定周期で点滅
     if(isStealth){
       alpha -= alphav;
       if(alpha < 0){
@@ -636,12 +642,15 @@ class Boss extends Enemy{
       }
     }else{
       if(Scount < 15)  Scount++;          //消えている時間
-      else            alpha += alphav;
+      else             alpha += alphav;
       if(alpha >= ALPHA){
         alpha = ALPHA;
+        isStealth = true;
         Scount = 0;
       }
     }
+    
+    if(isCharge)  alpha = 255;
   }
   
   void update() {
@@ -666,19 +675,21 @@ class Boss extends Enemy{
         if (isStan) {
           // スタン状態なら
           // スタン状態のときボス動かないほうがいいかな…
-        }
-        else {
+          rc = sc = 0;
+          isCharge = false;
+          if(charge != null)  charge.stop();
+        }else{
           // 戦闘状態
           if(bisStan != isStan)  count = 0;
           
-          move();
+          if(!isCharge)  move();
           attack();
           bisStan = isStan;
           stealth();
         }
         dicision();
         break;
-    
+      
       case 2:
         // 死んでからの処理
         y += downspeed;
@@ -740,17 +751,14 @@ class Boss extends Enemy{
             if (bu % 2 == 0) {
               // 要調整
               image(boss2, imgx - 2, imgy - 4);
-            }
-            else {
+            }else{
               image(boss2, imgx, imgy);
             }
-          }
-          else {
+          }else{
             image(boss2, imgx, imgy);
           }
-        }
-        else {
-          // 戦闘状態なら
+        }else{
+          //戦闘状態なら
           tint(255, alpha);
           image(boss1, imgx, imgy);
           noTint();
@@ -775,11 +783,4 @@ class Boss extends Enemy{
     
     pol.Draw();
   }
-  
-  /*
-  void draw(){
-    super.draw();
-    fill(255, 20, 147);
-    ellipse(x, y, 20, 20);
-  }*/
 }

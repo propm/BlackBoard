@@ -30,6 +30,7 @@ ArrayList<Bullet>    bullets;   //弾
 ArrayList<Wall>      walls;     //壁
 ArrayList<AudioSample> dies;    //死ぬときの音を一時的に保持し、数秒後にclose()するためのもの
 ArrayList<Integer> diescount;   //死ぬときの音がcloseされるまでカウントする
+ArrayList<ParticleManager> pms; //チャージエフェクト
 Boss boss;
 Player[] player;
 Home home;
@@ -43,7 +44,9 @@ final int scorePertime = 5;    //残り時間1フレームあたり何点もら�
 final int scoremarginf = 10;   //スコアを表示するときの間の時間
 final int dietime = 60*2;      //dieが鳴る時間の長さ
 final boolean isMouse = true;    //mouseでプレイヤーを操作するときはtrue
-final boolean isDebag = true;    //デバッグモードならtrue
+final boolean isDebag = false;    //デバッグモードならtrue
+final boolean isTwoKinect = true;  //キネクトを2台使うならtrue
+final boolean isKinectLeft = false;  //キネクトを1台使う場合にキネクトが置かれている場所が画面の左側ならtrue
 
 boolean firstinitial;
 boolean backspace, space;    //backspace、spaceが押されている間true
@@ -91,7 +94,7 @@ void settings(){
   //databaseセット
   db.initial();
   
-  size(db.screenw, db.screenh, P2D);
+  size(db.screenw, db.screenh, P3D);
   //PJOGL.profile = 1;
   noSmooth();
   
@@ -133,6 +136,7 @@ void allInitial(){
   bullets = new ArrayList<Bullet>();
   walls = new ArrayList<Wall>();
   dies = new ArrayList<AudioSample>();
+  pms = new ArrayList<ParticleManager>();
   diescount = new ArrayList<Integer>();
   
   player = new Player[isMouse ? 1:2 ];
@@ -151,7 +155,7 @@ void allInitial(){
   choke = MAXchoke;
   isStop = false;
   
-  scene = 1;
+  scene = 4;
   time = times[scene-1];
   wholecount = 0;
   backalpha = 0;
@@ -174,7 +178,6 @@ void draw(){
     //server.sendScreen();
     if(scene != 2)  drawing();
   }
-  
 }
 
 //処理用関数
@@ -217,7 +220,7 @@ void process(){
       
     //道中
     case 3:
-      tm.checksec();  //秒数に応じて敵の追加
+      tm.checksec();  //秒数に応じて敵の追加、bgmなども秒数に応じて変更
     
     //ボス
     case 4:
@@ -288,7 +291,6 @@ void drawing(){
     case 5:
     case 6:
       buttledraw();
-      if(boss != null)  boss.draw();
       break;
       
     //スコア画面
@@ -343,6 +345,37 @@ void buttledraw(){
    for(int i = 0; i < bullets.size(); i++){
      Bullet bullet = bullets.get(i);
      bullet.draw();
+   }
+   
+   if(boss != null)  boss.draw();
+   
+   particledraw();
+}
+
+void particledraw(){
+  //パーティクル
+   for(int i = 0; i < pms.size(); i++){
+     ParticleManager pm = pms.get(i);
+     
+     boolean isRemove = false;    //パーティクルを消すならtrue
+     switch(pm.owner.charanum){
+       case 5:
+         Cannon c = (Cannon)pm.owner;
+         isRemove = !c.isCharge || c.isDie || scene >= 4;
+         break;
+       case 7:
+         Boss b = (Boss)pm.owner;
+         isRemove = !b.isCharge || b.isStan || scene >= 6;
+         break;
+     }
+     
+     //オーナーがチャージ状態でない場合はパーティクルを消す
+     if(isRemove){
+       pms.remove(i);
+       i--;
+     }else{
+       pm.update();
+     }
    }
 }
 
@@ -488,7 +521,7 @@ void changeScene(){
     scene--;
   }
   
-  scene++; //<>//
+  scene++;
   time = times[scene-1];  //次のシーンまでの時間を更新
   
   switch(scene){
@@ -547,7 +580,7 @@ void scoreinitial(){
   Maxscore[0] = score;                                            //敵・弾撃破スコア
   Maxscore[1] = scorePertime* (times[4] - remaintime);            //残り時間
   Maxscore[2] = home.hp;                                          //残りhp
-  Maxscore[3] = bossdestroyscore;                                 //ボス撃破スコア
+  Maxscore[3] = Maxscore[1] != 0 ? bossdestroyscore : 0;          //ボス撃破スコア
   Maxscore[4] = Maxscore[0]+Maxscore[1]+Maxscore[2]+Maxscore[3];  //合計
   
   //for(int i = 0; i < Maxscore.length; i++)

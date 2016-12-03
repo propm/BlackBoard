@@ -164,6 +164,7 @@ class DataBase{
           Boss bo = (Boss)e;
           bo.reflectfirename = "reflect_fire.wav";
           bo.strongfirename = "reflectable_fire.wav";
+          bo.chargename = "laser_charge.wav";
           bo.diename = "boss_destroyed.wav";
           break;
         case 8:
@@ -229,7 +230,15 @@ class DataBase{
         Reflect ref = (Reflect)otherobj.get(num);
         ref.reversename = "reflect_reverse.wav";
       case 6:
-        //Strong st = (Strong)otherobj.get(num);
+        Reflect ref2 = (Reflect)otherobj.get(num);
+        for(int i = 0; i < ref2.BulletAnimatePieces; i++){
+          PImage img = loadImage("fire"+(num == 5 ? "B":"R")+(i+1)+".png");
+          float dividenum = num == 5 ? ref2.Rdividenum : ref2.Sdividenum;
+          ref2.w = (int)(img.width/dividenum*scwhrate);
+          ref2.h = (int)(img.height/dividenum*scwhrate);
+          img = reSize(img, ref2.w, ref2.h);
+          ref2.imgs.add(img);
+        }
         break;
     }
   }
