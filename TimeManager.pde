@@ -1,7 +1,7 @@
 
 class TimeManager{
   PriorityQueue<Datasaver> events;  //イベント
-  int counter;
+  int counter;                      //秒数をカウントする
   
   TimeManager(){
     counter = 0;
@@ -15,13 +15,15 @@ class TimeManager{
   //秒数ごとに指定されたことを実行
   void checksec(){
     if(events.size() > 0){
+      
+      //カウントがeventに入っている情報の秒数を越えたら、イベント（敵の発生、bgmの再生）を発生させる
       while(counter/60.0 >= events.peek().sec){
         Datasaver ds = events.poll();
-          switch(ds.tag){
-            case 2:
+          switch(rt.tags[ds.tag-1]){
+            case "<appear>":
               checksecparts(ds);
               break;
-            case 3:
+            case "<bgm>":
               if(bgm != null)  bgm.close();
               bgm = minim.loadFile(ds.stringdata[0]);
               if(bgm != null)  bgm.loop();

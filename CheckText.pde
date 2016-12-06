@@ -2,7 +2,7 @@
 //エラーがないか確認する
 class CheckText{
   
-  final String[] tags = {"<size>", "<appear>", "<bgm>"};
+  final String[] tags = {"<appear>", "<bgm>"};
   final String[] objects = {"Attacker", "Sin", "Tangent", "Parachuter", "Cannon", "Ninja"};
   
   String[] blines;
@@ -42,6 +42,7 @@ class CheckText{
     isInitialized = true;
   }
   
+  //エラーチェック
   boolean check(){
     initial();
     
@@ -70,17 +71,11 @@ class CheckText{
         ds = new Datasaver();
         
         //タグごとの処理
-        switch(tagnum){
-          
-          case 1:
-            sizeError(code, i);
-            break;
-          
-          case 2:
+        switch(tags[tagnum-1]){
+          case "<appear>":
             appearError(code, tagnum, i);
             break;
-            
-          case 3:
+          case "<bgm>":
             bgmError(code, tagnum, i);
             break;
         }
@@ -90,91 +85,7 @@ class CheckText{
     return isError;
   }
   
-  void sizeError(String code, int i){
-    //エラー処理
-    if(!Pattern.matches(tags[0]+"[0-9]+", lines[i])){
-      println("書式通り記入してください。 行数： "+(i+1));
-      isError = true;
-      return;
-    }
-    
-    //widthの抽出
-    int w = 0;
-    String a = getword(code, 0, "");
-    
-    if(a.equals("")){
-      println("sizeが書かれていません。　行数: "+(i+1));
-      isError = true;
-      return;
-    }
-    
-    try{
-      w = Integer.parseInt(a);
-    }catch(NumberFormatException e){
-      println("sizeは数字で記入してください。　行数: "+(i+1));
-      isError = true;
-      return;
-    }
-    
-    if(w <= 0){
-      println("sizeが0になっています。　行数: "+(i+1));
-      isError = true; 
-      return;
-    }
-      
-  }
-  /*
-  void soundError(String code, int tagnum, int i){
-    boolean isMatchJ, isMatchK;
-    boolean isErase;
-    
-    isMatchJ = isMatchK = false;
-    isErase = false;
-    
-    //コマンドが正しいかどうかを確認
-    //（コマンドがeraseの場合はオブジェクトの情報がかかれているかどうかも確認）
-    for(int j = 0; j < commands.length; j++){
-      if(Pattern.compile(tags[tagnum-1]+"\".+\">>"+commands[j]).matcher(lines[i]).find()){
-        isMatchJ = true;
-        if(j == 2){
-          isErase = true;
-          if(Pattern.matches(tags[tagnum-1]+"\".+\">>"+commands[j]+"\\(\\)", lines[i]))
-            isMatchK = true;
-        }
-      }
-    }
-    
-    //オブジェクトが正しいかどうかを確認
-    //（コマンドがeraseの場合にはここを通らない）
-    if(!isErase)
-      for(int k = 0; k < objects.length; k++)
-        if(Pattern.compile("\\("+objects[k]+"\\)").matcher(lines[i]).find())
-          isMatchK = true;
-    
-    if(Pattern.compile("\\(\\)").matcher(lines[i]).find())  isMatchK = true;
-    
-    if(!(isMatchJ && isMatchK)){
-      
-      if(!isMatchJ)  println("そのようなコマンドは存在しません。 行数: "+(i+1));
-      if(!isMatchK)
-        if(isErase)  println("erase()コマンドにオブジェクトの情報は必要ありません。 行数: "+(i+1));
-        else         println("そのようなオブジェクトは存在しません。 行数: "+(i+1));
-      
-      isError = true;
-      return;
-    }
-    
-    //ファイル名取得
-    int number = getnum(code, 0, "\"");
-    String filename = getword(code, number, "\"");
-    
-    //ファイルが存在するかの確認
-    if(conffile(filename, i)){
-      isError = true;
-      return;
-    }
-  }*/
-  
+  //appearタグのエラー処理
   void appearError(String code, int tagnum, int i){
     boolean isMatch = false;
     
@@ -189,6 +100,7 @@ class CheckText{
     }
   }
   
+  //bgmタグのエラー処理
   void bgmError(String code, int tagnum, int i){
     int ifcount = 0;
     

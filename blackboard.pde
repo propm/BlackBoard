@@ -86,7 +86,7 @@ void settings(){
   db = new DataBase();        //データベース
   tm = new TimeManager();
   
-  db.screenw = 1600;               //スクリーンwidth(仮)
+  db.screenw = 2000;               //スクリーンwidth(仮)
   if(rt.check())  System.exit(0);  //settings.txtのエラーチェック
   rt.readCommands();
   db.screenh = (int)(db.screenw*db.boardrate);

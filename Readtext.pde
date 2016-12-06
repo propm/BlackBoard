@@ -16,7 +16,7 @@ class ReadText extends CheckText{
     
     if(!isInitialized)  initial();
     
-    //1秒ごとに文を読む
+    //1行ごとに文を読む
     for(int i = 0; i < lines.length; i++){
       Pattern p = Pattern.compile(creg);
       Matcher m = p.matcher(blines[i]);
@@ -41,33 +41,16 @@ class ReadText extends CheckText{
         ds = new Datasaver();
         
         //タグごとの処理
-        switch(tagnum){
-          case 1:
-            sizepro(code);
-            break;
-          case 2:
+        switch(tags[tagnum-1]){
+          case "<appear>":
             appearpro(code, tagnum, i);
             break;
-          case 3:
+          case "<bgm>":
             bgmpro(code, tagnum, i);
             break;
         }
       }
     }
-  }
-  
-  //*****************************************************************************************************************
-  
-  //sizeタグの処理
-  void sizepro(String code){
-    
-    //widthの抽出
-    int w = 0;
-    
-    String a = getword(code, 0, "");
-    w = Integer.parseInt(a);
-    
-    db.screenw = w;
   }
   
   //*****************************************************************************************************************
