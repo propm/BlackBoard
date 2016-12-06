@@ -7,8 +7,7 @@ class ReadText extends CheckText{
   
   //テキストファイルを読む
   void read(){
-    blines = loadStrings("settings.txt");
-    lines = new String[blines.length];
+    lines = loadStrings("settings.txt");
   }
   
   //コマンドを読む
@@ -19,7 +18,7 @@ class ReadText extends CheckText{
     //1行ごとに文を読む
     for(int i = 0; i < lines.length; i++){
       Pattern p = Pattern.compile(creg);
-      Matcher m = p.matcher(blines[i]);
+      Matcher m = p.matcher(lines[i]);
       
       //文中にタグが存在したら
       if(m.find()){
@@ -55,49 +54,6 @@ class ReadText extends CheckText{
   
   //*****************************************************************************************************************
   
-  /*
-  //soundタグの処理
-  void soundpro(String code, int i){
-    String object, filename;
-    
-    //どのコマンドが使われているか調べる
-    int comnum = -1;
-    for(int j = 0; j < commands.length; j++)
-      if(Pattern.compile(commands[j]).matcher(lines[i]).find())  comnum = j+1;
-    
-    //オブジェクト名取得
-    int number = getnum(code, 0, "(");
-    object = getword(code, number, ")");
-    
-    //どのオブジェクトを指しているか調べる
-    int objectnum = -1;
-    for(int j = 0; j < objects.length; j++)
-      if(object.equals(objects[j]))  objectnum = j+1;
-    
-    if(object.equals(""))  objectnum = 0;
-    
-    //ファイル名取得
-    number = getnum(code, 0, "\"");
-    
-    filename = getword(code, number, "\"");
-    
-    //ファイルが存在するかの確認
-    if(conffile(filename, i))  System.exit(0);
-    
-    //音楽セット
-    if(comnum == 1 || comnum == 3){
-      if(objectnum > 0)                  db.setsound(objects[objectnum-1], commands[comnum-1], filename);
-      else     for(String obj: objects)  db.setsound(obj, commands[comnum-1], filename);
-    }
-    else if(comnum == 2){
-      Player p = (Player)db.otherobj.get(0);
-      p.erase = minim.loadSample(filename);
-    }
-  }
-  */
-  
-  //*****************************************************************************************************************
-  
   //appearタグの処理
   void appearpro(String code, int tagnum, int i){
     
@@ -108,6 +64,8 @@ class ReadText extends CheckText{
     while(m.find()){
       freq++;
     }
+    
+    //
     int[][] nums = new int[freq][2];
     for(int j = nums.length-1; j >= 0; j--){
       nums[j] = getsec(code, j != nums.length-1 ? nums[j+1][0] : code.length()-1);
@@ -121,30 +79,27 @@ class ReadText extends CheckText{
     object = a[0];
     number = Integer.parseInt(a[1]);
     
-    //dscの[intdata]    0:x座標 1:y座標
-    //dscの[stringdata] 0:オブジェクト名
+    //[intdata]    0:x座標 1:y座標
+    //[stringdata] オブジェクト名
     
     for(int j = 0; j < freq; j++){
-      Datasaver dsc = new Datasaver();
-      dsc.tag = tagnum;
-      dsc.intdata = new int[2];
-      dsc.stringdata = new String[1];
-      dsc.intdata[0] = dsc.intdata[1] = -10000;
+      ds = new Datasaver();
+      ds.tag = tagnum;
       
       //座標取得(座標が書かれてない場合、intdata[1], [2]には何も入らない)
       if(number < nums[j][0]-1){
         for(int k = number; k < nums[0][0] - 1; k++){
           if(code.substring(k, k+1).equals(",")){
-            dsc.intdata[0] = Integer.parseInt(code.substring(number, k));
-            dsc.intdata[1] = Integer.parseInt(code.substring(k+1, nums[0][0]-1));
+            ds.intdata[0] = Integer.parseInt(code.substring(number, k));
+            ds.intdata[1] = Integer.parseInt(code.substring(k+1, nums[0][0]-1));
           }
         }
       }
       
       //データ保存
-      dsc.sec = Integer.parseInt(code.substring(nums[j][0], nums[j][1]));
-      dsc.stringdata[0] = object;
-      tm.Add(dsc);
+      ds.sec = Integer.parseInt(code.substring(nums[j][0], nums[j][1]));
+      ds.stringdata = object;
+      tm.Add(ds);
     }
   }
   
@@ -168,19 +123,19 @@ class ReadText extends CheckText{
     }
     
     //データ保存
-    //[stringdata]  0:ファイル名
-    
-    ds.stringdata = new String[1];
+    //[stringdata]  ファイル名
     
     ds.tag = tagnum;
     ds.sec = Integer.parseInt(code.substring(nums[0], nums[1]));
     
-    ds.stringdata[0] = filename;
+    ds.stringdata = filename;
     tm.Add(ds);
   }
   
   //*****************************************************************************************************************
   
+  //引数: code:読み込む文字列　begin:探し始める位置
+  //戻り値: 秒数
   int[] getsec(String code, int begin){
     //秒数取得
     int[] nums = {0, 0};                 //1つ目の要素は秒数の書き始めの位置、2つ目は書き終わりの位置
@@ -196,31 +151,8 @@ class ReadText extends CheckText{
     return nums;
   }
   
-  //begin: 探し始める位置  end:探し終わる部分にある文字（「:」など）
-  String getword(String code, int begin, String end){
-    
-    for(int i = begin; i <= code.length(); i++){
-      try{
-        if((end.equals("") && i == code.length()) || (code.substring(i, i+1).equals(end))){
-          
-          return code.substring(begin, i);
-        }
-      }catch(Exception e){}
-    }
-    return null;
-  }
-  
-  //begin: 探し始める位置  end:探し終わる部分にある文字（「:」など）
-  int getnum(String code, int begin, String end){
-    
-    for(int i = begin; i < code.length(); i++){
-      if(code.substring(i, i+1).equals(end)){
-        return i+1;
-      }
-    }
-    return -1;
-  }
-    
+  //引数:  code:読み込む文字列　begin:探し始める位置　end:探し終わりの位置にある文字
+  //戻り値:  1つ目の要素：抜き取った文字列　　2つ目の要素：次に文字列を抜き取るときにどこから始めるか
   String[] getnumword(String code, int begin, String end){
     
     String[] word = {null, "-1"};
@@ -240,9 +172,9 @@ class Datasaver implements Cloneable{
   int tag;
   int sec;
   int[] intdata;
-  String[] stringdata;
+  String stringdata;
   
-  Datasaver(){
-    sec = -1;
+  { sec = -1;
+    intdata = new int[]{-10000, -10000};
   }
 }

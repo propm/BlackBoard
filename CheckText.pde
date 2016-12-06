@@ -5,8 +5,7 @@ class CheckText{
   final String[] tags = {"<appear>", "<bgm>"};
   final String[] objects = {"Attacker", "Sin", "Tangent", "Parachuter", "Cannon", "Ninja"};
   
-  String[] blines;
-  String[] lines;
+  String[] lines;         //ファイルの内容を読み込む
   
   boolean isError;        //エラーがあればtrue
   boolean isInitialized;  //initialがすでに呼ばれていればtrue
@@ -35,7 +34,7 @@ class CheckText{
     
     //半角空白、タブ削除
     for(int i = 0; i < lines.length; i++){
-      lines[i] = Pattern.compile(" ").matcher(blines[i]).replaceAll("");
+      lines[i] = Pattern.compile(" ").matcher(lines[i]).replaceAll("");
       lines[i] = Pattern.compile("\t").matcher(lines[i]).replaceAll("");
     }
     
@@ -49,7 +48,7 @@ class CheckText{
     //1秒ごとに文を読む
     for(int i = 0; i < lines.length; i++){
       Pattern p = Pattern.compile(creg);
-      Matcher m = p.matcher(blines[i]);
+      Matcher m = p.matcher(lines[i]);
       
       //文中にタグが存在したら
       if(m.find()){
