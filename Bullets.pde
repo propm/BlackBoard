@@ -360,7 +360,7 @@ class Strong extends Reflect{
   }
   
   void copy(){
-    Strong st = (Strong)db.otherobj.get(6);
+    Strong st = (Strong)db.otherobj.get(num);
     copy(st);
   }
   

@@ -1,10 +1,9 @@
 
 //突撃隊
 class Attacker extends Enemy{
-  boolean flag = false;
   
   Attacker(){
-    if(db.oriEnemys.size() > 0){
+    if(db.isFinishInitial){
       x = random(width)+width/3*2;
       initial();
     }
@@ -119,7 +118,7 @@ class Tangent extends Sin{
   
   //初期化
   void initialize(){
-    if(db.oriEnemys.size() > 0){
+    if(db.isFinishInitial){
       initial(3);  //初期設定をコピー
       
       float imgw = imgs.get(0).width;
@@ -181,7 +180,7 @@ class Parachuter extends Attacker{
   int changecount;
   
   Parachuter(){
-    if(db.oriEnemys.size() > 0){
+    if(db.isFinishInitial){
       x = random(width/2)+width/3*2;
       y = -height/3;
       initialize();
@@ -264,7 +263,7 @@ class Cannon extends Enemy{
   String chargename, appearname;
   
   Cannon(){
-    if(db.oriEnemys.size() > 0){
+    if(db.isFinishInitial){
       x = random(width/11.0*10)+ width/11.0;
       y = random(height);
       initial();
@@ -341,13 +340,6 @@ class Cannon extends Enemy{
     if(charge != null)  charge.close();
     if(appear != null)  appear.close();
   }
-  
-  /*void draw(){
-    tint(255, 0, 0, alpha);
-    image(image, imgx, imgy);
-    noTint();
-    pol.Draw();
-  }*/
 }
 
 //******************************************************************************************************
@@ -366,7 +358,7 @@ class Ninja extends Enemy{
   }
   
   Ninja(float x, float y){
-    if(db.oriEnemys.size() > 0){
+    if(db.isFinishInitial){
       this.x = x;
       this.y = y;
       initial();

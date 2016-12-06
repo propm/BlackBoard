@@ -48,10 +48,10 @@ final boolean isDebag = false;    //デバッグモードならtrue
 final boolean isTwoKinect = true;  //キネクトを2台使うならtrue
 final boolean isKinectLeft = false;  //キネクトを1台使う場合にキネクトが置かれている場所が画面の左側ならtrue
 
-boolean firstinitial;
+boolean firstinitial;        //最初のinitialが呼ばれるまでtrue
 boolean backspace, space;    //backspace、spaceが押されている間true
-boolean isStop;
-boolean sendable;
+boolean isStop;              //一時停止を司る
+boolean sendable;            //このフレームで既にoscで送ったならtrue
 boolean isPlaying;           //バトル中ならtrue
 boolean isGameOver;          //ゲームオーバーならtrue
 boolean gameoveronce;        
@@ -121,6 +121,8 @@ void setup(){
 //やり直し
 void allInitial(){
   
+  //↓オブジェクト類↓
+  
   //一回目以外
   if(!firstinitial){
     stop(true);
@@ -150,6 +152,8 @@ void allInitial(){
     bgm = minim.loadFile("bbtitle.mp3");
     bgm.loop();
   }catch(Exception e){}
+  
+  //*********↓各種グローバル変数初期化↓*************
   
   score = 0;
   choke = MAXchoke;
