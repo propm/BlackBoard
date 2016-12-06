@@ -37,7 +37,7 @@ Home home;
 MyObj title;
 
 final int MAXchoke = 11100;
-final int[] times = {-1, -1, 60*60, -1, 60*60, -1, 60*20, 60*18};    //sceneと対応　　　-1は時間制限なし
+final int[] times = {-1, -1, 60*60, -1, 60*60, -1, 60*10, 60*10};    //sceneと対応　　　-1は時間制限なし
 final int sendframes = 2;      //_bossappearなどの変数の中身を外部プログラムに送るときの信号の長さ
 final int Scoretime  = 60*1;   //scoreの数字を何秒間変化させるか
 final int scorePertime = 5;    //残り時間1フレームあたり何点もらえるか
@@ -57,6 +57,7 @@ boolean isGameOver;          //ゲームオーバーならtrue
 boolean gameoveronce;        
 boolean darkerfinish;        //ゲームオーバー時に暗くなるのが終わったらtrue
 boolean soundstop;           //効果音を止めたいときにtrueにする
+boolean stopWholecount;      //gameover画面かscore表示画面の、表示の途中ならtrue
 
 int time;            //次のシーンに入るまでの時間を入れる
 int score, choke;    //普通のスコア、現在の粉エネルギー
@@ -186,7 +187,10 @@ void draw(){
 
 //処理用関数
 void process(){
-  wholecount++;
+  
+  //スコア表示中でなければ時間を数える
+  if(!((scene == 7 || scene == 8) && !expressfinish))
+    wholecount++;
   
   //座標の取得
   if(!isMouse)  kinect.update();
@@ -302,6 +306,8 @@ void drawing(){
       background(0);
       textSize(60);
       fill(255);
+      
+      //スコアを一つ一つ表示
       for(int i = 0; i <= vsn; i++){
         int a = i;
         if(i == scoretext.length-1)  a++;
@@ -309,7 +315,8 @@ void drawing(){
         text(scoretext[i]+(int)exscore[i]+"pt", (int)((float)width/2), (int)((float)height/14*(a*2+3)));
       }
       
-      text((times[scene-1]- wholecount)/60, (float)width/30*2, (float)height/10*2);
+      //左上にタイトルに戻るまでの秒数を表示
+      if(expressfinish)  text((times[scene-1]- wholecount)/60, (float)width/30*2, (float)height/10*2);
       break;
    
     //ゲームオーバー
@@ -356,12 +363,13 @@ void buttledraw(){
    particledraw();
 }
 
+//パーティクル
 void particledraw(){
-  //パーティクル
+  
    for(int i = 0; i < pms.size(); i++){
      ParticleManager pm = pms.get(i);
      
-     boolean isRemove = false;    //パーティクルを消すならtrue
+     boolean isRemove = false;    //このParticleManagerを消すならtrue
      switch(pm.owner.charanum){
        case 5:
          Cannon c = (Cannon)pm.owner;
@@ -400,9 +408,10 @@ void gameoverdraw(){
     text("Game Over", width/2, height/14*5);
     textSize(60);
     text("score: "+(int)exscore[0], width/2, height/14*8);
+    
+    //左上にタイトルに戻るまでの秒数を表示
+    if(expressfinish)  text((times[scene-1]- wholecount)/60, (float)width/30*2, (float)height/10*2); //<>//
   }
-  
-  text((times[scene-1]- wholecount)/60, (float)width/30*2, (float)height/10*2);
 }
 
 //********************************↓シーンごとの処理↓*********************************
@@ -489,7 +498,6 @@ int vsn;              //変化するスコアがどれか　scoretextに対応
 float[] exscore;      //表示するスコア
 float plusscore;      //1フレームで追加するスコア  各スコアごとに変更される
 
-boolean scorescrollfinish;    //スクロールが終わっていたらtrue
 boolean expressfinish;        //表示が終わったらtrue
 
 //*********************************
@@ -505,7 +513,7 @@ void scoreprocess(){
     if(exscore[vsn] != Maxscore[vsn])  exscore[vsn] = Maxscore[vsn];    //表示したいスコアと違っていたら戻す
     
     //スコアをすべて表示したら、そのことを保持し、終了
-    if(vsn >= scoretext.length-1){
+    if(vsn >= scoretext.length-1 || (isGameOver && vsn == 0)){
       expressfinish = true;
       return;
     }
@@ -525,7 +533,7 @@ void changeScene(){
   //スコアシーンでシーン変更したなら、最初に戻す
   if(scene >= times.length-1){
     allInitial();
-    scene--;
+    return;
   }
   
   scene++;

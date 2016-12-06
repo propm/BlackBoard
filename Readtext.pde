@@ -117,7 +117,7 @@ class ReadText extends CheckText{
     filename = "";
     for(int j = 0; j < code.length(); j++){
       if(code.substring(j, j+1).equals("\"")){
-        if(ifcount == 1)  filename = code.substring(1, j);
+        if(ifcount > 0)  filename = code.substring(1, j);
         ifcount++;
       }
     }
