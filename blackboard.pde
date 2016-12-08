@@ -9,6 +9,7 @@ import ddf.minim.analysis.*;
 import ddf.minim.ugens.*;
 import ddf.minim.effects.*;
 import processing.net.*;
+import javax.swing.*;
 //import codeanticode.syphon.*;
 
 ScrollManager sm;
@@ -48,7 +49,6 @@ final boolean isDebag = false;    //デバッグモードならtrue
 final boolean isTwoKinect = true;  //キネクトを2台使うならtrue
 final boolean isKinectLeft = false;  //キネクトを1台使う場合にキネクトが置かれている場所が画面の左側ならtrue
 
-boolean firstinitial;        //最初のinitialが呼ばれるまでtrue
 boolean backspace, space;    //backspace、spaceが押されている間true
 boolean isStop;              //一時停止を司る
 boolean sendable;            //このフレームで既にoscで送ったならtrue
@@ -79,59 +79,45 @@ int _bossappear;
 //*************************↓初期設定など↓***************************
 
 void settings(){
-  minim = new Minim(this);    //音楽・効果音用
-  osc = new OscP5(this, 12345);
-  address = new NetAddress("172.23.5.5", 12345);
-  
-  rt = new ReadText();
+  rt = new ReadText();        //settings.txtを読み込むクラス
   db = new DataBase();        //データベース
-  tm = new TimeManager();
-  
-  db.screenw = 2000;               //スクリーンwidth(仮)
-  if(rt.check())  System.exit(0);  //settings.txtのエラーチェック
-  rt.readCommands();
-  db.screenh = (int)(db.screenw*db.boardrate);
-
-  //databaseセット
   db.initial();
   
-  size(db.screenw, db.screenh, P2D);
-  //PJOGL.profile = 1;
-  noSmooth();
-  
-  if(!isMouse)  kinect = new KinectClient(this);
+  size(db.screenw, db.screenh);
+  db.scwhrate = width/1600.0;
 }
 
 void setup(){
   //server = new SyphonServer(this, "processing Syphon");
+  //PJOGL.profile = 1;
+  
+  minim   = new Minim(this);    //音楽・効果音用
+  osc     = new OscP5(this, 12345);
+  address = new NetAddress("172.23.5.5", 12345);
+  
+  if(rt.check())  System.exit(0);  //settings.txtのエラーチェック
   
   db.settitle();        //settingではdataが読み込まれていないからか、素材が読み込めない
-  db.scwhrate = width/1600.0;
+  db.setobjects();      //敵の設定
   
-  db.setobjects();
-  firstinitial = true;
-  backspace = space = false;
+  if(!isMouse)  kinect = new KinectClient(this);  //キネクトを使うなら、キネクトの準備をする
   
   font = createFont("あんずもじ", 48);
   textFont(font);
   textAlign(CENTER);
   
+  //初期化
   allInitial();
 }
 
 //やり直し
 void allInitial(){
   
-  //↓オブジェクト類↓
+  stop(true);
   
-  //一回目以外
-  if(!firstinitial){
-    stop(true);
-    tm = new TimeManager();    //sizeを変更するのがsettingの中でしかできないため、1回目はallInitialにいれることができない
-    rt.readCommands();
-  }else{
-    firstinitial = false;
-  }
+  //↓オブジェクト類↓
+  tm = new TimeManager();    //sizeを変更するのがsettingの中でしかできないため、1回目はallInitialにいれることができない
+  rt.readCommands();
   
   sm = new ScrollManager();
   
@@ -171,6 +157,7 @@ void allInitial(){
   isGameOver = false;
   darkerfinish = false;
   soundstop = false;
+  backspace = space = false;
   
   _reflect = _damaged = _bossappear = 0;
 }

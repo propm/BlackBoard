@@ -1,13 +1,12 @@
 //あらゆる初期設定を保存するクラス
 class DataBase{
   
-  final float eraserw = 5;          //数字がでかいほうが横とする
-  final float eraserh = 2;
-  final float boardh  = 35;
+  final float eraserw = 5;          //黒板消しの大きさ(比)　数字がでかいほうが横とする
+  final float eraserh = 2;  
+  final float boardh  = 35;         //黒板の大きさ(比)
   final float boardw  = 79.8913*2;
   
-  final float boardrate = boardh/boardw;
-  final int otherobjsize = 7;
+  final float boardrate = boardh/boardw;  //黒板の縦横比
   
     //多角形の点を保持
   final float[][][] vectors = {{{29.0/40, 133.0/800}, {141.0/160, 31.0/40}, {61.0/81, 17.0/20}, {13.0/40, 33.0/40}, 
@@ -33,15 +32,20 @@ class DataBase{
   
   boolean isFinishInitial;
   
-  //初期化子
-  {isFinishInitial = false;}
-  
   ArrayList<Enemy> oriEnemys;    //敵種別設定用のオブジェクト
                                        //1:突撃兵  2:サイン  3:タンジェント  4:パラシュート
                                        //5:大砲　　6:忍者
   ArrayList<MyObj> otherobj;       //敵以外のオブジェクト
   
+  //ボス戦に入るときの警告音
   AudioSample warning;
+  
+  //初期化子
+  { 
+    isFinishInitial = false;
+    screenw = 2000;               //スクリーンの横の長さ
+    screenh = (int)(screenw*boardrate);
+  }
   
   //中身を入れる
   void initial(){
@@ -62,9 +66,9 @@ class DataBase{
     isFinishInitial = true;
   }
   
+  //タイトルの設定
   void settitle(){
-    title = new MyObj();
-    MyObj t = title;
+    MyObj t = title = new MyObj();
     
     float m = 3.7;
     try{
@@ -86,20 +90,6 @@ class DataBase{
     t.pol.Add(width/2.0-t.w/2.0, height/2.0-t.h/2.0, 0);
   }
   
-  /*
-  //敵の効果音を設定
-  void setsound(String object, String command, String filename){
-  
-    if(oriEnemys.containsKey(object)){
-      for(int i = 0; i < oriEnemys.size(); i++){
-        if(objects[i].equals(object)){
-          if(command.equals("die"))       oriEnemys.get(object).die = minim.loadSample(filename);
-          if(command.equals("attack"))    oriEnemys.get(object).AT  = minim.loadSample(filename);
-        }
-      }
-    }
-  }*/
-  
   //敵・プレイヤーの設定
   void setobjects(){
     for(int i = 1; i <= oriEnemys.size(); i++){
@@ -107,55 +97,60 @@ class DataBase{
       Enemy e = oriEnemys.get(i-1);
       e.pol = new Polygon();
       e.diename = "enemydestroyed.wav";    //死ぬときの音
-      e.bul = setsound("fire.wav");                      //普通弾発射時の音
-      String[] imgnames;
+      e.bul = setsound("fire.wav");        //普通弾発射時の音
+      String[] imgnames;                   //読み込む画像の名前を一時的に保持
       
       switch(i){
+        
+        //突撃兵
         case 1:
-          imgnames = new String[2];
-          imgnames[0] = "attacker.png";
-          imgnames[1] = "attacker_attack.png";
+          imgnames = new String[]{ "attacker.png", "attacker_attack.png" };
           //引数は右からオブジェクト、num, hp, rank, bulletflag, Bi, 移動速度, damage, imgfile名
           setEnemys(e, i, 2, 1, false, -1, new PVector(-2, 0), 10, imgnames);
+          
           e.ATname = "attacker_attack.mp3";    //壁に攻撃するときの音
           break;
+          
+        //フライング
         case 2:
-          imgnames = new String[2];
-          imgnames[0] = "flying1.png";
-          imgnames[1] = "flying2.png";
+          imgnames = new String[]{ "flying1.png", "flying2.png" };
           setEnemys(e, i, 1, 2, true, 75, new PVector(-3, 0), 20, imgnames);
           break;
+          
+        //タンジェント
         case 3:
-          imgnames = new String[2];
-          imgnames[0] = "tangent1.png";
-          imgnames[1] = "tangent2.png";
+          imgnames = new String[]{ "tangent1.png", "tangent2.png" };
           setEnemys(e, i, 1, 4, true, 0, new PVector(-6, 0), 50, imgnames);
+          
           e.bulname = "beam.wav";    //ビームを打っているときずっとなる音
           break;
-        case 4:
-          imgnames = new String[2];
-          imgnames[0] = "parachuter1.png";
-          imgnames[1] = "parachuter2.png";
           
+        //パラシュート（降下時）
+        case 4:
+          imgnames = new String[]{ "parachuter1.png", "parachuter2.png" };
           setEnemys(e, i, 5, 3, true, 50, new PVector(-2, 2), 30, imgnames);
+          
           e.ATname = "parachuter_attack.wav";    //突撃し始めるときの音
           break;
+          
+        //固定砲台
         case 5:
-          imgnames = new String[2];
-          imgnames[0] = "cannon.png";
-          imgnames[1] = "cannon_attack.png";
+          imgnames = new String[]{ "cannon.png", "cannon_attack.png" };
           setEnemys(e, i, 5, 3, true, 60*4, new PVector(0, 0), 0, imgnames);
+          
           Cannon c = (Cannon)e;
           c.chargename = "laser_charge.wav";  //チャージ時の音
-          c.bulname = "laser.wav";     //レーザーを打つときの音
-          c.appearname = "summon.wav";  //召喚時の音
+          c.bulname = "laser.wav";            //レーザーを打つときの音
+          c.appearname = "summon.wav";        //召喚時の音
           break;
+          
+        //忍者
         case 6:
-          imgnames = new String[2];
-          imgnames[0] = "ninja.png";
-          imgnames[1] = "ninja_attack.png";
+          imgnames = new String[]{ "ninja.png", "ninja_attack.png" };
           setEnemys(e, i, -1, 4, true, 60*4, new PVector(0, 0), 0, imgnames);
           break;
+          
+        //ボス
         case 7:
           e.hp = 100;
           float bosssize = 6.0;
@@ -164,11 +159,13 @@ class DataBase{
           setOriPolygon(e, i);
           
           Boss bo = (Boss)e;
-          bo.reflectfirename = "reflect_fire.wav";
-          bo.strongfirename = "reflectable_fire.wav";
-          bo.chargename = "laser_charge.wav";
-          bo.diename = "boss_destroyed.wav";
+          bo.reflectfirename = "reflect_fire.wav";     //反射弾を撃つときの音
+          bo.strongfirename = "reflectable_fire.wav";  //反射可能弾を撃つときの音
+          bo.chargename = "laser_charge.wav";          //チャージするときの音
+          bo.diename = "boss_destroyed.wav";           //死ぬときの音
           break;
+          
+        //パラシュート（突撃時）
         case 8:
           String filename = "parachuter_attack.png";
           setImage(e, filename);
@@ -193,6 +190,7 @@ class DataBase{
     e.v = new PVector(v.x*scwhrate, v.y*scwhrate);
     e.damage = damage;
     
+    //画像のセット
     for(int i = 0; i < imgnames.length; i++){
       setImage(e, imgnames[i]);
     }
@@ -288,7 +286,6 @@ class DataBase{
   void setOriPolygon(Enemy e, int num){
     float[] wh;
     int vecnum = 0;    //多角形の点の情報が入った配列の添字を表す
-    Polygon pol = e.pol;
     
     switch(num){
       case 1:  vecnum = 0;  break;    //突撃兵

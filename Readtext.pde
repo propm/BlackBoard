@@ -168,7 +168,7 @@ class ReadText extends CheckText{
 }
 
 //一時保存用クラス
-class Datasaver implements Cloneable{
+public class Datasaver implements Cloneable{
   int tag;
   int sec;
   int[] intdata;
@@ -176,5 +176,12 @@ class Datasaver implements Cloneable{
   
   { sec = -1;
     intdata = new int[]{-10000, -10000};
+  }
+  
+  //Datasaverが入ったリストを並べ替えるためのクラス
+  class MyComparator implements Comparator<Datasaver>{
+    public int compare(Datasaver a, Datasaver b){
+      return a.sec - b.sec;
+    }
   }
 }

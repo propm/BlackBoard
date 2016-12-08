@@ -81,6 +81,8 @@ class Sin extends Enemy{
   }
   
   void move(){
+    
+    //壁の左右の辺と衝突していなければ、y軸方向の速度を設定
     if(!pol.isCollide || !(pol.wallside == 2 || pol.wallside == 4)){
       theta += 2;
       theta %= 360;
@@ -129,7 +131,7 @@ class Tangent extends Sin{
       isCrasher = true;
       
       once = true;
-      out = false;
+      out = true;    //出現時に音を鳴らすため、trueにしておく
       dicision();
     }
   }
@@ -347,7 +349,7 @@ class Cannon extends Enemy{
 //忍者
 class Ninja extends Enemy{
   final float ALPHA = 120;  //最大不透明度
-  final int stealfreq = 60; //透明度が変わる方向が何フレームで変化するか
+  final int stealfreq = 30; //透明度が変わる方向が何フレームで変化するか
   float alphav;             //不透明度の増減の速さ(1フレームにどれだけ不透明度が変化するか)
   boolean isStealth;        //透明化するときtrue
   
@@ -376,7 +378,7 @@ class Ninja extends Enemy{
     
     stealthcount = 0;
     alpha = ALPHA;
-    alphav = 5;
+    alphav = ALPHA / stealfreq;
     isStealth = false;
   }
   
@@ -409,12 +411,10 @@ class Ninja extends Enemy{
     if(isStealth){
       alpha -= alphav;
       if(alpha < 0){
-        isStealth = false;
         alpha = 0;
       }
     }else{
-      if(count < 15)  count++;          //消えている時間
-      else            alpha += alphav;
+      alpha += alphav;
       if(alpha >= ALPHA){
         alpha = ALPHA;
         count = 0;

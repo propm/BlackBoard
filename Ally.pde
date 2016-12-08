@@ -1,7 +1,7 @@
 //プレイヤー
 class Player extends Enemy{
   final float abledifference = 10.0;    //壁を作るときに許容される誤差
-  final int ATbframe         = 5;        //攻撃するときに現在と角度を比べるベクトルが何フレーム前のものか
+  final int   ATbframe       = 5;       //攻撃するときに現在と角度を比べるベクトルが何フレーム前のものか
   final float eraseablelen   = 30;      //角度を変えたときにもう一度消したと認識される長さ
   
   float bx, by;            //1フレーム前の座標
@@ -33,9 +33,7 @@ class Player extends Enemy{
   Player(){}
   
   Player(int side){
-    if(db.otherobj.size() > 0){
-      initial();
-    }
+    initial();
     this.side = side;
   }
   
@@ -115,24 +113,23 @@ class Player extends Enemy{
           break;
       }
     }else{
-      readXYZ();
+      readXY();    //キネクトから座標を読み込む
     }
-    
-    //println("side:"+side+" "+" x:"+x+" y:"+y);
   }
   
+  //現在の位置を前フレームの位置として残す
   void setBver(){
     for(int i = 0; i < pol.ver.size(); i++)
       bver.set(i, pol.ver.get(i));
   }
   
   //キネクトから座標を受け取る
-  void readXYZ(){
-    
+  void readXY(){
     x = kinect.getX(side);
     y = kinect.getY(side);
   }
   
+  //タイトルを消す
   void titleAttack(){
     if(ATflag){
       if(judge(pol, title.pol)){
@@ -148,7 +145,8 @@ class Player extends Enemy{
     
     if(abs(x - createxy.x) <= abledifference && abs(y - createxy.y) <= abledifference){
       if(ATflag){
-        /*if(x >= home.border)*/  createwall();}
+        if(x >= home.border)  createwall();
+      }
       else        count = 0;
     }else{
       createflag = false;
@@ -161,7 +159,7 @@ class Player extends Enemy{
   }
   
   float dirx, diry;        //角度が変わったとき、もしくは当たり判定に入ったときの座標
-  int bframecount;         //値がatbframeになるまで++
+  int bframecount;         //値がATbframe(現在の移動方向と比べる移動方向が何フレーム前のものか)になるまで++
   boolean alleover;        //どの敵とも重なっていなかったらfalse
   ArrayList<Float> bframedirs;
   
@@ -169,30 +167,34 @@ class Player extends Enemy{
   void attack(){
     alleover = false;
     
+    //ザコ敵との判定
     for(int i = 0; i < enemys.size(); i++){
       Enemy e = enemys.get(i);
       if(e.charanum != 6)  dicisionEnemy(e);    //忍者以外なら判定
     }
     
+    //ボスとの判定
     if(boss != null){
       if(boss.isStan){
         dicisionEnemy(boss);
       }
     }
     
+    //どの敵とも重なっていなければ、記憶していた移動方向をすべて消去
     if(!alleover){
       dirx = diry = -1;
       bframedirs = new ArrayList<Float>(ATbframe);
       bframecount = 0;
     }
     
+    //弾との判定
     for(int i = 0; i < bullets.size(); i++){
       Bullet b = bullets.get(i);
       
       switch(b.num){
-        case 0:
-        case 4:
-        case 5:
+        case 0:  //普通弾
+        case 4:  //通常弾
+        case 5:  //反射弾
           if(bdicision(b)){
             if(!b.bisOver){
               b.hp--;
@@ -365,7 +367,7 @@ class Home extends MyObj{
   String damagedname;
   
   Home(){
-    if(db.otherobj.size() > 0){
+    if(db.isFinishInitial){
       initial();
     }
   }

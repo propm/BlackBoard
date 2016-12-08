@@ -5,7 +5,7 @@ class TimeManager{
   
   TimeManager(){
     counter = 0;
-    events = new PriorityQueue<Datasaver>(3, new MyComparator());
+    events = new PriorityQueue<Datasaver>(3, new Datasaver().new MyComparator());
   }
   
   void Add(Datasaver ds){
@@ -56,12 +56,5 @@ class TimeManager{
     if(ds.stringdata.equals("Ninja"))
       if(ds.intdata[0] != -10000 && ds.intdata[1] != -10000)  enemys.add(new Ninja(ds.intdata[0], ds.intdata[1]));
       else                                                    enemys.add(new Ninja());
-  }
-}
-
-//Datasaverが入ったリストを並べ替えるためのクラス
-class MyComparator implements Comparator<Datasaver>{
-  public int compare(Datasaver a, Datasaver b){
-    return a.sec - b.sec;
   }
 }
