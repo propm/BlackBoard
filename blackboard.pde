@@ -9,8 +9,10 @@ import ddf.minim.analysis.*;
 import ddf.minim.ugens.*;
 import ddf.minim.effects.*;
 import processing.net.*;
+
 import javax.swing.*;
-//import codeanticode.syphon.*;
+import java.lang.reflect.*;
+import codeanticode.syphon.*;
 
 ScrollManager sm;
 ReadText rt;
@@ -24,7 +26,7 @@ NetAddress address;
 
 Client client;
 KinectClient kinect;
-//SyphonServer server;
+SyphonServer server;
 
 ArrayList<Enemy>     enemys;    //敵
 ArrayList<Bullet>    bullets;   //弾
@@ -44,9 +46,9 @@ final int Scoretime  = 60*1;   //scoreの数字を何秒間変化させるか
 final int scorePertime = 5;    //残り時間1フレームあたり何点もらえるか
 final int scoremarginf = 10;   //スコアを表示するときの間の時間
 final int dietime = 60*2;      //dieが鳴る時間の長さ
-final boolean isMouse = true;    //mouseでプレイヤーを操作するときはtrue
+final boolean isMouse = false;    //mouseでプレイヤーを操作するときはtrue
 final boolean isDebag = false;    //デバッグモードならtrue
-final boolean isTwoKinect = true;  //キネクトを2台使うならtrue
+final boolean isTwoKinect = false;  //キネクトを2台使うならtrue
 final boolean isKinectLeft = false;  //キネクトを1台使う場合にキネクトが置かれている場所が画面の左側ならtrue
 
 boolean backspace, space;    //backspace、spaceが押されている間true
@@ -79,21 +81,21 @@ int _bossappear;
 //*************************↓初期設定など↓***************************
 
 void settings(){
+  osc     = new OscP5(this, 16666);
+  address = new NetAddress("127.0.0.1", 16666);
   rt = new ReadText();        //settings.txtを読み込むクラス
   db = new DataBase();        //データベース
   db.initial();
   
-  size(db.screenw, db.screenh);
+  size(db.screenw, db.screenh, P3D);
+    PJOGL.profile = 1;
+
   db.scwhrate = width/1600.0;
 }
 
 void setup(){
-  //server = new SyphonServer(this, "processing Syphon");
-  //PJOGL.profile = 1;
-  
+  server = new SyphonServer(this, "processing Syphon");
   minim   = new Minim(this);    //音楽・効果音用
-  osc     = new OscP5(this, 12345);
-  address = new NetAddress("172.23.5.5", 12345);
   
   if(rt.check())  System.exit(0);  //settings.txtのエラーチェック
   
@@ -167,7 +169,7 @@ void allInitial(){
 void draw(){
   if(!isStop){
     process();
-    //server.sendScreen();
+    server.sendScreen();
     if(scene != 2)  drawing();
   }
 }
@@ -396,8 +398,8 @@ void gameoverdraw(){
     textSize(60);
     text("score: "+(int)exscore[0], width/2, height/14*8);
     
-    //左上にタイトルに戻るまでの秒数を表示
-    if(expressfinish)  text((times[scene-1]- wholecount)/60, (float)width/30*2, (float)height/10*2); //<>//
+    //左上にタイトルに戻るまでの秒数を表示 //<>//
+    if(expressfinish)  text((times[scene-1]- wholecount)/60, (float)width/30*2, (float)height/10*2);
   }
 }
 
@@ -476,6 +478,7 @@ void battle(){
 //******スコア用変数・定数群*******
 final String[] scoretext = {"敵撃破点: ", "残り時間ボーナス: ", "残りhpボーナス: ", "ボス撃破ボーナス: ", "合計: "};
 final int bossdestroyscore = 10000;       //ボス撃破ボーナス
+final int Scorem = 10;
 
 int[] Maxscore;       //各点数
 
@@ -579,16 +582,16 @@ void scoreinitial(){
   vsn = 0;
   
   Maxscore = new int[scoretext.length];
-  Maxscore[0] = score;                                            //敵・弾撃破スコア
-  Maxscore[1] = scorePertime* (times[4] - remaintime);            //残り時間
-  Maxscore[2] = home.hp;                                          //残りhp
-  Maxscore[3] = Maxscore[1] != 0 ? bossdestroyscore : 0;          //ボス撃破スコア
+  Maxscore[0] = score * Scorem;                                            //敵・弾撃破スコア
+  Maxscore[1] = scorePertime* (times[4] - remaintime) * Scorem;            //残り時間
+  Maxscore[2] = (int)(home.hp * 1/100.0) * Scorem;                                          //残りhp
+  Maxscore[3] = Maxscore[1] != 0 ? bossdestroyscore*Scorem : 0;          //ボス撃破スコア
   Maxscore[4] = Maxscore[0]+Maxscore[1]+Maxscore[2]+Maxscore[3];  //合計
   
   //for(int i = 0; i < Maxscore.length; i++)
     //plusscore[i] = (float)Maxscore[i]/Scoretime;
   
-  plusscore = (float)score/Scoretime;
+  plusscore = Maxscore[0]/Scoretime;
   
   expressfinish = false;
   

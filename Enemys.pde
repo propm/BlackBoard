@@ -266,7 +266,7 @@ class Cannon extends Enemy{
   
   Cannon(){
     if(db.isFinishInitial){
-      x = random(width/11.0*10)+ width/11.0;
+      x = random(width/11.0*9)+ width/11.0;
       y = random(height);
       initial();
     }

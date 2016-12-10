@@ -3,6 +3,7 @@ class Player extends Enemy{
   final float abledifference = 10.0;    //壁を作るときに許容される誤差
   final int   ATbframe       = 5;       //攻撃するときに現在と角度を比べるベクトルが何フレーム前のものか
   final float eraseablelen   = 30;      //角度を変えたときにもう一度消したと認識される長さ
+  final int NotCreateFrame = 3*60;  //
   
   float bx, by;            //1フレーム前の座標
   
@@ -12,12 +13,14 @@ class Player extends Enemy{
   int energy;      //壁作成に必要なエネルギー
   
   int count;
+  int createcount;   //
   float radian;    //黒板消しが横向きになっているとき0、時計回りが正方向(-π < radian <= π)
   int key;
   
   boolean ATflag;     //マウスクリック時true
   boolean bATflag;
   boolean createflag;       //壁を作っている間true
+  boolean out;                  //
   
   ArrayList<PVector> bver;  //前フレームのpol.ver
   PVector createxy;         //壁を作り始めたときの座標
@@ -51,7 +54,7 @@ class Player extends Enemy{
     copy();
     radian = 0;
     key = 0;
-    energy = MAXchoke/3;
+    energy = 0;
     x = y = z = 0;
     bframecount = 0;
     
@@ -74,12 +77,14 @@ class Player extends Enemy{
       bver.add(pol.ver.get(i));
       
     radian = PI/2;
+    out = true;
   }
   
   //動作
   void update(){
     move();
     
+    outdicision();
     setBver();
     setPolygonAngle();  //多角形設定
     
@@ -93,6 +98,7 @@ class Player extends Enemy{
       case 5:
         ATorCreate();
         break;
+      default:  break;
     }
   }
   
@@ -115,6 +121,10 @@ class Player extends Enemy{
     }else{
       readXY();    //キネクトから座標を読み込む
     }
+  }
+  
+  void outdicision(){
+    out = (x < 0 || x > width || y < 0 || y > height);
   }
   
   //現在の位置を前フレームの位置として残す
@@ -145,7 +155,8 @@ class Player extends Enemy{
     
     if(abs(x - createxy.x) <= abledifference && abs(y - createxy.y) <= abledifference){
       if(ATflag){
-        if(x >= home.border)  createwall();
+        if(createcount < NotCreateFrame)  createcount++;
+        else if(x >= home.border || out)  createwall();
       }
       else        count = 0;
     }else{
@@ -344,7 +355,7 @@ class Player extends Enemy{
     popMatrix();
     
     textSize(36);
-    text(combo, x+width/60.0, y-height/80.0);
+    //text(combo, x+width/60.0, y-height/80.0);
     
     pol.Draw();
   }
@@ -354,7 +365,7 @@ class Player extends Enemy{
 
 //自陣
 class Home extends MyObj{
-  final int MaxHP = 3000;
+  final int MaxHP = 1000000;
   int bhp;
   float border;        //自陣の境界
   

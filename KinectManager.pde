@@ -20,7 +20,7 @@ class KinectClient{
   
   void initial(){
     LIP = "172.23.9.217";
-    RIP = "172.23.2.59";
+    RIP = "169.254.76.212";
     
     if(!isTwoKinect){
       if(isKinectLeft)  RIP = LIP;
@@ -51,10 +51,14 @@ class KinectClient{
     }
     
     if(rateX <= 1.0){
-      if((isTwoKinect && side == 0) || (!isTwoKinect && isKinectLeft))  result = (width*rateX)/2.0;
-      else                          result = (width*(1.0-rateX))/2.0;
-      
-      if(isTwoKinect && side == 1)  result += width/2;
+      if(isTwoKinect){
+        if(side == 0)  result = (width*rateX)/2.0;
+        else                 result = (width*(1.0-rateX))/2.0;
+      }else{
+        if(isKinectLeft)  result = width*rateX;
+        else                     result = width*(1.0-rateX);
+      }
+        
     }else{
       result = -100;
     }

@@ -28,7 +28,7 @@ class MyObj implements Cloneable{
   
   //死判定
   void die(){
-    if(hp == 0){
+    if(hp <= 0){
       isDie = true;
       if(!soundstop && die != null)  die.trigger();
     }

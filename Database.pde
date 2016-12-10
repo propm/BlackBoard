@@ -152,7 +152,7 @@ class DataBase{
           
         //ボス
         case 7:
-          e.hp = 100;
+          e.hp = 90;
           float bosssize = 6.0;
           setImage(e, "boss1.png", bosssize);
           setImage(e, "boss2.png", bosssize);
