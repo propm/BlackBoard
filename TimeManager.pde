@@ -1,4 +1,4 @@
-
+//戦闘時に時間によってイベントを発生させる
 class TimeManager{
   PriorityQueue<Datasaver> events;  //イベント
   int counter;                      //秒数をカウントする

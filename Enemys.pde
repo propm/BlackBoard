@@ -312,7 +312,7 @@ class Cannon extends Enemy{
   
   //ボスが登場したら上に飛んでって死ぬ
   void plus(){
-    if(scene >= 4){
+    if(scener.scenenum >= 4){
       isMoveobj = true;
       isCrasher = true;
       v.add(new PVector(0, -1));
@@ -383,7 +383,7 @@ class Ninja extends Enemy{
   }
   
   void plus(){
-    if(scene >= 4){
+    if(scener.scenenum >= 4){
       fadeout();
     }else{
       stealth();
@@ -668,7 +668,7 @@ class Boss extends Enemy{
           // 登場完了のときこの処理がくる
           // ボス動き＆攻撃開始
           count = 0;
-          changeScene();
+          scener.changeScene();
         }
         break;
       
@@ -702,7 +702,7 @@ class Boss extends Enemy{
           // この処理がくる少し前からボスは見えなくなっている。
           // result画面にchangeScene()していいと思う。
           
-          changeScene();
+          scener.changeScene();
         }
         break;
     }
@@ -717,7 +717,7 @@ class Boss extends Enemy{
   void cadaver(){
     if(hp <= 0 && !isDie){
       if(die != null)  die.trigger();
-      changeScene();
+      scener.changeScene();
       
       isDie = true;
     }

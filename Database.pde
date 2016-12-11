@@ -37,6 +37,7 @@ class DataBase{
                                        //5:大砲　　6:忍者
   ArrayList<MyObj> otherobj;       //敵以外のオブジェクト
   
+  MyObj title;
   //ボス戦に入るときの警告音
   AudioSample warning;
   
@@ -75,14 +76,14 @@ class DataBase{
       t.image = loadImage("title.png");
       t.w = (int)(t.image.width/m);
       t.h = (int)(t.image.height/m);
-      t.image = reSize(t.image, t.w, t.h);
+      t.image = db.reSize(t.image, t.w, t.h);
     }catch(Exception e){
       e.printStackTrace();
     }
-    
+
     t.x = width/2.0 - t.w/2.0;
     t.y = height/2.0 - t.h/2.0;
-    
+
     t.pol = new Polygon();
     t.pol.Add(width/2.0+t.w/2.0, height/2.0-t.h/2.0, 0);
     t.pol.Add(width/2.0+t.w/2.0, height/2.0+t.h/2.0, 0);
@@ -317,6 +318,26 @@ class DataBase{
   //拡大・縮小
   PImage reSize(PImage img, int w, int h){
     img.resize(w, h);
+    return img;
+  }
+  
+  //画像反転用関数
+  PImage reverse(PImage img){
+  
+    color[][] pixel = new color[img.width][img.height];
+    
+    for(int i = 0; i < img.width; i++){
+      for(int j = 0; j < img.height; j++){
+        pixel[i][j] = img.get(i, j);
+      }
+    }
+        
+    for(int i = 0; i < img.width; i++){
+      for(int j = 0; j < img.height; j++){
+        img.set(i, j, pixel[img.width - 1 - i][j]);
+      }
+    }
+  
     return img;
   }
 }

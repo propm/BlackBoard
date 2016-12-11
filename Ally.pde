@@ -89,13 +89,13 @@ class Player extends Enemy{
     setPolygonAngle();  //多角形設定
     
     //壁作成・攻撃
-    switch(scene){
-      case 1:
+    switch(scener.scenenum){
+      case 0:
         titleAttack();
         break;
+      case 2:
       case 3:
       case 4:
-      case 5:
         ATorCreate();
         break;
       default:  break;
@@ -142,8 +142,8 @@ class Player extends Enemy{
   //タイトルを消す
   void titleAttack(){
     if(ATflag){
-      if(judge(pol, title.pol)){
-        changeScene();
+      if(judge(pol, db.title.pol)){
+        scener.changeScene();
       }
     }
   }
@@ -209,7 +209,6 @@ class Player extends Enemy{
           if(bdicision(b)){
             if(!b.bisOver){
               b.hp--;
-              combo++;
               b.bisOver = true;
               if(hp == 0){
                 choke += b.maxhp*b.energy;
@@ -287,7 +286,6 @@ class Player extends Enemy{
   //ダメージを与える
   void erase(Enemy e){
     e.hp--;
-    combo++;
     
     if(e.hp <= 0){
       score += getscore(e);
@@ -426,7 +424,7 @@ class Home extends MyObj{
       
       if(hp <= 0){
         hp = 0;
-        isGameOver = true;
+        scener.JumptoGameOver();
       }
     }
   }
