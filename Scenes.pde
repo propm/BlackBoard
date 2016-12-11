@@ -63,7 +63,7 @@ class SceneManager {
   //gameoverにする
   void JumptoGameOver(){
     scenenum = 7;
-    soundsclose();
+    disposal.soundsclose();
     soundstop = true;
     changeScene();
   }
@@ -159,9 +159,9 @@ class Battle extends Scene {
     home.update();
     
     //死んだオブジェクトの処理
-    cadaver(enemys);
-    cadaver(bullets);
-    cadaver(walls);
+    disposal.cadaver(enemys);
+    disposal.cadaver(bullets);
+    disposal.cadaver(walls);
     if(boss != null)  boss.cadaver();
   }
   

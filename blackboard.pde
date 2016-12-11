@@ -14,11 +14,15 @@ import javax.swing.*;
 import java.lang.reflect.*;
 //import codeanticode.syphon.*;
 
+
+
+//クラス群
 ScrollManager scroller;
 ReadText rt;
 DataBase db;
 TimeManager tm;
 SceneManager scener;
+Disposal disposal;
 
 Minim       minim;
 AudioPlayer bgm;
@@ -40,7 +44,9 @@ Boss boss;
 Player[] players;
 Home home;
 
-final int MAXchoke = 11100;
+
+
+final int MAXchoke = 11100;    //粉エネルギーの最大値
 final int sendframes = 2;      //_bossappearなどの変数の中身を外部プログラムに送るときの信号の長さ
 
 final int dietime = 60*2;      //dieが鳴る時間の長さ
@@ -48,6 +54,8 @@ final boolean isMouse = true;    //mouseでプレイヤーを操作するとき�
 final boolean isDebag = false;    //デバッグモードならtrue
 final boolean isTwoKinect = false;  //キネクトを2台使うならtrue
 final boolean isKinectLeft = false;  //キネクトを1台使う場合にキネクトが置かれている場所が画面の左側ならtrue
+
+
 
 boolean backspace, space;    //backspace、spaceが押されている間true
 boolean isStop;              //一時停止を司る
@@ -90,6 +98,7 @@ void setup(){
   db.setobjects();      //敵の設定
   
   if(!isMouse)  kinect = new KinectClient(this);  //キネクトを使うなら、キネクトの準備をする
+  disposal = new Disposal();            //後処理用クラス
   
   font = createFont("あんずもじ", 48);
   textFont(font);
@@ -102,7 +111,7 @@ void setup(){
 //やり直し
 void allInitial(){
   
-  stop(true);
+  disposal.dispose();
   
   //↓オブジェクト類↓
   tm = new TimeManager();    //sizeを変更するのがsettingの中でしかできないため、1回目はallInitialにいれることができない
@@ -206,36 +215,6 @@ int getscore(Enemy e){
   return 0;
 }
 
-//死んだオブジェクトの処理
-void cadaver(ArrayList<?> obj){
-  for(int i = 0; i < obj.size(); i++){
-    MyObj o = (MyObj)obj.get(i);
-    o.die();
-    
-    //死んでいるなら参照削除
-    if(o.isDie){
-      if(o.die != null){
-        dies.add(o.die);        //死ぬときの音を保持、音がcloseされるまでを数えるカウントをセット
-        diescount.add(0);
-      }
-      o.soundclose();
-      obj.remove(i);
-      i--;
-    }
-  }
-  
-  //死ぬ音の処理
-  for(int i = 0; i < dies.size(); i++){
-    diescount.set(i, diescount.get(i)+1);
-    if(diescount.get(i) > dietime){
-      dies.get(i).close();
-      dies.remove(i);
-      diescount.remove(i);
-      i--;
-    }
-  }
-}
-
 //*************************↓イベント処理・送信・受信↓***************************
 
 void mousePressed(){
@@ -308,47 +287,9 @@ void send(){
 
 //スケッチ終了時に呼ばれる関数
 void stop(){
-  stop(true);
+  disposal.dispose();
   minim.stop();
   super.stop();
-}
-
-void stop(boolean a){
-  soundsclose();
-  
-  if(boss != null)  boss = null;
-  if(home != null)  home = null;
-  if(players != null)  players = null;
-  if(enemys != null)  enemys = null;
-  if(walls != null)   walls = null;
-  if(bullets != null)  bullets = null;
-}
-
-//音を止める
-void soundsclose(){
-  if(enemys != null)
-    for(int i = 0; i < enemys.size(); i++){
-      enemys.get(i).soundclose();
-    }
-  
-  if(walls != null)
-    for(int i = 0; i < walls.size(); i++){
-      walls.get(i).soundclose();
-    }
-  
-  if(bullets != null)
-    for(int i = 0; i < bullets.size(); i++){
-      bullets.get(i).soundclose();
-    }
-  
-  if(boss != null)  boss.soundclose();
-  if(players != null)
-    for(int i = 0; i < players.length; i++)
-      if(players != null)  players[i].soundclose();
-    
-  if(home != null)  home.soundclose();
-  soundstop = true;
-  if(bgm != null)  bgm.close();
 }
 
   
