@@ -1,6 +1,6 @@
 
 class SceneManager {
-  final int[] times = {-1, 0, 60*5, -1, 60*60, -1, 60*10, 60*10};    //-1は時間制限なし
+  final int[] times = {-1, 0, 60*60, -1, 60*60, -1, 60*10, 60*10};    //-1は時間制限なし
   final Scene[] scenes = {new Title(), new ChooseDifficulty(), new Battle(), new BossAppear(), 
                           new BossBattle(), new BossDestroy(), new Score(), new GameOver()};
 
