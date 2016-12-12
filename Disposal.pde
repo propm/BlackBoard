@@ -35,12 +35,7 @@ class Disposal{
   void dispose(){
     soundsclose();
     
-    if(boss != null)  boss = null;
-    if(home != null)  home = null;
-    if(players != null)  players = null;
-    if(enemys != null)  enemys = null;
-    if(walls != null)   walls = null;
-    if(bullets != null)  bullets = null;
+    boss = null;
   }
   
   //音を止める

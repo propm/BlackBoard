@@ -63,7 +63,6 @@ class DataBase{
     for(int i = 0; i < oe.length; i++)
       oriEnemys.add(oe[i]);
     
-    warning = setsound("warning.wav");
     isFinishInitial = true;
   }
   
@@ -93,10 +92,13 @@ class DataBase{
   
   //敵・プレイヤーの設定
   void setobjects(){
+    warning = setsound("warning.wav");
+    
     for(int i = 1; i <= oriEnemys.size(); i++){
       
       Enemy e = oriEnemys.get(i-1);
       e.pol = new Polygon();
+      
       e.diename = "enemydestroyed.wav";    //死ぬときの音
       e.bul = setsound("fire.wav");        //普通弾発射時の音
       String[] imgnames;                   //読み込む画像の名前を一時的に保持
@@ -248,7 +250,6 @@ class DataBase{
   void setPlayer(){
     Player p = (Player)otherobj.get(0);
     p.createname = "wallcreated.wav";
-    p.erasename = "";
     
     p.pol = new Polygon();
     p.pol.Add(0, 0, 0);
@@ -263,7 +264,9 @@ class DataBase{
     
     try{
       sound = minim.loadSample(filename);
-    }catch(Exception e){}
+    }catch(Exception e){
+      //e.printStackTrace();
+    }
     
     return sound;
   }

@@ -13,9 +13,9 @@ class Player extends Enemy{
   int energy;      //壁作成に必要なエネルギー
   
   int count;
-  int createcount;   //
+  int notCreatableCount;   //壁が作れない間 +1される
   float radian;    //黒板消しが横向きになっているとき0、時計回りが正方向(-π < radian <= π)
-  int key;
+  int key;         //回転方向を持つ
   
   boolean ATflag;     //マウスクリック時true
   boolean bATflag;
@@ -25,11 +25,10 @@ class Player extends Enemy{
   ArrayList<PVector> bver;  //前フレームのpol.ver
   PVector createxy;         //壁を作り始めたときの座標
   
-  AudioSample erase;    //消すときの音
   AudioSample create;   //壁を作るときの音
   Polygon bpol;         //前のpol
   
-  String erasename, createname;
+  String createname;
   int side;
   
   
@@ -44,7 +43,6 @@ class Player extends Enemy{
   void copy(){
     Player p = (Player)db.otherobj.get(0);
     
-    erase = db.setsound(p.erasename);
     create = db.setsound(p.createname);
     pol    = new Polygon(p.pol.ver);
   }
@@ -57,6 +55,7 @@ class Player extends Enemy{
     energy = 0;
     x = y = z = 0;
     bframecount = 0;
+    notCreatableCount = 0;
     
     gap = atan(db.eraserh/db.eraserw);
     
@@ -124,7 +123,7 @@ class Player extends Enemy{
   }
   
   void outdicision(){
-    out = (x < 0 || x > width || y < 0 || y > height);
+    out = (x < home.border || x > width || y < 0 || y > height);
   }
   
   //現在の位置を前フレームの位置として残す
@@ -150,13 +149,15 @@ class Player extends Enemy{
   
   //攻撃するか壁を作るか判定
   void ATorCreate(){
+    notCreatableCount++;    //ゲームが始まって5秒間は壁が作れない
+    
     if(!isMouse)  ATflag = true;      //mouseで操作してない場合はATflagの判定は不要
     if(!ATflag)  bframecount = 0;
     
     if(abs(x - createxy.x) <= abledifference && abs(y - createxy.y) <= abledifference){
       if(ATflag){
-        if(createcount < NotCreateFrame)  createcount++;
-        else if(x >= home.border || out)  createwall();
+        if(notCreatableCount > NotCreateFrame)
+          if(!out)  createwall();
       }
       else        count = 0;
     }else{
@@ -221,7 +222,6 @@ class Player extends Enemy{
       }
     }
     
-    if(erase != null && !soundstop)  erase.trigger();
   }
   
   //敵と自機が重なっているかどうかの判定:  戻り値→変更前のisOver
@@ -341,7 +341,6 @@ class Player extends Enemy{
   void soundclose(){
     super.soundclose();
     if(create != null)  create.close();
-    if(erase != null)   erase.close();
   }
   
   void draw(){

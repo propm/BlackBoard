@@ -1,6 +1,6 @@
 
 class SceneManager {
-  final int[] times = {-1, 0, 60*60, -1, 60*60, -1, 60*10, 60*10};    //-1は時間制限なし
+  final int[] times = {-1, 0, 60*5, -1, 60*60, -1, 60*10, 60*10};    //-1は時間制限なし
   final Scene[] scenes = {new Title(), new ChooseDifficulty(), new Battle(), new BossAppear(), 
                           new BossBattle(), new BossDestroy(), new Score(), new GameOver()};
 
@@ -14,7 +14,7 @@ class SceneManager {
   Scene bscene; //前のシーンを入れる
   Scene score;
   
-  SceneManager(){
+  void initial(){
     score = scenes[6];
     
     framecounter = 0;
@@ -207,8 +207,9 @@ class BossAppear extends Battle {
   
   @Override void initial() {
     _bossappear = 1;
-    if (db.warning != null && !soundstop)
+    if (db.warning != null && !soundstop){
       db.warning.trigger();    //警戒音を鳴らす
+    }
   }
   
   @Override void plus() {

@@ -17,21 +17,21 @@ import java.lang.reflect.*;
 
 
 //クラス群
-ScrollManager scroller;
-ReadText rt;
-DataBase db;
-TimeManager tm;
-SceneManager scener;
-Disposal disposal;
+ScrollManager scroller;    //背景をスクロールさせる
+ReadText rt;               //ステージファイルを読み込む
+DataBase db;               //dataフォルダから読み込む素材を保存しておく
+TimeManager tm;            //時間ごとにイベントを発生させる
+SceneManager scener;       //シーン切り替え、シーンごとの処理を実行
+Disposal disposal;         //死んだオブジェクトなどの処理
 
-Minim       minim;
-AudioPlayer bgm;
-OscP5       osc;
-NetAddress address;
+Minim       minim;         //音楽に必須
+AudioPlayer bgm;           //bgm
+OscP5       osc;           //外部プログラムへの送信に必要
+NetAddress address;        //どのIPアドレスに送るかを記憶
 
-Client client;
-KinectClient kinect;
-//SyphonServer server;
+Client client;             //kinect_serverとの通信に使う
+KinectClient kinect;       //kinectから受け取った値の処理
+//SyphonServer server;       //プロジェクターに映すときに使う(Mac限定)
 
 ArrayList<Enemy>     enemys;    //敵
 ArrayList<Bullet>    bullets;   //弾
@@ -98,11 +98,20 @@ void setup(){
   db.setobjects();      //敵の設定
   
   if(!isMouse)  kinect = new KinectClient(this);  //キネクトを使うなら、キネクトの準備をする
-  disposal = new Disposal();            //後処理用クラス
+  disposal = new Disposal();                      //後処理用クラス
   
+  //フォントの設定
   font = createFont("あんずもじ", 48);
   textFont(font);
   textAlign(CENTER);
+  
+  //イベントを保持
+  tm = new TimeManager();
+  rt.readCommands();
+  
+  //クラス群
+  scener = new SceneManager();
+  scroller = new ScrollManager();
   
   //初期化
   allInitial();
@@ -111,14 +120,14 @@ void setup(){
 //やり直し
 void allInitial(){
   
+  //残っているものを除去
   disposal.dispose();
   
-  //↓オブジェクト類↓
-  tm = new TimeManager();    //sizeを変更するのがsettingの中でしかできないため、1回目はallInitialにいれることができない
-  rt.readCommands();
+  tm.copy();
   
-  scroller = new ScrollManager();
-  scener = new SceneManager();
+  //↓オブジェクト類↓
+  scroller.initial();
+  scener.initial();
   
   enemys = new ArrayList<Enemy>();
   bullets = new ArrayList<Bullet>();

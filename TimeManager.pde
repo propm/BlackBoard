@@ -1,10 +1,11 @@
 //戦闘時に時間によってイベントを発生させる
 class TimeManager{
-  PriorityQueue<Datasaver> events;  //イベント
+  PriorityQueue<Datasaver> events;       //イベント（一度入れられたら中身は減らない）
+  PriorityQueue<Datasaver> events_copy;  //実際に使われるイベントのリスト（中身は減る）
+  
   int counter;                      //秒数をカウントする
   
   TimeManager(){
-    counter = 0;
     events = new PriorityQueue<Datasaver>(3, new Datasaver().new MyComparator());
   }
   
@@ -12,13 +13,19 @@ class TimeManager{
     events.add(ds);
   }
   
+  //イベントのコピーを作成
+  void copy(){
+    counter = 0;
+    events_copy = new PriorityQueue(events);
+  }
+  
   //秒数ごとに指定されたことを実行
   void checksec(){
-    if(events.size() > 0){
+    if(events_copy.size() > 0){
       
       //カウントがeventに入っている情報の秒数を越えたら、イベント（敵の発生、bgmの再生）を発生させる
-      while(counter/60.0 >= events.peek().sec){
-        Datasaver ds = events.poll();
+      while(counter/60.0 >= events_copy.peek().sec){
+        Datasaver ds = events_copy.poll();
           switch(rt.tags[ds.tag-1]){
             case "<appear>":
               checksecparts(ds);
@@ -29,7 +36,7 @@ class TimeManager{
               if(bgm != null)  bgm.loop();
               break;
           }
-        if(events.size() == 0)  break;
+        if(events_copy.size() == 0)  break;
       }
     }
     

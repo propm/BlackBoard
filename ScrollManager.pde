@@ -13,7 +13,9 @@ class ScrollManager{
     
     m = ceil((float)width/view.width);
     view.resize((int)(view.width*m*db.scwhrate), (int)(view.height*m*db.scwhrate));
-    
+  }
+  
+  void initial(){
     viewx = 0;
     viewx2 = view.width;
   }
