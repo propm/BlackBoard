@@ -269,11 +269,15 @@ class Enemy extends MyObj{
 
 //敵の弾丸
 class Bullet extends MyObj{
+  //x、yは発射地点側（右側）中央の位置
+  
   float radian;    //横一直線を0としたときの角度　正方向は時計回り(-π < radian <= π)
   float energy;
   int   damage;    //与えるダメージ
   int   num;       //bulletなら0、laserなら1、beamなら2、shurikenなら3、
-                   //standardなら4、reflectなら5、strongなら6            
+                   //standardなら4、reflectなら5、strongなら6   
+                   
+  float centerOffsetX, centerOffsetY;  //x, yと線の中心とのオフセット
   AudioSample AT;  //壁に当たったときになる音
   
   String ATname;
@@ -281,8 +285,10 @@ class Bullet extends MyObj{
   int[] col;       //色
   boolean bisOver;
   PVector length;       //弾の長さ
+  PVector dirmag;       //線の長さの半分と傾き
   
   ArrayList<PVector> bver;
+  BulletEffect effect;      //線状のエフェクト
   
   Bullet(){}
   
@@ -333,9 +339,9 @@ class Bullet extends MyObj{
   
   //普通の弾のinitial
   void sinitial(){
-    col[0] = 255;
+    col[0] = 4;
     col[1] = 255;
-    col[2] = 255;
+    col[2] = 4;
     
     h = (int)(4*db.scwhrate);
     damage = 2;
@@ -343,6 +349,15 @@ class Bullet extends MyObj{
     setPolygon();
     for(int i = 0; i < pol.ver.size(); i++)
       bver.add(pol.ver.get(i));
+    
+    centerOffsetX = -length.mag()/2 * cos(radian);
+    centerOffsetY = -length.mag()/2 * sin(radian);
+    
+    float decayRate = num == 0 ? 0.08: 0.05;
+    
+    //dirmag = length.copy().rotate(radian).setMag(length.mag()/2);
+    dirmag = new PVector(-centerOffsetX, -centerOffsetY);
+    effect = new BulletEffect(decayRate, dirmag, (num == 4));
   }
   
   //radianが0のとき、右上から時計回り（右上が0）
@@ -399,6 +414,7 @@ class Bullet extends MyObj{
   }
   
   void draw(){
+    /*
     fill(col[0], col[1], col[2]);
     pushMatrix();
     translate(x, y);
@@ -406,7 +422,13 @@ class Bullet extends MyObj{
     noStroke();
     rect(-length.mag(), -h/2, length.mag(), h);
     popMatrix();
+    */
     
     pol.Draw();
+  }
+  
+  void drawEffect(){
+    PVector center = new PVector(x + centerOffsetX, y + centerOffsetY);  //中心座標の算出
+    effect.draw(center, col);
   }
 }

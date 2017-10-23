@@ -1,5 +1,5 @@
 //プレイヤー
-class Player extends Enemy{
+class Player extends MyObj{
   final float abledifference = 10.0;    //壁を作るときに許容される誤差
   final int   ATbframe       = 5;       //攻撃するときに現在と角度を比べるベクトルが何フレーム前のものか
   final float eraseablelen   = 30;      //角度を変えたときにもう一度消したと認識される長さ

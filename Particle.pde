@@ -1,4 +1,6 @@
 
+color[][] bossBulletPixels;
+
 //管理用クラス
 class ParticleManager{
   final int ParticleSize = 30;   //生み出す（最大の）パーティクルの量
@@ -73,7 +75,7 @@ class ParticleManager{
     //中心から一定距離にあればパーティクルを消す
     if(!Infinity)  checkDif();
     
-    loadPixels();
+    //loadPixels();
     for(int i = 0; i < ps.size(); i++){
       Particle p = ps.get(i);
       
@@ -114,7 +116,7 @@ class ParticleManager{
       }
     }
     
-    updatePixels();
+    //updatePixels();
   }
   
   //パーティクルとターゲットとの距離が一定距離以内であれば、パーティクルを消す
@@ -248,12 +250,10 @@ class EllipseManager extends ParticleManager{
     isChargeManager = false;
   }
   
-  EllipseManager(Enemy owner, int x, int y, int size, color col){
+  EllipseManager(Enemy owner, int x, int y, int size, color _col){
     this(owner, x, y, size);
     
-    this.col[0] = col >> 16 & 0xFF;
-    this.col[1] = col >> 8 & 0xFF;
-    this.col[2] = col & 0xFF;
+    col = colToArray(_col);
   }
   
   void update(){
@@ -261,8 +261,6 @@ class EllipseManager extends ParticleManager{
     int[] basePowered = new int[3];  //ベースrgbの二乗
     for(int i = 0; i < basePowered.length; i++)
       basePowered[i] = col[i]*col[i];
-      
-    loadPixels();
     
     for(int i = 0; i < es.length; i++){
       Ellipse e = es[i];
@@ -303,8 +301,6 @@ class EllipseManager extends ParticleManager{
         }
       }
     }
-    
-    updatePixels();
   }
 }
 
@@ -327,4 +323,166 @@ class Ellipse{
     borderw = w;
     borderh = h;
   }
+}
+
+
+//線（Bulletに使われる）
+class BulletEffect{
+  
+  float DecayRate;
+  int drawRange;
+  PVector dirmag;          //dirmag, rangeY, rangeXは、傾き、長さが変わらない弾の場合のみ変数として保持する
+  int rangeY, rangeX;
+  boolean isBossBullet;    //ボスの通常弾はどれも傾き、色などが同じで、流用できるため、判別できるようにしておく
+  
+  //傾きか長さが変わる弾はこっち（ビーム、レーザーなど）
+  BulletEffect(float decayRate){
+    this(decayRate, null, false);
+  }
+  
+  //傾きも長さも変わらない弾はこっち（ボスの通常弾など）
+  BulletEffect(float decayRate, PVector _dirmag, boolean _isBossBullet){
+    DecayRate = decayRate;
+    drawRange = (int)(0.25 / DecayRate);
+    dirmag = _dirmag;
+    
+    if(_dirmag != null){
+      rangeY = (int)abs(_dirmag.y) + drawRange;
+      rangeX = (int)abs(_dirmag.x) + drawRange;
+    }
+    
+    isBossBullet = _isBossBullet;
+  }
+  
+  //そうでない弾はこっち
+  void draw(PVector center, int[] col){
+    if(isBossBullet && bossBulletPixels != null)  copyBossBulletPixels(center);
+    else                                          setPixels(center, dirmag, col, rangeY, rangeX);
+  }
+  
+  //傾き、長さが変わる弾はこっち
+  void draw(PVector center, PVector _dirmag, int[] col){
+    int _rangeY = (int)abs(_dirmag.y) + drawRange;
+    int _rangeX = (int)abs(_dirmag.x) + drawRange;
+    setPixels(center, _dirmag, col, _rangeY, _rangeX);
+  }
+  
+  //ボスの通常弾の場合、プログラムを開始してから一回しか呼ばれない
+  private void setPixels(PVector center, PVector _dirmag, int[] col, int _rangeY, int _rangeX){
+    
+    boolean isSettingBossBullet = false;
+    if(isBossBullet){
+      isSettingBossBullet = true;
+      bossBulletPixels = new color[_rangeX*2][_rangeY*2];
+    }
+    
+    PVector start  = PVector.sub(center, _dirmag);
+    PVector end    = PVector.add(center, _dirmag);
+    
+    int top     = max((int)(center.y - _rangeY), 0);
+    int bottom  = min((int)(center.y + _rangeY), height);
+    int left    = max((int)(center.x - _rangeX), 0);
+    int right   = min((int)(center.x + _rangeX), width);
+    
+    for(int y = top; y < bottom; y++){
+      for(int x = left; x < right; x++){
+        
+        PVector point = new PVector(x, y);
+        
+        //距離の算出（点が線の側面にあると仮定する）  ←そうでなければ、あとで変更する
+        float dist;
+        PVector vecB = PVector.sub(point, center); //中心と点を結ぶベクトルを算出
+        float area = vecB.cross(_dirmag).mag();     //方向ベクトルとそれが作る面積を算出
+        dist = area / _dirmag.mag();                //面積÷底辺（高さを算出）
+        
+        int indexX = x - int(center.x - rangeX);
+        int indexY = y - int(center.y - rangeY);
+        
+        //ピクセルを黒で初期化
+        if(isSettingBossBullet)
+          bossBulletPixels[indexX][indexY] = color(0, 0, 0);
+        
+        //距離が描画範囲以上なら描画しない
+        if(dist > drawRange)  continue;
+        
+        int index = y*width + x;
+        
+        //今の点が線分の側面に位置するかどうか
+        if(!isSideforLine(start, end, point)){
+          dist = min(PVector.sub(end, point).mag(), PVector.sub(start, point).mag());  //近い方の端点
+        }
+        
+        //距離が0の場合（点が線上にある場合）は、距離を正の小数にする
+        if(dist <= 0)  dist = 0.1;
+        
+        float div = DecayRate * dist * dist;
+        int red    = (int)(col[0] / div);
+        int green  = (int)(col[1] / div);
+        int blue   = (int)(col[2] / div);
+        
+        pixels[index] = addColor(pixels[index], new int[]{red, green, blue});
+        
+        //ボスの一発目の通常弾の場合のみ、そのピクセル情報をコピー
+        if(isSettingBossBullet){
+          bossBulletPixels[indexX][indexY] = color(red, green, blue);
+        }
+      }
+    }
+  }
+  
+  private void copyBossBulletPixels(PVector center){
+    
+    int minY = (int)(center.y - rangeY);
+    int maxY = (int)(center.y + rangeY);
+    int minX = (int)(center.x - rangeX);
+    int maxX = (int)(center.x + rangeX);
+    
+    int top     = max(minY, 0);
+    int bottom  = min(maxY, height);
+    int left    = max(minX, 0);
+    int right   = min(maxX, width);
+    
+    for(int y = top; y < bottom; y++){
+      for(int x = left; x < right; x++){
+        
+        int oriX = x - minX;
+        int oriY = y - minY;
+        int pixelIndex = y*width + x;
+        
+        pixels[pixelIndex] = addColor(pixels[pixelIndex], bossBulletPixels[oriX][oriY]);
+      }
+    }
+  }
+}
+
+boolean isSideforLine(PVector start, PVector end, PVector point){
+  PVector sub1 = PVector.sub(point, start);
+  PVector sub2 = PVector.sub(point, end);
+  float angle = PVector.angleBetween(sub1, sub2);
+  
+  return (angle > PI/2);
+}
+
+
+//color系便利関数群
+
+int[] colToArray(color col){
+  
+  int red   = (col >> 16) & 0xFF;
+  int green = (col >> 8) & 0xFF;
+  int blue  = col & 0xFF;
+  
+  return new int[]{red, green, blue};
+}
+
+color addColor(int[] col1, int[] col2){
+  return color(col1[0] + col2[0],   col1[1] + col2[1],   col1[2] + col2[2]);
+}
+
+color addColor(color col1, color col2){
+  return addColor(colToArray(col1), colToArray(col2));
+}
+
+color addColor(color col1, int[] col2){
+  return addColor(colToArray(col1), col2);
 }

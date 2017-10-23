@@ -687,7 +687,7 @@ class Boss extends Enemy{
           if(!isCharge)  move();
           attack();
           bisStan = isStan;
-          stealth();
+          //stealth();
         }
         dicision();
         break;
@@ -764,6 +764,8 @@ class Boss extends Enemy{
           tint(255, alpha);
           image(boss1, imgx, imgy);
           noTint();
+          fill(20, 100, 255, 100);
+          ellipse(x, y+h/8.0, h/1.5, h/1.5);
         }
         
         break;

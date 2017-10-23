@@ -27,16 +27,27 @@ class Laser extends Bullet{
     col[0] = 255;
     col[1] = 20;
     col[2] = 147;
+    
+    effect = new BulletEffect(0.02);
   }
   
   void plus(){
     if(count++ < maxcount && !owner.isDie)  length.setMag(dist(((Cannon)owner).laserX, owner.y+owner.h/2, x, y));
     setPolygonAngle();
   }
+  
+  @Override
+  void drawEffect(){
+    PVector center = new PVector(x - length.x/2, y);  //中心座標の算出
+    PVector dirmag = length.copy().mult(1/2.0);
+    effect.draw(center, dirmag, col);
+  }
 }
 
 //*************************************************************************************
 class Beam extends Bullet{
+  //x, yは発射している地点を表す
+  
   int Hcount;
   int margin;
   int r;
@@ -206,11 +217,11 @@ class Standard extends Bullet{
     this.y = y;
     this.v = new PVector(v_x, 0);
     
+    num = 4;
     initial();
     
     damage = 5;
     hp = 1;
-    num = 4;
     energy = 75;
     
     col[0] = 129;

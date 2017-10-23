@@ -51,7 +51,7 @@ final int sendframes = 2;      //_bossappearなどの変数の中身を外部プ
 
 final int dietime = 60*2;      //dieが鳴る時間の長さ
 final boolean isMouse = true;    //mouseでプレイヤーを操作するときはtrue
-final boolean isDebag = false;    //デバッグモードならtrue
+final boolean isDebag = true;    //デバッグモードならtrue
 final boolean isTwoKinect = false;  //キネクトを2台使うならtrue
 final boolean isKinectLeft = false;  //キネクトを1台使う場合にキネクトが置かれている場所が画面の左側ならtrue
 
@@ -180,6 +180,11 @@ void draw(){
 
 //パーティクル
 void particledraw(){
+  loadPixels();
+  
+   for(Bullet b: bullets){
+     if(b.effect != null)  b.drawEffect();
+   }
   
    for(int i = 0; i < pms.size(); i++){
      ParticleManager pm = pms.get(i);
@@ -207,6 +212,8 @@ void particledraw(){
        pm.update();
      }
    }
+   
+   updatePixels();
 }
 
 int getscore(Enemy e){
