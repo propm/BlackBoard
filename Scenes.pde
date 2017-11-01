@@ -200,6 +200,11 @@ class Battle extends Scene {
     particledraw();
     
     super.draw();
+    //プレイヤー
+    for(int i = 0; i < players.length; i++){
+      fill(255, 134, 0);
+      players[i].draw();
+    }
   }
 }
 

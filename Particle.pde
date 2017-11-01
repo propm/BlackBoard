@@ -1,5 +1,7 @@
 
-color[][] bossBulletPixels;
+//color[][] bossBulletPixels;
+color[] bossBulletPixels;
+color[] laserPixels;
 
 //管理用クラス
 class ParticleManager{
@@ -325,8 +327,187 @@ class Ellipse{
   }
 }
 
+enum Type{ Default, Standard, Laser}
+boolean once = true;
 
 //線（Bulletに使われる）
+class BulletEffect{
+  
+  float DecayRate;
+  int drawRange;
+  int[] col;
+  Type type;
+  boolean copiable;      //レーザーは、長さが固定になっている間のみコピーするため、その間だけtrue
+  
+  BulletEffect(float decayRate, int[] _col, Type _type){
+    this(decayRate, (int)(0.25 / decayRate), _col, _type);
+  }
+  
+  BulletEffect(float decayRate, int _drawRange, int[] _col, Type _type){
+    DecayRate = decayRate;
+    drawRange = _drawRange;
+    col = _col;
+    type = _type;
+    copiable = false;
+  }
+  
+  //外から呼ばれるのはこれだけ
+  void draw(PVector center, PVector _dirmag){
+    int _rangeY = (int)abs(_dirmag.y) + drawRange;
+    int _rangeX = (int)abs(_dirmag.x) + drawRange;
+    
+    //タイプによって格納する配列を変更
+    int[] array = pixels;
+    PVector range = new PVector(_rangeX, _rangeY);
+    
+    boolean _isCopiable = copiable;
+    switch(type){
+      case Standard:
+        if(_isCopiable)  _isCopiable = (bossBulletPixels != null);
+        if(_isCopiable)  array = bossBulletPixels;
+        break;
+      case Laser:
+        if(_isCopiable)  _isCopiable = (laserPixels      != null);
+        if(_isCopiable)  array = laserPixels;
+        break;
+      default:  _isCopiable = false;
+    }
+    
+    if(_isCopiable)  copyPixels(center, range, array);
+    else             prepareCalculate(center, _dirmag, range, array);
+    
+    //まだコピーできる状態でないならreturn
+    if(!copiable)    return;
+    
+    //条件文は後で書き換える（配列のとこ）
+    
+    //ここから先はプログラムを開始してから種類ごとに1回しか入らない
+    color[] newArray = new color[int(_rangeX*2) * int(_rangeY*2)];
+    
+    switch(type){
+      case Standard:  if(bossBulletPixels != null)  return;  bossBulletPixels = newArray;  break;
+      case Laser:     if(laserPixels      != null)  return;  laserPixels      = newArray;  break;
+    }
+    
+    prepareCalculate(center, _dirmag, range, newArray);
+  }
+  
+  protected void prepareCalculate(PVector center, PVector _dirmag, PVector range, color[] _array){
+    int top     = (int)(center.y - range.y);
+    int bottom  = (int)(center.y + range.y);
+    int left    = (int)(center.x - range.x);
+    int right   = (int)(center.x + range.x);
+    
+    color[] array = _array;
+    
+    if(array == pixels){
+      top    = max(top, 0);
+      left   = max(left, 0);
+      right  = min(right, width);
+      bottom = min(bottom, height);
+    }
+    
+    PVector rangeStart  = new PVector(left, top);
+    PVector rangeEnd    = new PVector(right, bottom);
+    
+    calculatePixels(center, _dirmag, rangeStart, rangeEnd, array);
+  }
+  
+  //ボスの通常弾の場合、プログラムを開始してから一回しか呼ばれない
+  private void calculatePixels(PVector center, PVector _dirmag, PVector rangeStart, PVector rangeEnd, color[] array){
+    
+    PVector start  = PVector.sub(center, _dirmag);
+    PVector end    = PVector.add(center, _dirmag);
+    
+    int top    = int(rangeStart.y);
+    int left   = int(rangeStart.x);
+    int bottom = int(rangeEnd.y);
+    int right  = int(rangeEnd.x);
+    
+    for(int y = top; y < bottom; y++){
+      for(int x = left; x < right; x++){
+        
+        int w = (array == pixels ? width : right - left);
+        
+        int indexX = (array == pixels ? x : x - left);
+        int indexY = (array == pixels ? y : y - top);
+        
+        int index = indexY*w + indexX;
+        
+        PVector point = new PVector(x, y);
+        
+        //距離の算出（点が線の側面にあると仮定する）  ←そうでなければ、あとで変更する
+        float dist;
+        PVector vecB = PVector.sub(point, center); //中心と点を結ぶベクトルを算出
+        float area = vecB.cross(_dirmag).mag();     //方向ベクトルとそれが作る面積を算出
+        dist = area / _dirmag.mag();                //面積÷底辺（高さを算出）
+        
+        //ピクセルを黒で初期化
+        if(array != pixels)
+          array[index] = color(0, 0, 0);
+        
+        //距離が描画範囲以上なら描画しない
+        if(dist > drawRange)  continue;
+        
+        //今の点が線分の側面に位置するかどうか
+        if(!isSideforLine(start, end, point)){
+          dist = min(PVector.sub(end, point).mag(), PVector.sub(start, point).mag());  //近い方の端点
+        }
+        
+        //距離が0の場合（点が線上にある場合）は、距離を正の小数にする
+        if(dist <= 0)  dist = 0.1;
+        
+        float div = DecayRate * dist * dist;
+        int red    = (int)(col[0] / div);
+        int green  = (int)(col[1] / div);
+        int blue   = (int)(col[2] / div);
+        
+        array[index] = addColor(array[index], new int[]{red, green, blue});
+      }
+    }
+  }
+  
+  protected void copyPixels(PVector center, PVector range, int[] array){
+    
+    int minY = (int)(center.y - range.y);
+    int maxY = (int)(center.y + range.y);
+    int minX = (int)(center.x - range.x);
+    int maxX = (int)(center.x + range.x);
+    
+    int top     = max(minY, 0);
+    int bottom  = min(maxY, height);
+    int left    = max(minX, 0);
+    int right   = min(maxX, width);
+    
+    for(int y = top; y < bottom; y++){
+      for(int x = left; x < right; x++){
+        
+        int oriX = x - minX;
+        int oriY = y - minY;
+        int pixelIndex = y*width + x;
+        int arrayIndex = oriY * int(range.x)*2 + oriX;
+        
+        pixels[pixelIndex] = addColor(pixels[pixelIndex], array[arrayIndex]);
+      }
+    }
+  }
+}
+
+class FixedLine extends BulletEffect{
+  PVector dirmag;
+  
+  FixedLine(float decayRate, PVector _dirmag, int[] col, Type _type){
+    super(decayRate, col, _type);
+    dirmag = _dirmag;
+    copiable = true;
+  }
+  
+  void draw(PVector center){
+    super.draw(center, dirmag);
+  }
+}
+
+/*
 class BulletEffect{
   
   float DecayRate;
@@ -453,7 +634,7 @@ class BulletEffect{
       }
     }
   }
-}
+}*/
 
 boolean isSideforLine(PVector start, PVector end, PVector point){
   PVector sub1 = PVector.sub(point, start);

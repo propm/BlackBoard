@@ -51,9 +51,9 @@ final int sendframes = 2;      //_bossappearなどの変数の中身を外部プ
 
 final int dietime = 60*2;      //dieが鳴る時間の長さ
 final boolean isMouse = true;    //mouseでプレイヤーを操作するときはtrue
-final boolean isDebag = true;    //デバッグモードならtrue
+final boolean isDebag = false;    //デバッグモードならtrue
 final boolean isTwoKinect = false;  //キネクトを2台使うならtrue
-final boolean isKinectLeft = false;  //キネクトを1台使う場合にキネクトが置かれている場所が画面の左側ならtrue
+final boolean isKinectLeft = true;  //キネクトを1台使う場合にキネクトが置かれている場所が画面の左側ならtrue
 
 
 
@@ -89,7 +89,7 @@ void settings(){
 }
 
 void setup(){
-  //server = new SyphonServer(this, "processing Syphon");
+  //server = new SyphonServer(this, "Processing Syphon");
   minim   = new Minim(this);    //音楽・効果音用
   
   if(rt.check())  System.exit(0);  //settings.txtのエラーチェック
@@ -146,6 +146,7 @@ void allInitial(){
   try{
     bgm = minim.loadFile("bbtitle.mp3");
     bgm.loop();
+    bgm.setGain(-4);
   }catch(Exception e){}
   
   //*********↓各種グローバル変数初期化↓*************
@@ -165,6 +166,10 @@ void allInitial(){
 //*************************↓ループ関数↓***************************
 void draw(){
   
+  //server.sendScreen();
+  
+  //println("Lz1; "+kinect.Lz1+"Ly1; "+kinect.Ly1+" Rz1: "+kinect.Rz1+" Ry1: "+kinect.Ry1);
+  
   //座標の取得
   if(!isMouse)  kinect.update();
   
@@ -175,7 +180,8 @@ void draw(){
   if(!alreadySend)  send();
   alreadySend = false;
   
-  //server.sendScreen();
+  
+  //server.sendImage(g);
 }
 
 //パーティクル

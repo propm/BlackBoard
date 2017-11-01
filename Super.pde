@@ -277,7 +277,6 @@ class Bullet extends MyObj{
   int   num;       //bulletなら0、laserなら1、beamなら2、shurikenなら3、
                    //standardなら4、reflectなら5、strongなら6   
                    
-  float centerOffsetX, centerOffsetY;  //x, yと線の中心とのオフセット
   AudioSample AT;  //壁に当たったときになる音
   
   String ATname;
@@ -285,7 +284,6 @@ class Bullet extends MyObj{
   int[] col;       //色
   boolean bisOver;
   PVector length;       //弾の長さ
-  PVector dirmag;       //線の長さの半分と傾き
   
   ArrayList<PVector> bver;
   BulletEffect effect;      //線状のエフェクト
@@ -350,14 +348,10 @@ class Bullet extends MyObj{
     for(int i = 0; i < pol.ver.size(); i++)
       bver.add(pol.ver.get(i));
     
-    centerOffsetX = -length.mag()/2 * cos(radian);
-    centerOffsetY = -length.mag()/2 * sin(radian);
-    
     float decayRate = num == 0 ? 0.08: 0.05;
     
-    //dirmag = length.copy().rotate(radian).setMag(length.mag()/2);
-    dirmag = new PVector(-centerOffsetX, -centerOffsetY);
-    effect = new BulletEffect(decayRate, dirmag, (num == 4));
+    effect = new BulletEffect(decayRate, col, (num == 4) ? Type.Standard : Type.Default);
+    effect.copiable = (num == 4);
   }
   
   //radianが0のとき、右上から時計回り（右上が0）
@@ -428,7 +422,10 @@ class Bullet extends MyObj{
   }
   
   void drawEffect(){
-    PVector center = new PVector(x + centerOffsetX, y + centerOffsetY);  //中心座標の算出
-    effect.draw(center, col);
+    float offsetX = -length.mag()/2 * cos(radian);
+    float offsetY = -length.mag()/2 * sin(radian);
+    PVector center = new PVector(x + offsetX, y + offsetY);  //中心座標の算出
+    PVector dirmag = new PVector(-offsetX, -offsetY);
+    effect.draw(center, dirmag);
   }
 }

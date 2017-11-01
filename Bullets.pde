@@ -1,5 +1,7 @@
 
 class Laser extends Bullet{
+  //laserのみ、x, yが先頭を表す（lengthはマイナス）
+  
   int count;
   int maxcount;    //レーザーを打つ秒数
   int Hcount;      //自陣に当たったときのカウント
@@ -28,11 +30,12 @@ class Laser extends Bullet{
     col[1] = 20;
     col[2] = 147;
     
-    effect = new BulletEffect(0.02);
+    effect = new BulletEffect(0.02, col, Type.Laser);
   }
   
   void plus(){
     if(count++ < maxcount && !owner.isDie)  length.setMag(dist(((Cannon)owner).laserX, owner.y+owner.h/2, x, y));
+    else if(effect != null)                 effect.copiable = true;
     setPolygonAngle();
   }
   
@@ -40,7 +43,7 @@ class Laser extends Bullet{
   void drawEffect(){
     PVector center = new PVector(x - length.x/2, y);  //中心座標の算出
     PVector dirmag = length.copy().mult(1/2.0);
-    effect.draw(center, dirmag, col);
+    effect.draw(center, dirmag);
   }
 }
 

@@ -468,6 +468,7 @@ class Home extends MyObj{
             if(l.x+abs(l.length.x) >= border){
               
               if(l.x <= border){
+                if(l.effect != null)  l.effect.copiable = false;
                 l.x = border;
                 l.length.setMag(l.length.mag()+l.v.x);
                 l.setPolygonAngle();
@@ -542,7 +543,7 @@ class Wall extends MyObj{
     this.h = (int)h;
     this.radian = radian;
     isDie = false;
-    hp = 200;
+    hp = 50;
     
     copy();
     

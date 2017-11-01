@@ -18,9 +18,9 @@ class KinectClient{
     initial();
   }
   
-  void initial(){
-    LIP = "172.23.9.217";
-    RIP = "169.254.76.212";
+  void initial(){ 
+    LIP = "172.20.10.4";
+    RIP = "172.20.10.4";
     
     if(!isTwoKinect){
       if(isKinectLeft)  RIP = LIP;

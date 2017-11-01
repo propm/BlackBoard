@@ -619,6 +619,7 @@ class Boss extends Enemy{
       if(!isStrong){
         //反射弾
         bullets.add(new Reflect(chargeXY.x, chargeXY.y, new PVector(-rbs*cos(45*PI/180.0), rbs*sin(45*PI/180.0))));
+        bullets.add(new Reflect(chargeXY.x, chargeXY.y, new PVector(-rbs, 0)));
         bullets.add(new Reflect(chargeXY.x, chargeXY.y, new PVector(-rbs*cos(-45*PI/180.0), rbs*sin(-45*PI/180.0))));
         //効果音
         if(reflectfire != null && !soundstop)  reflectfire.trigger();
@@ -765,6 +766,7 @@ class Boss extends Enemy{
           image(boss1, imgx, imgy);
           noTint();
           fill(20, 100, 255, 100);
+          noStroke();
           ellipse(x, y+h/8.0, h/1.5, h/1.5);
         }
         

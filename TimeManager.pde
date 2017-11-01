@@ -33,7 +33,10 @@ class TimeManager{
             case "<bgm>":
               if(bgm != null)  bgm.close();
               bgm = minim.loadFile(ds.stringdata);
-              if(bgm != null)  bgm.loop();
+              if(bgm != null){
+                bgm.loop();
+                bgm.setGain(-8);
+              }
               break;
           }
         if(events_copy.size() == 0)  break;
